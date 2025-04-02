@@ -134,6 +134,12 @@ userSchema.statics.findByUsername = function (username) {
     return this.findOne({ username: username.toLowerCase() });
 };
 
+// Method to check if reset password token is valid
+userSchema.methods.isResetPasswordTokenValid = function() {
+    return this.resetPasswordToken && 
+           this.resetPasswordTokenExpiry && 
+           this.resetPasswordTokenExpiry > new Date();
+  };
 userSchema.index({ email: 1 });
 userSchema.index({ username: 1 });
 
