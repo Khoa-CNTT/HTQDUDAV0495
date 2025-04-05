@@ -135,13 +135,16 @@ userSchema.statics.findByUsername = function (username) {
 };
 
 // Method to check if reset password token is valid
-userSchema.methods.isResetPasswordTokenValid = function() {
-    return this.resetPasswordToken && 
-           this.resetPasswordTokenExpiry && 
-           this.resetPasswordTokenExpiry > new Date();
-  };
+userSchema.methods.isResetPasswordTokenValid = function () {
+    return this.resetPasswordToken &&
+        this.resetPasswordTokenExpiry &&
+        this.resetPasswordTokenExpiry > new Date();
+};
+
 userSchema.index({ email: 1 });
 userSchema.index({ username: 1 });
+userSchema.index({ verificationToken: 1 });
+userSchema.index({ resetPasswordToken: 1 });
 
 const User = mongoose.model('User', userSchema);
 
