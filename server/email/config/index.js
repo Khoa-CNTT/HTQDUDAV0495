@@ -1,9 +1,10 @@
 const SibApiV3Sdk = require('sib-api-v3-sdk');
+require('dotenv').config();
 
 // Initialize the Brevo API client
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
 const apiKey = defaultClient.authentications['api-key'];
-apiKey.apiKey = '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';
+apiKey.apiKey = process.env.BREVO_API_KEY;
 
 // Email configuration
 const emailConfig = {
@@ -19,4 +20,4 @@ const emailConfig = {
   }
 };
 
-module.exports = emailConfig; 
+module.exports = emailConfig;
