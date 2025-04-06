@@ -6,8 +6,8 @@
 ## Installation
 1. Clone the Repository
    ```bash
-   git clone https://github.com/your-username/dynamic-quiz-system.git
-   cd dynamic-quiz-system
+   git clone https://github.com/Khoa-CNTT/HTQDUDAV0495.git
+   cd HTQDUDAV0495
    ```
 
 2. Environment Variables
