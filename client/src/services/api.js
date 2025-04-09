@@ -162,3 +162,176 @@ export const getPublicQuizzes = async () => {
     };
   }
 };
+
+export const getQuizById = async (quizId) => {
+  const response = await api.get(`/quizzes/${quizId}`);
+  return response.data;
+};
+
+export const deleteQuiz = async (quizId) => {
+  const response = await api.delete(`/quizzes/${quizId}`);
+  return response.data;
+};
+
+// Quiz Submission API calls
+export const submitQuizSubmission = async (quizId, answers) => {
+  const response = await api.post(`/quizzes/${quizId}/submit`, { answers });
+  return response.data;
+};
+
+export const getUserSubmissions = async () => {
+  const response = await api.get('/submissions/user');
+  return response.data;
+};
+
+export const getSubmissionById = async (submissionId) => {
+  const response = await api.get(`/submissions/${submissionId}`);
+  return response.data;
+};
+
+// Room API calls for multiplayer functionality
+export const createRoom = async (quizId, options = {}) => {
+  try {
+    const response = await api.post('/rooms', { quizId, ...options });
+    
+    // Ensure we have a valid response with data
+    if (!response.data || !response.data.data) {
+      throw new Error('Invalid response from server');
+    }
+    
+    const roomData = response.data.data;
+    
+    // Make sure we extract the room code
+    return {
+      success: true,
+      data: {
+        ...roomData,
+        // Ensure code exists (it should be in roomData directly)
+        code: roomData.code,
+        // Make sure hostId is properly formatted if it's an object
+        hostId: typeof roomData.hostId === 'object' 
+          ? roomData.hostId._id 
+          : roomData.hostId,
+        // Format any other objects that might cause rendering issues
+        hostName: typeof roomData.hostId === 'object'
+          ? (roomData.hostId.displayName || roomData.hostId.username)
+          : 'Host'
+      }
+    };
+  } catch (error) {
+    console.error('Error creating room:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to create room'
+    };
+  }
+};
+
+export const getUserRooms = async () => {
+  const response = await api.get('/rooms/user');
+  return response.data;
+};
+
+export const getRoomByCode = async (code) => {
+  try {
+    // Validate code before making the request
+    if (!code || code === 'undefined') {
+      console.error('Invalid room code received in getRoomByCode:', code);
+      return {
+        success: false,
+        message: 'Invalid room code'
+      };
+    }
+    
+    console.log('Fetching room with code:', code);
+    const response = await api.get(`/rooms/${code}`);
+    
+    // Check if we have a valid response
+    if (!response.data) {
+      throw new Error('Invalid response from server');
+    }
+    
+    // Handle different response structures
+    const roomData = response.data.data || response.data;
+    
+    return {
+      success: true,
+      data: roomData
+    };
+  } catch (error) {
+    console.error(`Error getting room with code "${code}":`, error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Room not found'
+    };
+  }
+};
+
+export const joinRoom = async (code) => {
+  const response = await api.post(`/rooms/${code}/join`);
+  return response.data;
+};
+
+export const startRoom = async (code) => {
+  try {
+    const response = await api.post(`/rooms/${code}/start`);
+    return {
+      success: true,
+      data: response.data.data
+    };
+  } catch (error) {
+    console.error('Error starting room:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to start room'
+    };
+  }
+};
+
+export const endRoom = async (code) => {
+  try {
+    const response = await api.post(`/rooms/${code}/end`);
+    return {
+      success: true,
+      data: response.data.data
+    };
+  } catch (error) {
+    console.error('Error ending room:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to end room'
+    };
+  }
+};
+
+export const submitAnswer = async (code, questionId, answerId) => {
+  try {
+    const response = await api.post(`/rooms/${code}/answer`, { questionId, answerId });
+    return {
+      success: true,
+      data: response.data.data
+    };
+  } catch (error) {
+    console.error('Error submitting answer:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to submit answer'
+    };
+  }
+};
+
+export const getRoomParticipants = async (code) => {
+  try {
+    const response = await api.get(`/rooms/${code}/participants`);
+    return {
+      success: true,
+      data: response.data.data
+    };
+  } catch (error) {
+    console.error('Error getting room participants:', error);
+    return {
+      success: false,
+      message: error.response?.data?.message || 'Failed to load participants'
+    };
+  }
+};
