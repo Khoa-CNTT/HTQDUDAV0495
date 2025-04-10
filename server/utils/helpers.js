@@ -27,3 +27,30 @@ function formatDate(date) {
       minute: '2-digit'
     });
   }
+
+  /**
+ * Tính toán khoảng thời gian giữa hai ngày
+ * @param {Date} Ngày bắt đầu
+ * @param {Date} Ngày kết thúc
+ * @returns {number} Khoảng thời gian tính bằng giây
+ */
+function calculateTimeDifference(startDate, endDate) {
+  return Math.floor((endDate - startDate) / 1000);
+}
+
+/**
+ * Xác thực Email
+ * @param {string} 
+ * @returns {boolean} 
+ */
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+module.exports = {
+  generateRoomCode,
+  formatDate,
+  calculateTimeDifference,
+  isValidEmail
+}; 
