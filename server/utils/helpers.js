@@ -48,9 +48,37 @@ function isValidEmail(email) {
   return emailRegex.test(email);
 }
 
+/**
+ * Tạo chuỗi ngẫu nhiên
+ * @param {number} Độ dài chuỗi mong muốn
+ * @returns {string} 
+ */
+function generateRandomString(length) {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  
+  return result;
+}
+
+/**
+ * Định dạng số thành phần trăm
+ * @param {number} value - Giá trị cần định dạng
+ * @param {number} total - Tổng số để tính phần trăm
+ * @returns {string} 
+ */
+function formatPercentage(value, total) {
+  return `${Math.round((value / total) * 100)}%`;
+}
+
 module.exports = {
   generateRoomCode,
   formatDate,
   calculateTimeDifference,
-  isValidEmail
+  isValidEmail,
+  generateRandomString,
+  formatPercentage
 }; 
