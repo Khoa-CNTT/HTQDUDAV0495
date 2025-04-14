@@ -38,11 +38,9 @@ const quizSchema = new mongoose.Schema({
     },
     originalPdfName: {
         type: String,
-        required: true,
     },
     pdfPath: {
         type: String,
-        required: true,
     },
     questions: [questionSchema],
     createdBy: {
@@ -62,4 +60,4 @@ const quizSchema = new mongoose.Schema({
 
 const Quiz = mongoose.model('Quiz', quizSchema);
 
-module.exports = Quiz; 
+module.exports = Quiz;
