@@ -47,8 +47,9 @@ const HeadHero = () => {
             <Button
               className="font-bold text-black bg-white hover:text-white"
               size="sm"
-            >
-              Log in{" "}
+              
+            ><Link to="/login">Log in</Link>
+              {" "}
               <span aria-hidden="true" className="hidden sm:block">
                 →
               </span>

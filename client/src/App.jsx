@@ -56,7 +56,7 @@ function App() {
       {/* <Navbar /> */}
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login login={login} />} />
+        <Route path="/login" element={<Login login={login} user={user} />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

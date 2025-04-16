@@ -15,7 +15,6 @@ const Register = ({ user }) => {
   const [registered, setRegistered] = useState(false);
   const navigate = useNavigate();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user) {
       navigate('/dashboard');
@@ -31,21 +30,15 @@ const Register = ({ user }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
       return;
     }
-    
-    setLoading(true);
 
+    setLoading(true);
     try {
-      // Remove confirmPassword before sending to API
       const { confirmPassword, ...registerData } = formData;
       await register(registerData);
-      
-      // Show success message
       setRegistered(true);
       toast.success('Registration successful! Please check your email to verify your account.');
     } catch (error) {
@@ -58,22 +51,21 @@ const Register = ({ user }) => {
 
   if (registered) {
     return (
-      <div className="max-w-md mx-auto">
-        <div className="bg-white p-8 rounded-lg shadow-md text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#e6f0f3] to-[#d2f2f4] px-4">
+        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center border-t-4 border-[#00b3b3]">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-green-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Registration Successful!</h2>
-          <p className="text-gray-600 mb-6">
-            We've sent a verification link to <strong>{formData.email}</strong>. Please check your email 
-            and click the link to verify your account.
+          <h2 className="text-2xl font-bold text-[#00b3b3] mb-4">Registration Successful!</h2>
+          <p className="text-gray-600 mb-4">
+            A verification link has been sent to <strong>{formData.email}</strong>.
           </p>
-          <p className="text-gray-500 text-sm mb-6">
-            If you don't see the email, please check your spam folder.
+          <p className="text-sm text-gray-500 mb-6">
+            Please check your inbox or spam folder to activate your account.
           </p>
-          <Link 
-            to="/login" 
-            className="inline-block bg-indigo-600 text-white py-2 px-6 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          <Link
+            to="/login"
+            className="inline-block bg-[#00b3b3] text-white py-2 px-6 rounded-lg hover:bg-[#009999] transition duration-200"
           >
             Go to Login
           </Link>
@@ -83,109 +75,110 @@ const Register = ({ user }) => {
   }
 
   return (
-    <div className="max-w-md mx-auto">
-      <h1 className="text-3xl font-bold text-center mb-8">Create an Account</h1>
-      
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md">
-        <div className="mb-4">
-          <label htmlFor="username" className="block text-gray-700 font-medium mb-2">
-            Username *
-          </label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="Choose a username"
-          />
-        </div>
-        
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
-            Email *
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="Enter your email"
-          />
-        </div>
-        
-        <div className="mb-4">
-          <label htmlFor="displayName" className="block text-gray-700 font-medium mb-2">
-            Display Name (Optional)
-          </label>
-          <input
-            type="text"
-            id="displayName"
-            name="displayName"
-            value={formData.displayName}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="Your display name"
-          />
-          <p className="text-xs text-gray-500 mt-1">This will be displayed to other users</p>
-        </div>
-        
-        <div className="mb-4">
-          <label htmlFor="password" className="block text-gray-700 font-medium mb-2">
-            Password *
-          </label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            minLength="6"
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="Create a password"
-          />
-          <p className="text-xs text-gray-500 mt-1">At least 6 characters</p>
-        </div>
-        
-        <div className="mb-6">
-          <label htmlFor="confirmPassword" className="block text-gray-700 font-medium mb-2">
-            Confirm Password *
-          </label>
-          <input
-            type="password"
-            id="confirmPassword"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="Confirm your password"
-          />
-        </div>
-        
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-        >
-          {loading ? 'Registering...' : 'Register'}
-        </button>
-        
-        <div className="mt-4 text-center text-gray-600">
-          Already have an account?{' '}
-          <Link to="/login" className="text-indigo-600 hover:underline">
-            Login here
-          </Link>
-        </div>
-      </form>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#e6f0f3] to-[#d2f2f4] px-4">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border-t-4 border-[#00b3b3]">
+        <h2 className="text-3xl font-bold text-center text-[#00b3b3] mb-6">Create Your Account</h2>
+        <p className="text-center text-gray-600 mb-6">Join QuizWhiz today!</p>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label htmlFor="username" className="block text-gray-700 font-medium mb-1">
+              Username *
+            </label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              required
+              value={formData.username}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00b3b3]"
+              placeholder="Choose a username"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-gray-700 font-medium mb-1">
+              Email *
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00b3b3]"
+              placeholder="Enter your email"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="displayName" className="block text-gray-700 font-medium mb-1">
+              Display Name (optional)
+            </label>
+            <input
+              type="text"
+              id="displayName"
+              name="displayName"
+              value={formData.displayName}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00b3b3]"
+              placeholder="What should we call you?"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-gray-700 font-medium mb-1">
+              Password *
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              required
+              minLength={6}
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00b3b3]"
+              placeholder="Create a password"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="confirmPassword" className="block text-gray-700 font-medium mb-1">
+              Confirm Password *
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              required
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00b3b3]"
+              placeholder="Repeat your password"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-[#00b3b3] text-white rounded-md font-semibold hover:bg-[#009999] transition duration-200 disabled:opacity-50"
+          >
+            {loading ? 'Registering...' : 'Register'}
+          </button>
+
+          <p className="text-center text-gray-600">
+            Already have an account?{' '}
+            <Link to="/login" className="text-[#00b3b3] font-medium hover:underline">
+              Login here
+            </Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 };
 
-export default Register; 
+export default Register;

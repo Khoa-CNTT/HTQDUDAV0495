@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = ({ user, logout }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -10,6 +11,11 @@ const Navbar = ({ user, logout }) => {
 
   const closeMenu = () => {
     setMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout(); // Call the logout function passed as a prop
+    navigate("/login"); // Redirect to login page after logout
   };
 
   return (
@@ -102,7 +108,7 @@ const Navbar = ({ user, logout }) => {
                       <button
                         onClick={() => {
                           closeMenu();
-                          logout();
+                          handleLogout();
                         }}
                         className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-indigo-50"
                       >
@@ -115,7 +121,7 @@ const Navbar = ({ user, logout }) => {
             ) : (
               <>
                 <Link
-                  to="/login"
+                  to="/Login.jsx"
                   className="text-gray-700 hover:text-indigo-600"
                 >
                   Login
