@@ -4,17 +4,14 @@ import { login } from '../services/api';
 import toast from 'react-hot-toast';
 
 const Login = ({ login: loginUser, user }) => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      navigate('/login');
     }
   }, [user, navigate]);
 
@@ -37,16 +34,12 @@ const Login = ({ login: loginUser, user }) => {
     } catch (error) {
       console.error('Login error:', error);
       let errorMsg = 'Login failed. Please try again.';
-      
       if (error.response?.data?.message) {
         errorMsg = error.response.data.message;
-        
-        // Special message for unverified accounts
         if (errorMsg.includes('verify your email')) {
-          errorMsg = 'Please verify your email before logging in. Check your inbox for a verification link.';
+          errorMsg = 'Please verify your email before logging in.';
         }
       }
-      
       toast.error(errorMsg);
     } finally {
       setLoading(false);
@@ -54,64 +47,71 @@ const Login = ({ login: loginUser, user }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <h1 className="text-3xl font-bold text-center mb-8">Login</h1>
-      
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md">
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-gray-700 font-medium mb-2">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="Enter your email"
-          />
-        </div>
-        
-        <div className="mb-6">
-          <label htmlFor="password" className="block text-gray-700 font-medium mb-2">
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="Enter your password"
-          />
-          <div className="mt-2 text-right">
-            <Link to="/forgot-password" className="text-sm text-indigo-600 hover:underline">
-              Forgot password?
-            </Link>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#e6f0f3] to-[#d2f2f4] px-4">
+      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md border-t-4 border-[#00b3b3]">
+        <h2 className="text-3xl font-bold text-center text-[#00b3b3] mb-6">
+          Welcome Back!
+        </h2>
+        <p className="text-center text-gray-600 mb-6">
+          Login to your QuizWhiz account
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label htmlFor="email" className="block text-gray-700 font-medium mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              id="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              placeholder="e.g. your@email.com"
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00b3b3] focus:border-[#00b3b3]"
+            />
           </div>
-        </div>
-        
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-        >
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-        
-        <div className="mt-4 text-center text-gray-600">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-indigo-600 hover:underline">
-            Register here
-          </Link>
-        </div>
-      </form>
+
+          <div>
+            <label htmlFor="password" className="block text-gray-700 font-medium mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              id="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              placeholder="Enter your password"
+              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00b3b3] focus:border-[#00b3b3]"
+            />
+            <div className="text-right mt-2">
+              <Link to="/forgot-password" className="text-sm text-[#00b3b3] hover:underline">
+                Forgot password?
+              </Link>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-[#00b3b3] text-white rounded-md font-semibold hover:bg-[#009999] transition duration-200 disabled:opacity-50"
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+
+          <p className="text-center text-gray-600">
+            Don’t have an account?{' '}
+            <Link to="/register" className="text-[#00b3b3] font-medium hover:underline">
+              Sign up
+            </Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 };
 
-export default Login; 
+export default Login;

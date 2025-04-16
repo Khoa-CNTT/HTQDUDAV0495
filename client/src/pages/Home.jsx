@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getPublicQuizzes } from "../services/api";
-import { isAuthenticated } from "../utils/jwtUtils";
+//  Removed unused import: import { isAuthenticated } from "../utils/jwtUtils";
 import QuizCard from "../components/QuizCard";
 import toast from "react-hot-toast";
 import Hero from "../components/home/Hero";
 import { useAuth } from "../context/AuthContext";
 
 const Home = () => {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn } = useAuth(); // ✅ Now used in the render
   const [publicQuizzes, setPublicQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -31,6 +31,21 @@ const Home = () => {
   return (
     <div>
       <Hero />
+
+      {/* Optional: Show something different if user is logged in */}
+      <div className="mt-4 text-right text-sm text-gray-500">
+        {isLoggedIn ? (
+          <span>Welcome back! Explore the public quizzes below.</span>
+        ) : (
+          <span>
+            Want to create your own quiz?{" "}
+            <Link to="/register" className="text-indigo-600 underline">
+              Sign up
+            </Link>{" "}
+            to get started.
+          </span>
+        )}
+      </div>
 
       <section>
         <h2 className="mb-6 text-2xl font-bold">Public Quizzes</h2>
