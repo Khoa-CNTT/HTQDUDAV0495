@@ -5,6 +5,7 @@ const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
 const quizRoutes = require('./routes/quizRoutes');
 const submissionRoutes = require('./routes/submissionRoute');
+const roomRoutes = require('./routes/roomRoutes');
 dotenv.config();
 
 const app = express();
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use('/api/users', userRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/submissions', submissionRoutes);
+app.use('/api/rooms', roomRoutes);
 
 // Connect mongodb
 mongoose.connect(process.env.MONGO_URI)
