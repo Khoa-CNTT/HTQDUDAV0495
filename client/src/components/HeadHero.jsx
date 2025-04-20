@@ -2,8 +2,14 @@ import React from "react";
 import { Link } from "react-router-dom";
 import Layout from "../layout";
 import { Button } from "./ui/button";
+import { useAuth } from "@/context/AuthContext";
 
 const HeadHero = () => {
+  const { isLoggedIn, logout } = useAuth();
+  const handleLogout = () => {
+    logout();
+    navigate("/"); // điều hướng về trang chủ sau khi logout
+  };
   return (
     <Layout>
       <div className="justify-between w-full lg:flex lg:gap-x-3">
@@ -23,7 +29,7 @@ const HeadHero = () => {
           {/* For Institutions */}
           <div className="flex items-center gap-x-2 lg:gap-x-3">
             <Button
-              className="text-pink-600 bg-white border-[1px] border-pink-600 hover:bg-pink-600 hover:text-white font-bold"
+              className="rounded-xl text-pink-600 bg-white border-[1px] border-pink-600 hover:bg-pink-600 hover:text-white font-bold"
               size="sm"
             >
               For Institutions
@@ -44,16 +50,25 @@ const HeadHero = () => {
             </Button>
 
             {/* Log in */}
-            <Button
-              className="font-bold text-black bg-white hover:text-white"
-              size="sm"
-              
-            ><Link to="/login">Log in</Link>
-              {" "}
-              <span aria-hidden="true" className="hidden sm:block">
-                →
-              </span>
-            </Button>
+            {isLoggedIn ? (
+              <Button
+                onClick={handleLogout}
+                className="font-bold text-black bg-white hover:text-white hover:bg-black border-[1px] border-black rounded-xl"
+                size="sm"
+              >
+                Log out
+              </Button>
+            ) : (
+              <Button
+                className="font-bold text-black bg-white hover:text-white hover:bg-black border-[1px] border-black rounded-xl"
+                size="sm"
+              >
+                <Link to="/login">Log in</Link>{" "}
+                <span aria-hidden="true" className="hidden sm:block">
+                  →
+                </span>
+              </Button>
+            )}
           </div>
         </div>
       </div>

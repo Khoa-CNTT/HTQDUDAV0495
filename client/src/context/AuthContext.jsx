@@ -10,9 +10,13 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     setIsLoggedIn(isAuthenticated());
   }, []);
+  const logout = () => {
+    localStorage.removeItem("token"); // hoặc cái key bạn dùng để lưu
+    setIsLoggedIn(false); // Xóa trạng thái login trong context
+  };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn }}>
+    <AuthContext.Provider value={{ isLoggedIn, logout }}>
       {children}
     </AuthContext.Provider>
   );

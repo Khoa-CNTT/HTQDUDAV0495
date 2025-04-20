@@ -23,6 +23,7 @@ import UserProfile from "./pages/UserProfile";
 import CreateRoom from "./pages/CreateRoom";
 import JoinRoom from "./pages/JoinRoom";
 import Room from "./pages/Room";
+import Footer from "./components/Footer";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -120,14 +121,7 @@ function App() {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <footer className="py-6 mt-12 bg-gray-100">
-        <div className="container px-4 mx-auto text-center text-gray-600">
-          <p>
-            &copy; {new Date().getFullYear()} PDF Quiz Game. All rights
-            reserved.
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
