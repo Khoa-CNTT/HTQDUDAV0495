@@ -108,7 +108,8 @@ const Navbar = ({ user, logout }) => {
                       <button
                         onClick={() => {
                           closeMenu();
-                          handleLogout();
+                          handleLogout();     
+                          navigate('/login');                     
                         }}
                         className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-indigo-50"
                       >

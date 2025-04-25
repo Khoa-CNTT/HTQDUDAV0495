@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { isAuthenticated } from "../utils/jwtUtils";
+import { isAuthenticated, removeUser } from "../utils/jwtUtils";
 
 const AuthContext = createContext();
 
@@ -10,9 +10,12 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     setIsLoggedIn(isAuthenticated());
   }, []);
+
   const logout = () => {
-    localStorage.removeItem("token"); // hoặc cái key bạn dùng để lưu
-    setIsLoggedIn(false); // Xóa trạng thái login trong context
+    removeUser(); // Remove user data from localStorage
+    localStorage.removeItem("token"); // Remove token
+    setIsLoggedIn(false); // Update login state
+    window.location.reload();
   };
 
   return (

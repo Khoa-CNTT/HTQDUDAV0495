@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getUser, saveUser, isAuthenticated } from "./utils/jwtUtils";
 
@@ -30,7 +30,6 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on app load using JWT utilities
     const authenticated = isAuthenticated();
     if (authenticated) {
       setUser(getUser());
@@ -57,7 +56,15 @@ function App() {
       {/* <Navbar /> */}
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login login={login} user={user} />} />
+
+        {/* Nếu đã đăng nhập rồi thì không cho vào /login nữa */}
+        <Route
+          path="/login"
+          element={
+            user ? <Navigate to="/dashboard" /> : <Login login={login} user={user} />
+          }
+        />
+
         <Route path="/register" element={<Register />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -66,47 +73,52 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute user={user}>
               <Dashboard user={user} />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/profile"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute user={user}>
               <UserProfile user={user} setUser={setUser} />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/upload"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute user={user}>
               <UploadQuiz user={user} />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/create-room"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute user={user}>
               <CreateRoom user={user} />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/join-room"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute user={user}>
               <JoinRoom user={user} />
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/room/:code"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute user={user}>
               <Room user={user} />
             </ProtectedRoute>
           }
@@ -114,13 +126,11 @@ function App() {
 
         <Route path="/quiz/:quizId" element={<QuizDetails user={user} />} />
         <Route path="/take-quiz/:quizId" element={<TakeQuiz user={user} />} />
-        <Route
-          path="/results/:submissionId"
-          element={<QuizResults user={user} />}
-        />
+        <Route path="/results/:submissionId" element={<QuizResults user={user} />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
+
       <Footer />
     </div>
   );
