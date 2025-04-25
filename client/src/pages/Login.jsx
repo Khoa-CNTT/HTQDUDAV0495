@@ -8,10 +8,10 @@ const Login = ({ login: loginUser, user }) => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Redirect if already logged in
+  // ✅ Redirect nếu đã đăng nhập → về dashboard
   useEffect(() => {
     if (user) {
-      navigate('/login');
+      navigate('/dashboard');
     }
   }, [user, navigate]);
 
