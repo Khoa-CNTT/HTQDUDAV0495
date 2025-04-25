@@ -1,14 +1,14 @@
-import axios from 'axios';
-import { getToken, saveUser } from '../utils/jwtUtils';
+import axios from "axios";
+import { getToken, saveUser } from "../utils/jwtUtils";
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = "http://localhost:5000/api";
 
 // Create axios instance
 const api = axios.create({
   baseURL: API_URL,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    "Content-Type": "application/json",
+  },
 });
 
 // Add request interceptor to attach auth token
@@ -25,26 +25,26 @@ api.interceptors.request.use(
 
 // Auth API calls
 export const register = async (userData) => {
-  const response = await api.post('/users/register', userData);
+  const response = await api.post("/users/register", userData);
   return response.data;
 };
 
 export const login = async (credentials) => {
   try {
-    const response = await api.post('/users/login', credentials);
+    const response = await api.post("/users/login", credentials);
     if (response.data && response.data.token) {
       const userData = {
         ...response.data.user,
-        token: response.data.token
+        token: response.data.token,
       };
-      
+
       // Save user data using our JWT utils
       saveUser(userData);
       return userData;
     }
-    throw new Error('Invalid response from server');
+    throw new Error("Invalid response from server");
   } catch (error) {
-    console.error('Login error:', error);
+    console.error("Login error:", error);
     throw error;
   }
 };
@@ -55,110 +55,119 @@ export const verifyEmail = async (token) => {
 };
 
 export const requestPasswordReset = async (email) => {
-  const response = await api.post('/users/request-password-reset', { email });
+  const response = await api.post("/users/request-password-reset", { email });
   return response.data;
 };
 
 export const resetPassword = async (token, newPassword) => {
-  const response = await api.post('/users/reset-password', { token, newPassword });
+  const response = await api.post("/users/reset-password", {
+    token,
+    newPassword,
+  });
   return response.data;
 };
 
 export const getUserProfile = async () => {
-  const response = await api.get('/users/profile');
+  const response = await api.get("/users/profile");
   return response.data;
 };
 
 export const updateUserProfile = async (profileData) => {
-  const response = await api.put('/users/profile', profileData);
+  const response = await api.put("/users/profile", profileData);
   return response.data;
 };
 
 // Quiz API calls
 export const uploadQuiz = async (formData) => {
   // Get the current user data with token
-  const user = JSON.parse(localStorage.getItem('user'));
+  const user = JSON.parse(localStorage.getItem("user"));
   if (!user || !user.token) {
-    throw new Error('Authentication required');
+    throw new Error("Authentication required");
   }
 
   // Create a new FormData object with the correct field name
   const serverFormData = new FormData();
-  
+
   // Loop through the original formData entries
   for (const [key, value] of formData.entries()) {
-    if (key === 'pdf') {
+    if (key === "pdf") {
       // Change the field name from 'pdf' to 'pdfFile'
-      serverFormData.append('pdfFile', value);
+      serverFormData.append("pdfFile", value);
     } else {
       // Keep other fields as is
       serverFormData.append(key, value);
     }
   }
-  
-  const response = await api.post('/quizzes/upload', serverFormData, {
+
+  const response = await api.post("/quizzes/upload", serverFormData, {
     headers: {
-      'Content-Type': 'multipart/form-data',
-      'Authorization': `Bearer ${user.token}`
-    }
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${user.token}`,
+    },
   });
   return response.data;
 };
 
 export const getUserQuizzes = async () => {
   try {
-    const response = await api.get('/quizzes');
-    
+    const response = await api.get("/quizzes");
+
     // Check if we have a valid response
     if (!response.data) {
-      throw new Error('Invalid response from server');
+      throw new Error("Invalid response from server");
     }
-    
+
     // Handle different response structures
     const quizData = response.data.data || response.data;
-    
+
     return {
       success: true,
-      data: quizData.map(quiz => ({
+      data: quizData.map((quiz) => ({
         ...quiz,
-        createdBy: typeof quiz.createdBy === 'object' ? quiz.createdBy._id : quiz.createdBy
-      }))
+        createdBy:
+          typeof quiz.createdBy === "object"
+            ? quiz.createdBy._id
+            : quiz.createdBy,
+      })),
     };
   } catch (error) {
-    console.error('Error getting user quizzes:', error);
+    console.error("Error getting user quizzes:", error);
     return {
       success: false,
       data: [],
-      message: error.response?.data?.message || 'Failed to load your quizzes'
+      message: error.response?.data?.message || "Failed to load your quizzes",
     };
   }
 };
 
 export const getPublicQuizzes = async () => {
   try {
-    const response = await api.get('/quizzes/public');
-    
+    const response = await api.get("/quizzes/public");
+
     // Check if we have a valid response
     if (!response.data) {
-      throw new Error('Invalid response from server');
+      throw new Error("Invalid response from server");
     }
-    
+
     // Handle different response structures
     const quizData = response.data.data || response.data;
-    
+
     return {
       success: true,
-      data: quizData.map(quiz => ({
+      data: quizData.map((quiz) => ({
         ...quiz,
-        createdBy: typeof quiz.createdBy === 'object' ? quiz.createdBy : { _id: quiz.createdBy }
-      }))
+        createdBy:
+          typeof quiz.createdBy === "object"
+            ? quiz.createdBy
+            : { _id: quiz.createdBy },
+      })),
     };
   } catch (error) {
-    console.error('Error getting public quizzes:', error);
+    console.error("Error getting public quizzes:", error);
     return {
       success: false,
       data: [],
-      message: error.response?.data?.message || 'Failed to load public quizzes'
+      message: error.response?.data?.message || "Failed to load public quizzes",
     };
   }
 };
@@ -180,7 +189,7 @@ export const submitQuizSubmission = async (quizId, answers) => {
 };
 
 export const getUserSubmissions = async () => {
-  const response = await api.get('/submissions/user');
+  const response = await api.get("/submissions/user");
   return response.data;
 };
 
@@ -192,15 +201,15 @@ export const getSubmissionById = async (submissionId) => {
 // Room API calls for multiplayer functionality
 export const createRoom = async (quizId, options = {}) => {
   try {
-    const response = await api.post('/rooms', { quizId, ...options });
-    
+    const response = await api.post("/rooms", { quizId, ...options });
+
     // Ensure we have a valid response with data
     if (!response.data || !response.data.data) {
-      throw new Error('Invalid response from server');
+      throw new Error("Invalid response from server");
     }
-    
+
     const roomData = response.data.data;
-    
+
     // Make sure we extract the room code
     return {
       success: true,
@@ -209,60 +218,62 @@ export const createRoom = async (quizId, options = {}) => {
         // Ensure code exists (it should be in roomData directly)
         code: roomData.code,
         // Make sure hostId is properly formatted if it's an object
-        hostId: typeof roomData.hostId === 'object' 
-          ? roomData.hostId._id 
-          : roomData.hostId,
+        hostId:
+          typeof roomData.hostId === "object"
+            ? roomData.hostId._id
+            : roomData.hostId,
         // Format any other objects that might cause rendering issues
-        hostName: typeof roomData.hostId === 'object'
-          ? (roomData.hostId.displayName || roomData.hostId.username)
-          : 'Host'
-      }
+        hostName:
+          typeof roomData.hostId === "object"
+            ? roomData.hostId.displayName || roomData.hostId.username
+            : "Host",
+      },
     };
   } catch (error) {
-    console.error('Error creating room:', error);
+    console.error("Error creating room:", error);
     return {
       success: false,
-      message: error.response?.data?.message || 'Failed to create room'
+      message: error.response?.data?.message || "Failed to create room",
     };
   }
 };
 
 export const getUserRooms = async () => {
-  const response = await api.get('/rooms/user');
+  const response = await api.get("/rooms/user");
   return response.data;
 };
 
 export const getRoomByCode = async (code) => {
   try {
     // Validate code before making the request
-    if (!code || code === 'undefined') {
-      console.error('Invalid room code received in getRoomByCode:', code);
+    if (!code || code === "undefined") {
+      console.error("Invalid room code received in getRoomByCode:", code);
       return {
         success: false,
-        message: 'Invalid room code'
+        message: "Invalid room code",
       };
     }
-    
-    console.log('Fetching room with code:', code);
+
+    console.log("Fetching room with code:", code);
     const response = await api.get(`/rooms/${code}`);
-    
+
     // Check if we have a valid response
     if (!response.data) {
-      throw new Error('Invalid response from server');
+      throw new Error("Invalid response from server");
     }
-    
+
     // Handle different response structures
     const roomData = response.data.data || response.data;
-    
+
     return {
       success: true,
-      data: roomData
+      data: roomData,
     };
   } catch (error) {
     console.error(`Error getting room with code "${code}":`, error);
     return {
       success: false,
-      message: error.response?.data?.message || 'Room not found'
+      message: error.response?.data?.message || "Room not found",
     };
   }
 };
@@ -277,13 +288,13 @@ export const startRoom = async (code) => {
     const response = await api.post(`/rooms/${code}/start`);
     return {
       success: true,
-      data: response.data.data
+      data: response.data.data,
     };
   } catch (error) {
-    console.error('Error starting room:', error);
+    console.error("Error starting room:", error);
     return {
       success: false,
-      message: error.response?.data?.message || 'Failed to start room'
+      message: error.response?.data?.message || "Failed to start room",
     };
   }
 };
@@ -293,29 +304,32 @@ export const endRoom = async (code) => {
     const response = await api.post(`/rooms/${code}/end`);
     return {
       success: true,
-      data: response.data.data
+      data: response.data.data,
     };
   } catch (error) {
-    console.error('Error ending room:', error);
+    console.error("Error ending room:", error);
     return {
       success: false,
-      message: error.response?.data?.message || 'Failed to end room'
+      message: error.response?.data?.message || "Failed to end room",
     };
   }
 };
 
 export const submitAnswer = async (code, questionId, answerId) => {
   try {
-    const response = await api.post(`/rooms/${code}/answer`, { questionId, answerId });
+    const response = await api.post(`/rooms/${code}/answer`, {
+      questionId,
+      answerId,
+    });
     return {
       success: true,
-      data: response.data.data
+      data: response.data.data,
     };
   } catch (error) {
-    console.error('Error submitting answer:', error);
+    console.error("Error submitting answer:", error);
     return {
       success: false,
-      message: error.response?.data?.message || 'Failed to submit answer'
+      message: error.response?.data?.message || "Failed to submit answer",
     };
   }
 };
@@ -325,13 +339,13 @@ export const getRoomParticipants = async (code) => {
     const response = await api.get(`/rooms/${code}/participants`);
     return {
       success: true,
-      data: response.data.data
+      data: response.data.data,
     };
   } catch (error) {
-    console.error('Error getting room participants:', error);
+    console.error("Error getting room participants:", error);
     return {
       success: false,
-      message: error.response?.data?.message || 'Failed to load participants'
+      message: error.response?.data?.message || "Failed to load participants",
     };
   }
 };

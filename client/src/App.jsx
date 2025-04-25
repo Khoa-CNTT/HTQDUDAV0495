@@ -24,6 +24,7 @@ import CreateRoom from "./pages/CreateRoom";
 import JoinRoom from "./pages/JoinRoom";
 import Room from "./pages/Room";
 import Footer from "./components/Footer";
+import { SidebarProvider } from "./components/ui/sidebar";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -67,7 +68,10 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard user={user} />
+              <SidebarProvider>
+                {/* Your main content here */}
+                <Dashboard user={user} />
+              </SidebarProvider>
             </ProtectedRoute>
           }
         />
