@@ -65,8 +65,6 @@ function Friends({ user }) {
 
   const handleSelectFriend = (friend) => {
     setSelectedFriend(friend);
-    // Load chat history
-    // This would typically come from an API call
     setChatMessages([]);
   };
 

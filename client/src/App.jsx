@@ -1,6 +1,6 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getUser, saveUser, isAuthenticated } from "./utils/jwtUtils";
+import { getUser, saveUser, isAuthenticated, removeUser } from "./utils/jwtUtils";
 
 // Components
 import Navbar from "./components/Navbar";
@@ -44,6 +44,13 @@ function App() {
     saveUser(userData);
   };
 
+  // Logout handler
+  const logout = () => {
+    removeUser();
+    localStorage.removeItem("token");
+    setUser(null);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -81,7 +88,7 @@ function App() {
             <ProtectedRoute user={user}>
               <SidebarProvider>
                 {/* Your main content here */}
-                <Dashboard user={user} />
+                <Dashboard user={user} logout={logout} />
               </SidebarProvider>
             </ProtectedRoute>
           }
