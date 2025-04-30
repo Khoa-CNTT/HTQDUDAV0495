@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  getUserQuizzes,
   deleteQuiz,
   getUserSubmissions,
   getPublicQuizzes,
@@ -9,14 +8,17 @@ import {
 import QuizCard from "../components/QuizCard";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
+import "../styles/Dashboard.css";
 
-const Dashboard = ({ user }) => {
+const Dashboard = ({ user, logout }) => {
   const [quizzes, setQuizzes] = useState([]);
   const [publicQuizzes, setPublicQuizzes] = useState([]);
   const [submissions, setSubmissions] = useState([]);
   const [activeTab, setActiveTab] = useState("quizzes");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,6 +55,20 @@ const Dashboard = ({ user }) => {
     fetchData();
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const handleDeleteQuiz = async (quizId) => {
     if (window.confirm("Are you sure you want to delete this quiz?")) {
       try {
@@ -77,18 +93,40 @@ const Dashboard = ({ user }) => {
     return quiz.createdBy === user?._id;
   };
 
+  // Toggle dropdown menu
+  const toggleDropdown = () => {
+    setDropdownOpen(!dropdownOpen);
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  // Get first letter of username for avatar
+  const getInitial = (name) => {
+    return name ? name.charAt(0).toUpperCase() : "U";
+  };
+
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <div className="dashboard-container">
+        <div className="empty-state">
+          <LoadingSpinner />
+        </div>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="max-w-lg p-4 mx-auto mt-8">
-        <div className="p-4 text-center text-red-500 rounded-lg bg-red-50">
-          <p className="font-medium">{error}</p>
+      <div className="dashboard-container">
+        <div className="empty-state">
+          <p className="empty-state-text">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 mt-4 text-white bg-red-500 rounded hover:bg-red-600"
+            className="create-quiz-btn"
           >
             Try Again
           </button>
@@ -98,36 +136,90 @@ const Dashboard = ({ user }) => {
   }
 
   return (
-    <div className="max-w-5xl p-4 mx-auto">
-      <h1 className="mb-6 text-2xl font-bold">Dashboard</h1>
+    <div className="dashboard-container">
+      <div className="dashboard-header">
+        <h1 className="dashboard-title">Dashboard</h1>
+        <div className="user-info" ref={dropdownRef}>
+          <div className="avatar-container" onClick={toggleDropdown}>
+            <div className="avatar">
+              {getInitial(user?.username)}
+            </div>
+            <span className="username">{user?.username || "User"}</span>
+          </div>
+          
+          <div className={`dropdown-menu ${dropdownOpen ? 'active' : ''}`}>
+            <div className="dropdown-header">
+              <div className="avatar">
+                {getInitial(user?.username)}
+              </div>
+              <div className="dropdown-header-info">
+                <div className="dropdown-header-name">{user?.username || "User"}</div>
+                <div className="dropdown-header-email">{user?.email || "user@example.com"}</div>
+              </div>
+            </div>
+            
+            <Link to="/profile" className="dropdown-item">
+              <div className="dropdown-item-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+              <span className="dropdown-item-text">Profile</span>
+            </Link>
+            
+            <Link to="/friends" className="dropdown-item">
+              <div className="dropdown-item-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+              <span className="dropdown-item-text">Friends</span>
+            </Link>
+            
+            <Link to="/achievements" className="dropdown-item">
+              <div className="dropdown-item-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z"></path>
+                </svg>
+              </div>
+              <span className="dropdown-item-text">Achievements</span>
+            </Link>
+            
+            <div className="dropdown-divider"></div>
+            
+            <button onClick={handleLogout} className="dropdown-item">
+              <div className="dropdown-item-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+              </div>
+              <span className="dropdown-item-text">Logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
-      <div className="flex mb-6 border-b">
+      <div className="tab-container">
         <button
-          className={`px-4 py-2 ${
-            activeTab === "quizzes"
-              ? "border-b-2 border-indigo-600 text-indigo-600"
-              : "text-gray-500"
-          }`}
+          className={`tab-button ${activeTab === "quizzes" ? "active" : ""}`}
           onClick={() => setActiveTab("quizzes")}
         >
           My Quizzes
         </button>
         <button
-          className={`px-4 py-2 ${
-            activeTab === "public"
-              ? "border-b-2 border-indigo-600 text-indigo-600"
-              : "text-gray-500"
-          }`}
+          className={`tab-button ${activeTab === "public" ? "active" : ""}`}
           onClick={() => setActiveTab("public")}
         >
           Public Quizzes
         </button>
         <button
-          className={`px-4 py-2 ${
-            activeTab === "submissions"
-              ? "border-b-2 border-indigo-600 text-indigo-600"
-              : "text-gray-500"
-          }`}
+          className={`tab-button ${activeTab === "submissions" ? "active" : ""}`}
           onClick={() => setActiveTab("submissions")}
         >
           My Submissions
@@ -136,53 +228,44 @@ const Dashboard = ({ user }) => {
 
       {activeTab === "quizzes" && (
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">My Quizzes</h2>
-            <Link
-              to="/upload"
-              className="px-4 py-2 text-white bg-indigo-600 rounded hover:bg-indigo-700"
-            >
+          <div className="dashboard-header">
+            <h2 className="quiz-card-title">My Quizzes</h2>
+            <Link to="/upload" className="create-quiz-btn">
               Create New Quiz
             </Link>
           </div>
 
           {Array.isArray(quizzes) && quizzes.length === 0 ? (
-            <div className="py-8 text-center rounded-lg bg-gray-50">
-              <p className="text-gray-600">
+            <div className="empty-state">
+              <p className="empty-state-text">
                 You haven't created any quizzes yet.
               </p>
-              <Link
-                to="/upload"
-                className="inline-block mt-4 text-indigo-600 hover:text-indigo-700"
-              >
+              <Link to="/upload" className="empty-state-link">
                 Create your first quiz
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="quiz-grid">
               {Array.isArray(quizzes) &&
                 quizzes.map((quiz) => (
-                  <div
-                    key={quiz._id}
-                    className="p-4 border rounded-lg shadow-sm"
-                  >
-                    <h3 className="mb-2 text-lg font-semibold">{quiz.title}</h3>
-                    <p className="mb-2 text-gray-600">
+                  <div key={quiz._id} className="quiz-card">
+                    <h3 className="quiz-card-title">{quiz.title}</h3>
+                    <p className="quiz-card-info">
                       {quiz.questions
                         ? `${quiz.questions.length} questions`
                         : "Loading questions..."}
                     </p>
-                    <div className="flex justify-between mt-4">
+                    <div className="quiz-card-actions">
                       <Link
                         to={`/quiz/${quiz._id}`}
-                        className="text-indigo-600 hover:text-indigo-700"
+                        className="take-quiz-btn"
                       >
                         Take Quiz
                       </Link>
                       {isCreator(quiz) && (
                         <button
                           onClick={() => handleDeleteQuiz(quiz._id)}
-                          className="text-red-600 hover:text-red-700"
+                          className="delete-quiz-btn"
                         >
                           Delete
                         </button>
@@ -197,33 +280,30 @@ const Dashboard = ({ user }) => {
 
       {activeTab === "public" && (
         <div>
-          <h2 className="mb-4 text-lg font-semibold">Public Quizzes</h2>
+          <h2 className="quiz-card-title">Public Quizzes</h2>
 
           {Array.isArray(publicQuizzes) && publicQuizzes.length === 0 ? (
-            <div className="py-8 text-center rounded-lg bg-gray-50">
-              <p className="text-gray-600">No public quizzes available.</p>
+            <div className="empty-state">
+              <p className="empty-state-text">No public quizzes available.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="quiz-grid">
               {Array.isArray(publicQuizzes) &&
                 publicQuizzes.map((quiz) => (
-                  <div
-                    key={quiz._id}
-                    className="p-4 border rounded-lg shadow-sm"
-                  >
-                    <h3 className="mb-2 text-lg font-semibold">{quiz.title}</h3>
-                    <p className="mb-2 text-gray-600">
+                  <div key={quiz._id} className="quiz-card">
+                    <h3 className="quiz-card-title">{quiz.title}</h3>
+                    <p className="quiz-card-info">
                       {quiz.questions
                         ? `${quiz.questions.length} questions`
                         : "Loading questions..."}
                     </p>
-                    <p className="mb-2 text-sm text-gray-500">
+                    <p className="quiz-card-info">
                       Created by: {quiz.createdBy?.username || "Unknown"}
                     </p>
-                    <div className="flex justify-between mt-4">
+                    <div className="quiz-card-actions">
                       <Link
                         to={`/quiz/${quiz._id}`}
-                        className="text-indigo-600 hover:text-indigo-700"
+                        className="take-quiz-btn"
                       >
                         Take Quiz
                       </Link>
@@ -237,74 +317,44 @@ const Dashboard = ({ user }) => {
 
       {activeTab === "submissions" && (
         <div>
-          <h2 className="mb-4 text-lg font-semibold">My Submissions</h2>
+          <h2 className="quiz-card-title">My Submissions</h2>
 
           {Array.isArray(submissions) && submissions.length === 0 ? (
-            <div className="py-8 text-center rounded-lg bg-gray-50">
-              <p className="text-gray-600">
+            <div className="empty-state">
+              <p className="empty-state-text">
                 You haven't taken any quizzes yet.
               </p>
-              <Link
-                to="/"
-                className="inline-block mt-4 text-indigo-600 hover:text-indigo-700"
-              >
+              <Link to="/" className="empty-state-link">
                 Find Quizzes to Take
               </Link>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead className="bg-gray-100">
+              <table className="submissions-table">
+                <thead>
                   <tr>
-                    <th className="px-4 py-2 text-left">Quiz</th>
-                    <th className="px-4 py-2 text-left">Score</th>
-                    <th className="px-4 py-2 text-left">Date</th>
-                    <th className="px-4 py-2 text-left">Actions</th>
+                    <th>Quiz</th>
+                    <th>Score</th>
+                    <th>Date</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {Array.isArray(submissions) &&
-                    submissions.map((submission) => (
-                      <tr key={submission._id} className="border-b">
-                        <td className="px-4 py-2">
-                          {submission.quizTitle || "Untitled Quiz"}
-                        </td>
-                        <td className="px-4 py-2">
-                          {submission.score !== undefined &&
-                          submission.totalQuestions ? (
-                            <>
-                              {submission.score} / {submission.totalQuestions}
-                              <span className="ml-2 text-sm text-gray-500">
-                                (
-                                {Math.round(
-                                  (submission.score /
-                                    submission.totalQuestions) *
-                                    100
-                                )}
-                                %)
-                              </span>
-                            </>
-                          ) : (
-                            "Score not available"
-                          )}
-                        </td>
-                        <td className="px-4 py-2">
-                          {submission.completedAt
-                            ? new Date(
-                                submission.completedAt
-                              ).toLocaleDateString()
-                            : "Date not available"}
-                        </td>
-                        <td className="px-4 py-2">
-                          <Link
-                            to={`/results/${submission._id}`}
-                            className="text-indigo-600 hover:text-indigo-700"
-                          >
-                            View Results
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
+                  {submissions.map((submission) => (
+                    <tr key={submission._id}>
+                      <td>{submission.quiz?.title || "Unknown Quiz"}</td>
+                      <td>{submission.score}%</td>
+                      <td>{new Date(submission.createdAt).toLocaleDateString()}</td>
+                      <td>
+                        <Link
+                          to={`/quiz-results/${submission._id}`}
+                          className="take-quiz-btn"
+                        >
+                          View Results
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -313,17 +363,17 @@ const Dashboard = ({ user }) => {
       )}
 
       {/* Multiplayer section */}
-      <div className="p-6 mt-8 bg-white rounded-lg shadow-md">
-        <h2 className="mb-4 text-xl font-bold">Multiplayer Quizzes</h2>
-        <p className="mb-4 text-gray-600">
+      <div className="multiplayer-section">
+        <h2 className="multiplayer-title">Multiplayer Quizzes</h2>
+        <p className="multiplayer-description">
           Challenge your friends or join public quiz rooms for a competitive
           experience.
         </p>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div className="p-4 border rounded-lg bg-blue-50">
-            <h3 className="mb-2 text-lg font-semibold">Create a Room</h3>
-            <p className="mb-4 text-sm text-gray-600">
+        <div className="multiplayer-grid">
+          <div className="multiplayer-card">
+            <h3 className="multiplayer-card-title">Create a Room</h3>
+            <p className="multiplayer-card-description">
               Create a multiplayer room with one of your quizzes and invite
               others to join.
             </p>
@@ -337,20 +387,20 @@ const Dashboard = ({ user }) => {
                   navigate("/create-room");
                 }
               }}
-              className="w-full py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
+              className="multiplayer-btn create-room-btn"
             >
               Create Room
             </button>
           </div>
 
-          <div className="p-4 border rounded-lg bg-green-50">
-            <h3 className="mb-2 text-lg font-semibold">Join a Room</h3>
-            <p className="mb-4 text-sm text-gray-600">
+          <div className="multiplayer-card">
+            <h3 className="multiplayer-card-title">Join a Room</h3>
+            <p className="multiplayer-card-description">
               Join an existing quiz room using a room code from another player.
             </p>
             <button
               onClick={() => navigate("/join-room")}
-              className="w-full py-2 text-white bg-green-500 rounded hover:bg-green-600"
+              className="multiplayer-btn join-room-btn"
             >
               Join Room
             </button>

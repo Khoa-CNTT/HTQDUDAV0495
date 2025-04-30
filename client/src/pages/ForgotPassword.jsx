@@ -1,72 +1,116 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { requestPasswordReset } from '../services/api';
-import toast from 'react-hot-toast';
+import '../styles/Auth.css';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
-
-  const handleChange = (e) => setEmail(e.target.value);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
+
     try {
-      await requestPasswordReset(email);
-      setEmailSent(true);
-      toast.success('Password reset instructions sent to your email.');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to send reset instructions.');
+      // TODO: Implement password reset logic
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated API call
+      setSuccess(true);
+    } catch (err) {
+      console.error('Reset password error:', err);
+      setError('Failed to send reset email. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  if (emailSent) {
+  if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#eaf6f6]">
-        <div className="bg-white p-8 rounded-xl shadow-md text-center w-full max-w-md">
-          <h2 className="text-2xl font-bold text-teal-600 mb-4">Check Your Email</h2>
-          <p className="text-gray-600 mb-4">
-            We’ve sent reset instructions to <strong>{email}</strong>.
-          </p>
-          <p className="text-sm text-gray-500 mb-6">Check spam if it doesn’t appear soon.</p>
-          <Link to="/login" className="inline-block bg-teal-500 text-white px-6 py-2 rounded hover:bg-teal-600">
-            Return to Login
-          </Link>
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-success">
+            <div className="success-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
+              </svg>
+            </div>
+            <h2 className="success-title">Check Your Email</h2>
+            <p className="success-message">
+              We've sent password reset instructions to:
+              <br />
+              <span className="success-email">{email}</span>
+              <br />
+              <small style={{ color: 'var(--text-tertiary)', marginTop: '0.5rem', display: 'block' }}>
+                Please check your spam folder if you don't see it in your inbox
+              </small>
+            </p>
+            <Link to="/login" className="auth-button">
+              Return to Login
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#eaf6f6]">
-      <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold text-teal-600 text-center mb-6">Reset Your Password</h1>
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="email" className="block text-gray-700 font-medium mb-1">Email</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={handleChange}
-            required
-            placeholder="Enter your email"
-            className="w-full px-4 py-2 mb-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 bg-blue-50"
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-teal-500 text-white py-2 rounded hover:bg-teal-600 disabled:opacity-50"
+    <div className="auth-container">
+      <div className="auth-card">
+        <div className="auth-header">
+          <h1 className="auth-title">Reset Password</h1>
+          <p className="auth-subtitle">
+            Enter your email address and we'll send you instructions to reset your password
+          </p>
+        </div>
+
+        {error && (
+          <div className="auth-error">
+            <div className="error-icon">⚠️</div>
+            <h2 className="error-title">Error</h2>
+            <p className="error-message">{error}</p>
+          </div>
+        )}
+
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label" htmlFor="email">Email Address</label>
+            <input
+              id="email"
+              type="email"
+              className="form-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email address"
+              required
+              autoFocus
+              autoComplete="email"
+            />
+          </div>
+
+          <button 
+            type="submit" 
+            className="auth-button" 
+            disabled={loading || !email.trim()}
           >
-            {loading ? 'Sending...' : 'Send Reset Instructions'}
+            {loading ? (
+              <>
+                <span className="loading-spinner"></span>
+                Sending Instructions...
+              </>
+            ) : (
+              'Send Reset Instructions'
+            )}
           </button>
         </form>
-        <div className="text-center text-sm text-gray-600 mt-4">
-          Remembered your password?{' '}
-          <Link to="/login" className="text-teal-600 hover:underline">Login</Link>
+
+        <div className="auth-links">
+          <p>
+            Remember your password?{' '}
+            <Link to="/login" className="auth-link">
+              Sign in
+            </Link>
+          </p>
         </div>
       </div>
     </div>

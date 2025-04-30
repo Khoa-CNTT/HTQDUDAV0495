@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import '../styles/Auth.css';
 import { register } from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -13,9 +14,10 @@ const Register = ({ user }) => {
   });
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (user) {
       navigate('/dashboard');
     }
@@ -31,7 +33,7 @@ const Register = ({ user }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
+      setError('Passwords do not match');
       return;
     }
 
@@ -75,107 +77,104 @@ const Register = ({ user }) => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#e6f0f3] to-[#d2f2f4] px-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border-t-4 border-[#00b3b3]">
-        <h2 className="text-3xl font-bold text-center text-[#00b3b3] mb-6">Create Your Account</h2>
-        <p className="text-center text-gray-600 mb-6">Join QuizWhiz today!</p>
+    <div className="auth-container">
+      <div className="auth-card">
+        <div className="auth-header">
+          <h1 className="auth-title">Create Account</h1>
+          <p className="auth-subtitle">Join our community today</p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label htmlFor="username" className="block text-gray-700 font-medium mb-1">
-              Username *
-            </label>
+        {error && (
+          <div className="auth-error">
+            <div className="error-icon">⚠️</div>
+            <h2 className="error-title">Error</h2>
+            <p className="error-message">{error}</p>
+          </div>
+        )}
+
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label className="form-label" htmlFor="username">Username</label>
             <input
-              type="text"
               id="username"
               name="username"
-              required
+              type="text"
+              className="form-input"
               value={formData.username}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00b3b3]"
               placeholder="Choose a username"
+              required
             />
           </div>
 
-          <div>
-            <label htmlFor="email" className="block text-gray-700 font-medium mb-1">
-              Email *
-            </label>
+          <div className="form-group">
+            <label className="form-label" htmlFor="email">Email</label>
             <input
-              type="email"
               id="email"
               name="email"
-              required
+              type="email"
+              className="form-input"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00b3b3]"
               placeholder="Enter your email"
+              required
             />
           </div>
 
-          <div>
-            <label htmlFor="displayName" className="block text-gray-700 font-medium mb-1">
-              Display Name (optional)
-            </label>
+          <div className="form-group">
+            <label className="form-label" htmlFor="displayName">Display Name (optional)</label>
             <input
-              type="text"
               id="displayName"
               name="displayName"
+              type="text"
+              className="form-input"
               value={formData.displayName}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00b3b3]"
               placeholder="What should we call you?"
             />
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-gray-700 font-medium mb-1">
-              Password *
-            </label>
+          <div className="form-group">
+            <label className="form-label" htmlFor="password">Password</label>
             <input
-              type="password"
               id="password"
               name="password"
-              required
-              minLength={6}
+              type="password"
+              className="form-input"
               value={formData.password}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00b3b3]"
               placeholder="Create a password"
+              required
             />
           </div>
 
-          <div>
-            <label htmlFor="confirmPassword" className="block text-gray-700 font-medium mb-1">
-              Confirm Password *
-            </label>
+          <div className="form-group">
+            <label className="form-label" htmlFor="confirmPassword">Confirm Password</label>
             <input
-              type="password"
               id="confirmPassword"
               name="confirmPassword"
-              required
+              type="password"
+              className="form-input"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#00b3b3]"
-              placeholder="Repeat your password"
+              placeholder="Confirm your password"
+              required
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 bg-[#00b3b3] text-white rounded-md font-semibold hover:bg-[#009999] transition duration-200 disabled:opacity-50"
-          >
-            {loading ? 'Registering...' : 'Register'}
+          <button type="submit" className="auth-button" disabled={loading}>
+            {loading ? 'Registering...' : 'Create Account'}
           </button>
+        </form>
 
-          <p className="text-center text-gray-600">
+        <div className="auth-links">
+          <p>
             Already have an account?{' '}
-            <Link to="/login" className="text-[#00b3b3] font-medium hover:underline">
-              Login here
+            <Link to="/login" className="auth-link">
+              Sign in
             </Link>
           </p>
-        </form>
+        </div>
       </div>
     </div>
   );
