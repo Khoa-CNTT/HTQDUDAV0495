@@ -48,6 +48,10 @@ const userService = {
             throw new Error('Invalid email or password');
         }
 
+        if (!user.isActive) {
+            throw new Error('Your account is not active. Please verify your email.');
+        }
+
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
             throw new Error('Invalid email or password');
@@ -174,4 +178,4 @@ const userService = {
 
 };
 
-module.exports = userService; 
+module.exports = userService;
