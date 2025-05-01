@@ -7,6 +7,7 @@ const quizRoutes = require('./routes/quizRoutes');
 const submissionRoutes = require('./routes/submissionRoutes');
 const multiplayerRoutes = require('./routes/multiplayerRoutes');
 const roomRoutes = require('./routes/roomRoutes');
+const friendRoutes = require('./routes/friendRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const setupSocketServer = require('./socket');
 
@@ -27,6 +28,7 @@ app.use('/api/quizzes', quizRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/multiplayer', multiplayerRoutes);
 app.use('/api/rooms', roomRoutes);
+app.use('/api/friends', friendRoutes);
 app.use('/api/chats', chatRoutes);
 
 // Connect to MongoDB
