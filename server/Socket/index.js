@@ -1,7 +1,6 @@
 const socketIo = require("socket.io");
 const Room = require("../models/Room");
 const Participant = require("../models/Participant");
-const Friend = require("../models/Friend");
 const Chat = require("../models/Chat");
 const User = require("../models/User");
 const chatService = require("../services/chatService");
@@ -37,53 +36,6 @@ function setupSocketServer(server) {
 
     // Join user's personal room for private messages
     socket.join(socket.userId);
-
-    // Handle friend requests
-    socket.on("send-friend-request", async (targetUserId) => {
-      try {
-        const friend = new Friend({
-          user1: socket.userId,
-          user2: targetUserId,
-          requestedBy: socket.userId,
-          status: "pending",
-        });
-        await friend.save();
-
-        // Notify target user
-        io.to(targetUserId).emit("friend-request-received", {
-          userId: socket.userId,
-          username: socket.username,
-        });
-      } catch (error) {
-        socket.emit("error", { message: "Failed to send friend request" });
-      }
-    });
-
-    // Handle friend request response
-    socket.on("respond-friend-request", async (data) => {
-      try {
-        const { requestId, accept } = data;
-        const friend = await Friend.findById(requestId);
-
-        if (!friend) {
-          return socket.emit("error", { message: "Friend request not found" });
-        }
-
-        friend.status = accept ? "accepted" : "rejected";
-        await friend.save();
-
-        // Notify the original requester
-        io.to(friend.requestedBy.toString()).emit("friend-request-response", {
-          userId: socket.userId,
-          username: socket.username,
-          status: friend.status,
-        });
-      } catch (error) {
-        socket.emit("error", {
-          message: "Failed to respond to friend request",
-        });
-      }
-    });
 
     // Handle private messages
     socket.on("send-message", async (data) => {
