@@ -1,36 +1,41 @@
-import { useState, useEffect } from 'react';
-import friendService from '../services/friendService';
-import chatService from '../services/chatService';
+import { useState, useEffect } from "react";
+import friendService from "../services/friendService";
+import chatService from "../services/chatService";
 
 function Friends({ user }) {
   const [friends, setFriends] = useState([]);
   const [friendRequests, setFriendRequests] = useState([]);
   const [selectedFriend, setSelectedFriend] = useState(null);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     // Set up friend request listeners
     friendService.onFriendRequestReceived((data) => {
-      setFriendRequests(prev => [...prev, data]);
+      setFriendRequests((prev) => [...prev, data]);
     });
 
     friendService.onFriendRequestResponse((data) => {
-      if (data.status === 'accepted') {
-        setFriends(prev => [...prev, {
-          _id: data.userId,
-          username: data.username
-        }]);
+      if (data.status === "accepted") {
+        setFriends((prev) => [
+          ...prev,
+          {
+            _id: data.userId,
+            username: data.username,
+          },
+        ]);
       }
       // Remove from friend requests if it was our request
-      setFriendRequests(prev => prev.filter(req => req.userId !== data.userId));
+      setFriendRequests((prev) =>
+        prev.filter((req) => req.userId !== data.userId)
+      );
     });
 
     // Set up chat message listener
     chatService.onNewMessage((data) => {
       if (selectedFriend && data.message.sender === selectedFriend._id) {
-        setChatMessages(prev => [...prev, data.message]);
+        setChatMessages((prev) => [...prev, data.message]);
       }
     });
 
@@ -41,12 +46,16 @@ function Friends({ user }) {
 
   const handleAcceptFriend = (request) => {
     friendService.respondToFriendRequest(request._id, true);
-    setFriendRequests(prev => prev.filter(req => req.userId !== request.userId));
+    setFriendRequests((prev) =>
+      prev.filter((req) => req.userId !== request.userId)
+    );
   };
 
   const handleRejectFriend = (request) => {
     friendService.respondToFriendRequest(request._id, false);
-    setFriendRequests(prev => prev.filter(req => req.userId !== request.userId));
+    setFriendRequests((prev) =>
+      prev.filter((req) => req.userId !== request.userId)
+    );
   };
 
   const handleSendMessage = (e) => {
@@ -55,12 +64,15 @@ function Friends({ user }) {
 
     chatService.sendPrivateMessage(selectedFriend._id, newMessage.trim());
     // Optimistically add message to chat
-    setChatMessages(prev => [...prev, {
-      sender: user._id,
-      content: newMessage.trim(),
-      createdAt: new Date()
-    }]);
-    setNewMessage('');
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        sender: user._id,
+        content: newMessage.trim(),
+        createdAt: new Date(),
+      },
+    ]);
+    setNewMessage("");
   };
 
   const handleSelectFriend = (friend) => {
@@ -69,19 +81,19 @@ function Friends({ user }) {
   };
 
   return (
-    <div className="grid grid-cols-3 gap-4 p-4">
+    <div className="grid h-screen grid-cols-3 gap-4 p-4">
       {/* Friends List */}
-      <div className="col-span-1 bg-white rounded-lg shadow p-4">
-        <h2 className="text-lg font-semibold mb-4">Friends</h2>
+      <div className="col-span-1 p-4 bg-white rounded-lg shadow">
+        <h2 className="mb-4 text-lg font-semibold">Friends</h2>
         <div className="space-y-2">
-          {friends.map(friend => (
+          {friends.map((friend) => (
             <button
               key={friend._id}
               onClick={() => handleSelectFriend(friend)}
               className={`w-full p-2 text-left rounded ${
                 selectedFriend?._id === friend._id
-                  ? 'bg-blue-100'
-                  : 'hover:bg-gray-100'
+                  ? "bg-blue-100"
+                  : "hover:bg-gray-100"
               }`}
             >
               {friend.username}
@@ -91,29 +103,29 @@ function Friends({ user }) {
       </div>
 
       {/* Chat Area */}
-      <div className="col-span-2 bg-white rounded-lg shadow p-4">
+      <div className="col-span-2 p-4 bg-white rounded-lg shadow">
         {selectedFriend ? (
           <>
-            <h2 className="text-lg font-semibold mb-4">
+            <h2 className="mb-4 text-lg font-semibold">
               Chat with {selectedFriend.username}
             </h2>
-            <div className="h-96 overflow-y-auto mb-4 p-2 border rounded">
+            <div className="p-2 mb-4 overflow-y-auto border rounded h-96">
               {chatMessages.map((msg, index) => (
                 <div
                   key={index}
                   className={`mb-2 ${
-                    msg.sender === user._id ? 'text-right' : 'text-left'
+                    msg.sender === user._id ? "text-right" : "text-left"
                   }`}
                 >
                   <div
                     className={`inline-block p-2 rounded-lg ${
                       msg.sender === user._id
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-100'
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-100"
                     }`}
                   >
                     <div>{msg.content}</div>
-                    <div className="text-xs mt-1 opacity-75">
+                    <div className="mt-1 text-xs opacity-75">
                       {new Date(msg.createdAt).toLocaleTimeString()}
                     </div>
                   </div>
@@ -130,14 +142,14 @@ function Friends({ user }) {
               />
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600"
               >
                 Send
               </button>
             </form>
           </>
         ) : (
-          <div className="h-full flex items-center justify-center text-gray-500">
+          <div className="flex items-center justify-center h-full text-gray-500">
             Select a friend to start chatting
           </div>
         )}
@@ -145,10 +157,10 @@ function Friends({ user }) {
 
       {/* Friend Requests */}
       {friendRequests.length > 0 && (
-        <div className="col-span-3 bg-white rounded-lg shadow p-4">
-          <h2 className="text-lg font-semibold mb-4">Friend Requests</h2>
+        <div className="col-span-3 p-4 bg-white rounded-lg shadow">
+          <h2 className="mb-4 text-lg font-semibold">Friend Requests</h2>
           <div className="space-y-2">
-            {friendRequests.map(request => (
+            {friendRequests.map((request) => (
               <div
                 key={request.userId}
                 className="flex items-center justify-between p-2 border rounded"
@@ -157,13 +169,13 @@ function Friends({ user }) {
                 <div className="space-x-2">
                   <button
                     onClick={() => handleAcceptFriend(request)}
-                    className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                    className="px-3 py-1 text-white bg-green-500 rounded hover:bg-green-600"
                   >
                     Accept
                   </button>
                   <button
                     onClick={() => handleRejectFriend(request)}
-                    className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                    className="px-3 py-1 text-white bg-red-500 rounded hover:bg-red-600"
                   >
                     Reject
                   </button>
@@ -175,7 +187,7 @@ function Friends({ user }) {
       )}
 
       {error && (
-        <div className="col-span-3 p-3 bg-red-100 text-red-700 rounded">
+        <div className="col-span-3 p-3 text-red-700 bg-red-100 rounded">
           {error}
         </div>
       )}
@@ -183,4 +195,4 @@ function Friends({ user }) {
   );
 }
 
-export default Friends; 
+export default Friends;

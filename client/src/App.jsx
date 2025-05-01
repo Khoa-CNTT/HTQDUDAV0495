@@ -1,6 +1,11 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getUser, saveUser, isAuthenticated, removeUser } from "./utils/jwtUtils";
+import {
+  getUser,
+  saveUser,
+  isAuthenticated,
+  removeUser,
+} from "./utils/jwtUtils";
 
 // Components
 import Navbar from "./components/Navbar";
@@ -25,6 +30,7 @@ import JoinRoom from "./pages/JoinRoom";
 import Room from "./pages/Room";
 import Footer from "./components/Footer";
 import { SidebarProvider } from "./components/ui/sidebar";
+import Friends from "./components/Friends";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -76,7 +82,7 @@ function App() {
             )
           }
         />
-
+        <Route path="/friends" element={<Friends />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
