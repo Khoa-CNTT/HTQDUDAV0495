@@ -33,12 +33,7 @@ export default function CreateQuizSteps() {
 
   return (
     <div className="relative px-4 py-16 mx-auto my-10 max-w-7xl sm:px-6 lg:px-8 bg-slate-50">
-      <img
-        className="absolute z-0 left-1/2 top-0 max-w-none -translate-y-1/4 -translate-x-[30%] opacity-50"
-        src="https://www.quizwhiz.ai/static/images/5982fbe6e680d8baa575.webp"
-        alt=""
-        style={{ width: "1558px", height: "946px" }}
-      />
+    
       <div className="text-center">
         <h2 className="relative z-20 text-3xl tracking-tight font-display text-slate-900 sm:text-4xl">
           3 Simple Steps to Create Quizzes

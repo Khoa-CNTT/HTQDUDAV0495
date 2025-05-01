@@ -63,8 +63,6 @@ export default function FaqSection() {
       <img
         className="absolute left-1/2 top-0 max-w-none -translate-y-1/4 -translate-x-[30%] opacity-50"
         src="https://www.quizwhiz.ai/static/images/5982fbe6e680d8baa575.webp"
-        alt=""
-        style={{ width: "1558px", height: "946px" }}
       />
       <div className="relative px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto lg:mx-0">
