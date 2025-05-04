@@ -16,7 +16,7 @@ const quizService = {
 
       for (const question of quizData.questions) {
         if (
-          !question.text ||
+          !question.content ||
           !question.options ||
           !Array.isArray(question.options) ||
           question.options.length === 0
@@ -28,12 +28,11 @@ const quizService = {
 
         for (const option of question.options) {
           if (
-            !option.text ||
-            typeof option.isCorrect !== "boolean" ||
-            !option.label
+            !option.label ||
+            typeof option.isCorrect !== "boolean"
           ) {
             throw new Error(
-              "Question must have content, label and correct/incorrect status."
+              "Each option must have label and correct/incorrect status."
             );
           }
         }
@@ -123,16 +122,24 @@ const quizService = {
    * Get a single quiz by ID
    */
   async getQuizById(quizId) {
-    const quiz = await Quiz.findById(quizId).populate(
-      "createdBy",
-      "username displayName"
-    );
+    try {
+      console.log("QuizService: Getting quiz with ID:", quizId);
+      const quiz = await Quiz.findById(quizId).populate(
+        "createdBy",
+        "username displayName"
+      );
 
-    if (!quiz) {
-      throw new Error("Quiz not found");
+      if (!quiz) {
+        console.log("QuizService: Quiz not found with ID:", quizId);
+        throw new Error("Quiz not found");
+      }
+
+      console.log("QuizService: Found quiz:", quiz);
+      return quiz;
+    } catch (error) {
+      console.error("Error in getQuizById:", error);
+      throw error;
     }
-
-    return quiz;
   },
 
   /**

@@ -12,7 +12,17 @@ const QuizDetails = ({ user }) => {
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
+        console.log('Fetching quiz with ID from URL params:', id);
+
+        if (!id || id === 'undefined') {
+          console.error('Invalid quiz ID detected:', id);
+          toast.error('Invalid quiz ID');
+          navigate('/not-found');
+          return;
+        }
+
         const data = await getQuizById(id);
+        console.log('Quiz data received:', data);
         setQuiz(data);
       } catch (error) {
         console.error('Error fetching quiz:', error);
@@ -80,7 +90,7 @@ const QuizDetails = ({ user }) => {
             )}
           </div>
         </div>
-        
+
         <div className="flex space-x-3">
           {isOwner && (
             <button
@@ -90,7 +100,7 @@ const QuizDetails = ({ user }) => {
               Delete
             </button>
           )}
-          
+
           {user ? (
             <Link
               to={`/quiz/${id}/take`}
@@ -108,34 +118,34 @@ const QuizDetails = ({ user }) => {
           )}
         </div>
       </div>
-      
+
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4">Preview</h2>
         <p className="text-gray-600 mb-4">
           This quiz contains {quiz.questions.length} questions. Here's a preview of the first question:
         </p>
-        
+
         {quiz.questions.length > 0 && (
           <div className="border rounded-lg p-4 bg-gray-50">
-            <p className="font-medium text-gray-800 mb-3">{quiz.questions[0].text}</p>
+            <p className="font-medium text-gray-800 mb-3">{quiz.questions[0].content}</p>
             <div className="space-y-2">
               {quiz.questions[0].options.map((option, index) => (
                 <div key={index} className="flex items-center">
-                  <span className="font-medium mr-2">{option.label}.</span>
-                  <span>{option.text}</span>
+                  <span className="font-medium mr-2">{String.fromCharCode(65 + index)}.</span>
+                  <span>{option.label}</span>
                 </div>
               ))}
             </div>
           </div>
         )}
       </div>
-      
+
       <div className="bg-indigo-50 rounded-lg p-6">
         <h2 className="text-xl font-semibold mb-4">Ready to test your knowledge?</h2>
         <p className="text-gray-700 mb-6">
           Take this quiz to challenge yourself and see how well you understand the material.
         </p>
-        
+
         {user ? (
           <Link
             to={`/quiz/${id}/take`}

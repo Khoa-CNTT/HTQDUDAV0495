@@ -8,14 +8,11 @@ const createQuiz = async (req, res) => {
     res.status(201).json(result);
   } catch (error) {
     console.error("Error creating quiz:", error);
-    if (
-      error.message.includes("Please provide") ||
-      error.message.includes("Each question must have") ||
-      error.message.includes("Each option must have")
-    ) {
-      return res.status(400).json({ message: error.message });
-    }
-    res.status(500).json({ message: "Server error while creating quiz." });
+    // Trả về lỗi với thông báo chi tiết
+    res.status(400).json({
+      message: error.message || "Có lỗi xảy ra khi tạo quiz",
+      error: error.message
+    });
   }
 };
 
