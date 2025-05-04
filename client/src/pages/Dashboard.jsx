@@ -4,6 +4,7 @@ import {
   deleteQuiz,
   getUserSubmissions,
   getPublicQuizzes,
+  getUserQuizzes,
 } from "../services/api";
 import QuizCard from "../components/QuizCard";
 import toast from "react-hot-toast";
@@ -28,7 +29,7 @@ const Dashboard = ({ user, logout }) => {
       setLoading(true);
       try {
         // Get user's quizzes
-        const quizzesResponse = await getPublicQuizzes();
+        const quizzesResponse = await getUserQuizzes();
         if (!quizzesResponse.success) {
           throw new Error(quizzesResponse.message || "Failed to load quizzes");
         }
@@ -279,7 +280,18 @@ const Dashboard = ({ user, logout }) => {
                   }}
                   style={{ cursor: 'pointer' }}
                 >
-                  <h3 className="quiz-card-title">{quiz.title}</h3>
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="quiz-card-title">{quiz.title}</h3>
+                    {quiz.isPublic ? (
+                      <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                        Public
+                      </span>
+                    ) : (
+                      <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
+                        Private
+                      </span>
+                    )}
+                  </div>
                   <p className="quiz-card-info">
                     {quiz.questions
                       ? `${quiz.questions.length} questions`
@@ -350,7 +362,12 @@ const Dashboard = ({ user, logout }) => {
                     }}
                     style={{ cursor: 'pointer' }}
                   >
-                    <h3 className="quiz-card-title">{quiz.title}</h3>
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="quiz-card-title">{quiz.title}</h3>
+                      <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                        Public
+                      </span>
+                    </div>
                     <p className="quiz-card-info">
                       {quiz.questions
                         ? `${quiz.questions.length} questions`

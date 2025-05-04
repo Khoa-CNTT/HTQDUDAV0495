@@ -14,9 +14,20 @@ const QuizCard = ({ quiz }) => {
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold text-gray-800">{quiz.title}</h3>
-          <span className="px-3 py-1 text-sm font-medium text-teal-600 bg-teal-50 rounded-full">
-            {quiz.questions?.length || 0} questions
-          </span>
+          <div className="flex items-center space-x-2">
+            <span className="px-3 py-1 text-sm font-medium text-teal-600 bg-teal-50 rounded-full">
+              {quiz.questions?.length || 0} questions
+            </span>
+            {quiz.isPublic ? (
+              <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                Public
+              </span>
+            ) : (
+              <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
+                Private
+              </span>
+            )}
+          </div>
         </div>
         <p className="text-gray-600 mb-6 line-clamp-2">{quiz.description}</p>
         <div className="flex justify-end">
@@ -46,4 +57,4 @@ const QuizCard = ({ quiz }) => {
   );
 };
 
-export default QuizCard; 
+export default QuizCard;

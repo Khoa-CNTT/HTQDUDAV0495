@@ -58,19 +58,32 @@ const createQuizFromPDF = async (req, res) => {
   }
 };
 
+// GET /api/quizzes
 const getAllQuizzes = async (req, res) => {
   try {
     const filters = {
       status: req.query.status,
-      createdBy: req.query.createdBy,
       search: req.query.search,
     };
 
+    // Nếu createdBy là "me" hoặc không được chỉ định, sử dụng userId từ token
+    if (!req.query.createdBy || req.query.createdBy === "me") {
+      filters.createdBy = req.user._id;
+    } else {
+      filters.createdBy = req.query.createdBy;
+    }
+
     const quizzes = await quizService.getAllQuizzes(filters);
-    res.json(quizzes);
+    res.json({
+      success: true,
+      data: quizzes
+    });
   } catch (error) {
     console.error("Error getting quizzes:", error);
-    res.status(500).json({ message: "Error getting quizzes" });
+    res.status(500).json({
+      success: false,
+      message: "Error getting quizzes"
+    });
   }
 };
 

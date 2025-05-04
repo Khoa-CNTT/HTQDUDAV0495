@@ -14,13 +14,16 @@ const api = axios.create({
 // Add request interceptor to attach auth token
 api.interceptors.request.use(
   (config) => {
-    const token = getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user && user.token) {
+      config.headers.Authorization = `Bearer ${user.token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error("Request interceptor error:", error);
+    return Promise.reject(error);
+  }
 );
 
 // Auth API calls
@@ -124,7 +127,11 @@ export const uploadQuiz = async (formData) => {
 
 export const getUserQuizzes = async () => {
   try {
-    const response = await api.get("/quizzes");
+    const response = await api.get("/quizzes", {
+      params: {
+        createdBy: "me" // Server sẽ lấy userId từ token
+      }
+    });
 
     // Check if we have a valid response
     if (!response.data) {
@@ -135,7 +142,8 @@ export const getUserQuizzes = async () => {
     const quizData = response.data.data || response.data;
 
     // Kiểm tra từng quiz để đảm bảo có _id hợp lệ
-    const processedQuizData = quizData.filter(quiz => quiz && (quiz._id || quiz.id))
+    const processedQuizData = quizData
+      .filter(quiz => quiz && (quiz._id || quiz.id))
       .map((quiz) => ({
         ...quiz,
         _id: (quiz._id || quiz.id || '').toString().trim(),
