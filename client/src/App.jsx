@@ -31,6 +31,7 @@ import Room from "./pages/Room";
 import Footer from "./components/Footer";
 import { SidebarProvider } from "./components/ui/sidebar";
 import Friends from "./components/Friends";
+import CreateQuiz from './pages/CreateQuiz';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -146,12 +147,14 @@ function App() {
           }
         />
 
-        <Route path="/quiz/:quizId" element={<QuizDetails user={user} />} />
+        <Route path="/quiz/:id" element={<QuizDetails user={user} />} />
         <Route path="/take-quiz/:quizId" element={<TakeQuiz user={user} />} />
         <Route
           path="/results/:submissionId"
           element={<QuizResults user={user} />}
         />
+
+        <Route path="/create-quiz" element={<CreateQuiz />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>

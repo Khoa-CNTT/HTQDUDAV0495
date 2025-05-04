@@ -8,6 +8,7 @@ import {
 import QuizCard from "../components/QuizCard";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
+import CreateQuizModal from "../components/CreateQuizModal";
 import "../styles/Dashboard.css";
 
 const Dashboard = ({ user, logout }) => {
@@ -18,6 +19,7 @@ const Dashboard = ({ user, logout }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isCreateQuizModalOpen, setIsCreateQuizModalOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -109,6 +111,14 @@ const Dashboard = ({ user, logout }) => {
     return name ? name.charAt(0).toUpperCase() : "U";
   };
 
+  // Log ra console để debug dữ liệu quiz
+  console.log('Danh sách quizzes:', quizzes);
+  const validQuizzes = Array.isArray(quizzes) ? quizzes.filter(quiz => typeof quiz._id === 'string' && quiz._id.trim() !== '') : [];
+  const invalidQuizzes = Array.isArray(quizzes) ? quizzes.filter(quiz => !quiz._id || typeof quiz._id !== 'string' || quiz._id.trim() === '') : [];
+  if (invalidQuizzes.length > 0) {
+    console.warn('Quiz bị thiếu _id:', invalidQuizzes);
+  }
+
   if (loading) {
     return (
       <div className="dashboard-container">
@@ -146,7 +156,7 @@ const Dashboard = ({ user, logout }) => {
             </div>
             <span className="username">{user?.username || "User"}</span>
           </div>
-          
+
           <div className={`dropdown-menu ${dropdownOpen ? 'active' : ''}`}>
             <div className="dropdown-header">
               <div className="avatar">
@@ -157,7 +167,7 @@ const Dashboard = ({ user, logout }) => {
                 <div className="dropdown-header-email">{user?.email || "user@example.com"}</div>
               </div>
             </div>
-            
+
             <Link to="/profile" className="dropdown-item">
               <div className="dropdown-item-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -167,7 +177,7 @@ const Dashboard = ({ user, logout }) => {
               </div>
               <span className="dropdown-item-text">Profile</span>
             </Link>
-            
+
             <Link to="/friends" className="dropdown-item">
               <div className="dropdown-item-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -179,7 +189,7 @@ const Dashboard = ({ user, logout }) => {
               </div>
               <span className="dropdown-item-text">Friends</span>
             </Link>
-            
+
             <Link to="/achievements" className="dropdown-item">
               <div className="dropdown-item-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -188,9 +198,9 @@ const Dashboard = ({ user, logout }) => {
               </div>
               <span className="dropdown-item-text">Achievements</span>
             </Link>
-            
+
             <div className="dropdown-divider"></div>
-            
+
             <button onClick={handleLogout} className="dropdown-item">
               <div className="dropdown-item-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -230,9 +240,12 @@ const Dashboard = ({ user, logout }) => {
         <div>
           <div className="dashboard-header">
             <h2 className="quiz-card-title">My Quizzes</h2>
-            <Link to="/upload" className="create-quiz-btn">
+            <button
+              onClick={() => setIsCreateQuizModalOpen(true)}
+              className="create-quiz-btn"
+            >
               Create New Quiz
-            </Link>
+            </button>
           </div>
 
           {Array.isArray(quizzes) && quizzes.length === 0 ? (
@@ -240,39 +253,72 @@ const Dashboard = ({ user, logout }) => {
               <p className="empty-state-text">
                 You haven't created any quizzes yet.
               </p>
-              <Link to="/upload" className="empty-state-link">
+              <button
+                onClick={() => setIsCreateQuizModalOpen(true)}
+                className="empty-state-link"
+              >
                 Create your first quiz
-              </Link>
+              </button>
             </div>
           ) : (
             <div className="quiz-grid">
-              {Array.isArray(quizzes) &&
-                quizzes.map((quiz) => (
-                  <div key={quiz._id} className="quiz-card">
-                    <h3 className="quiz-card-title">{quiz.title}</h3>
-                    <p className="quiz-card-info">
-                      {quiz.questions
-                        ? `${quiz.questions.length} questions`
-                        : "Loading questions..."}
-                    </p>
-                    <div className="quiz-card-actions">
-                      <Link
-                        to={`/quiz/${quiz._id}`}
-                        className="take-quiz-btn"
+              {validQuizzes.map((quiz) => (
+                <div
+                  key={quiz._id}
+                  className="quiz-card"
+                  onClick={() => {
+                    if (!quiz._id) {
+                      console.error('Quiz without valid ID:', quiz);
+                      toast.error('Cannot view quiz details - Invalid quiz ID');
+                      return;
+                    }
+                    const quizId = String(quiz._id).trim();
+                    console.log('Quiz click:', quiz);
+                    console.log('Quiz _id click:', quizId);
+                    navigate(`/quiz/${quizId}`);
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <h3 className="quiz-card-title">{quiz.title}</h3>
+                  <p className="quiz-card-info">
+                    {quiz.questions
+                      ? `${quiz.questions.length} questions`
+                      : "Loading questions..."}
+                  </p>
+                  <div className="quiz-card-actions">
+                    <Link
+                      to={`/quiz/${quiz._id}`}
+                      className="take-quiz-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!quiz._id) {
+                          e.preventDefault();
+                          console.error('Quiz without valid ID (Take Quiz button):', quiz);
+                          toast.error('Cannot take quiz - Invalid quiz ID');
+                        }
+                      }}
+                    >
+                      Take Quiz
+                    </Link>
+                    {isCreator(quiz) && (
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          if (quiz._id) {
+                            handleDeleteQuiz(quiz._id);
+                          } else {
+                            console.error('Cannot delete quiz without ID:', quiz);
+                            toast.error('Cannot delete quiz - Invalid quiz ID');
+                          }
+                        }}
+                        className="delete-quiz-btn"
                       >
-                        Take Quiz
-                      </Link>
-                      {isCreator(quiz) && (
-                        <button
-                          onClick={() => handleDeleteQuiz(quiz._id)}
-                          className="delete-quiz-btn"
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
+                        Delete
+                      </button>
+                    )}
                   </div>
-                ))}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -290,7 +336,20 @@ const Dashboard = ({ user, logout }) => {
             <div className="quiz-grid">
               {Array.isArray(publicQuizzes) &&
                 publicQuizzes.map((quiz) => (
-                  <div key={quiz._id} className="quiz-card">
+                  <div key={quiz._id} className="quiz-card"
+                    onClick={() => {
+                      if (!quiz._id) {
+                        console.error('Public quiz without valid ID:', quiz);
+                        toast.error('Cannot view quiz details - Invalid quiz ID');
+                        return;
+                      }
+                      const quizId = String(quiz._id).trim();
+                      console.log('Public quiz click:', quiz);
+                      console.log('Public quiz _id click:', quizId);
+                      navigate(`/quiz/${quizId}`);
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <h3 className="quiz-card-title">{quiz.title}</h3>
                     <p className="quiz-card-info">
                       {quiz.questions
@@ -304,6 +363,14 @@ const Dashboard = ({ user, logout }) => {
                       <Link
                         to={`/quiz/${quiz._id}`}
                         className="take-quiz-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!quiz._id) {
+                            e.preventDefault();
+                            console.error('Public quiz without valid ID (Take Quiz button):', quiz);
+                            toast.error('Cannot take quiz - Invalid quiz ID');
+                          }
+                        }}
                       >
                         Take Quiz
                       </Link>
@@ -407,6 +474,11 @@ const Dashboard = ({ user, logout }) => {
           </div>
         </div>
       </div>
+
+      <CreateQuizModal
+        isOpen={isCreateQuizModalOpen}
+        onClose={() => setIsCreateQuizModalOpen(false)}
+      />
     </div>
   );
 };

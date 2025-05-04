@@ -78,6 +78,20 @@ export const updateUserProfile = async (profileData) => {
 };
 
 // Quiz API calls
+export const createQuiz = async (quizData) => {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user || !user.token) {
+    throw new Error("Authentication required");
+  }
+
+  const response = await api.post("/quizzes", quizData, {
+    headers: {
+      Authorization: `Bearer ${user.token}`,
+    },
+  });
+  return response.data;
+};
+
 export const uploadQuiz = async (formData) => {
   // Get the current user data with token
   const user = JSON.parse(localStorage.getItem("user"));
@@ -120,15 +134,25 @@ export const getUserQuizzes = async () => {
     // Handle different response structures
     const quizData = response.data.data || response.data;
 
-    return {
-      success: true,
-      data: quizData.map((quiz) => ({
+    // Kiểm tra từng quiz để đảm bảo có _id hợp lệ
+    const processedQuizData = quizData.filter(quiz => quiz && (quiz._id || quiz.id))
+      .map((quiz) => ({
         ...quiz,
+        _id: (quiz._id || quiz.id || '').toString().trim(),
         createdBy:
           typeof quiz.createdBy === "object"
             ? quiz.createdBy._id
             : quiz.createdBy,
-      })),
+      }));
+
+    // Log warning nếu có quiz bị bỏ qua
+    if (processedQuizData.length < quizData.length) {
+      console.warn(`Filtered out ${quizData.length - processedQuizData.length} quizzes with invalid IDs`);
+    }
+
+    return {
+      success: true,
+      data: processedQuizData,
     };
   } catch (error) {
     console.error("Error getting user quizzes:", error);
@@ -152,15 +176,25 @@ export const getPublicQuizzes = async () => {
     // Handle different response structures
     const quizData = response.data.data || response.data;
 
-    return {
-      success: true,
-      data: quizData.map((quiz) => ({
+    // Kiểm tra từng quiz để đảm bảo có _id hợp lệ
+    const processedQuizData = quizData.filter(quiz => quiz && (quiz._id || quiz.id))
+      .map((quiz) => ({
         ...quiz,
+        _id: (quiz._id || quiz.id || '').toString().trim(),
         createdBy:
           typeof quiz.createdBy === "object"
             ? quiz.createdBy
             : { _id: quiz.createdBy },
-      })),
+      }));
+
+    // Log warning nếu có quiz bị bỏ qua
+    if (processedQuizData.length < quizData.length) {
+      console.warn(`Filtered out ${quizData.length - processedQuizData.length} quizzes with invalid IDs`);
+    }
+
+    return {
+      success: true,
+      data: processedQuizData,
     };
   } catch (error) {
     console.error("Error getting public quizzes:", error);
@@ -173,8 +207,18 @@ export const getPublicQuizzes = async () => {
 };
 
 export const getQuizById = async (quizId) => {
-  const response = await api.get(`/quizzes/${quizId}`);
-  return response.data;
+  try {
+    if (!quizId) {
+      console.error('getQuizById called with invalid quizId:', quizId);
+      throw new Error('Quiz ID is required');
+    }
+
+    const response = await api.get(`/quizzes/${quizId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching quiz with ID ${quizId}:`, error);
+    throw error;
+  }
 };
 
 export const deleteQuiz = async (quizId) => {

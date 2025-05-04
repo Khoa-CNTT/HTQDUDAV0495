@@ -1,21 +1,17 @@
 const mongoose = require('mongoose');
 
 const questionSchema = new mongoose.Schema({
-    text: {
+    content: {
         type: String,
         required: true,
     },
     options: [{
-        text: {
+        label: {
             type: String,
             required: true,
         },
         isCorrect: {
             type: Boolean,
-            required: true,
-        },
-        label: {
-            type: String,
             required: true,
         }
     }],
