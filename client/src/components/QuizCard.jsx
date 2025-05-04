@@ -23,9 +23,13 @@ const QuizCard = ({ quiz, onDelete, showCreator = false }) => {
       >
         <div className="flex justify-between items-start">
           <h3 className="text-xl font-semibold text-gray-800 mb-2">{quiz.title}</h3>
-          {quiz.isPublic && (
+          {quiz.isPublic ? (
             <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
               Public
+            </span>
+          ) : (
+            <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
+              Private
             </span>
           )}
         </div>
@@ -66,4 +70,4 @@ const QuizCard = ({ quiz, onDelete, showCreator = false }) => {
   );
 };
 
-export default QuizCard; 
+export default QuizCard;

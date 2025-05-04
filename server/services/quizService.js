@@ -99,11 +99,10 @@ const quizService = {
    * Get all quizzes with optional filters
    */
   async getAllQuizzes(filters = {}) {
-    const query = {};
+    const query = { createdBy: filters.createdBy };
 
-    // Apply filters
+    // Apply additional filters
     if (filters.status) query.status = filters.status;
-    if (filters.createdBy) query.createdBy = filters.createdBy;
     if (filters.search) {
       query.$or = [
         { title: { $regex: filters.search, $options: "i" } },
