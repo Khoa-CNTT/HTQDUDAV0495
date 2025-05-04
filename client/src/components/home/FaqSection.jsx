@@ -4,6 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { motion } from "framer-motion";
 
 const faqs = [
   {
@@ -55,44 +56,30 @@ const faqs = [
 
 export default function FaqSection() {
   return (
-    <section
-      id="faq"
-      aria-labelledby="faq-title"
-      className="relative py-20 overflow-hidden bg-slate-50 sm:py-32"
-    >
-      <img
-        className="absolute left-1/2 top-0 max-w-none -translate-y-1/4 -translate-x-[30%] opacity-50"
-        src="https://www.quizwhiz.ai/static/images/5982fbe6e680d8baa575.webp"
-      />
-      <div className="relative px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div className="max-w-2xl mx-auto lg:mx-0">
-          <h2
-            id="faq-title"
-            className="text-3xl tracking-tight font-display text-slate-900 sm:text-4xl"
+    <div className="max-w-3xl mx-auto">
+      <Accordion type="multiple" className="space-y-4">
+        {faqs.map((faq, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.8, delay: index * 0.1 }}
           >
-            Frequently asked questions
-          </h2>
-          <p className="mt-4 text-lg tracking-tight text-slate-700">
-            If you can't find what you're looking for, email us at{" "}
-            <strong>admin@quizwhiz.ai</strong>
-          </p>
-        </div>
-
-        <div className="max-w-2xl mx-auto mt-16 lg:max-w-5xl">
-          <Accordion type="multiple" className="space-y-4">
-            {faqs.map((faq, index) => (
-              <AccordionItem value={`item-${index}`} key={index}>
-                <AccordionTrigger className="text-lg font-medium text-left text-slate-900">
-                  {faq.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-sm text-slate-700">
-                  {faq.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      </div>
-    </section>
+            <AccordionItem
+              value={`item-${index}`}
+              className="border border-gray-200 rounded-lg overflow-hidden"
+            >
+              <AccordionTrigger className="px-4 py-3 text-left text-lg font-medium text-gray-900 hover:text-indigo-600 transition-colors">
+                {faq.question}
+              </AccordionTrigger>
+              <AccordionContent className="px-4 py-3 text-gray-600">
+                {faq.answer}
+              </AccordionContent>
+            </AccordionItem>
+          </motion.div>
+        ))}
+      </Accordion>
+    </div>
   );
 }

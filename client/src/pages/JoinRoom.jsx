@@ -54,7 +54,7 @@ function JoinRoom() {
               <p className="text-gray-600">Enter the room code to join a multiplayer quiz session</p>
             </div>
 
-            {error && (
+        {error && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -65,26 +65,26 @@ function JoinRoom() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <p className="text-red-600">{error}</p>
-                </div>
+          </div>
               </motion.div>
-            )}
+        )}
 
-            <form onSubmit={handleSubmit}>
-              <div className="mb-6">
+        <form onSubmit={handleSubmit}>
+          <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="roomCode">
                   Room Code
-                </label>
+            </label>
                 <div className="relative">
-                  <input
-                    type="text"
-                    id="roomCode"
+            <input
+              type="text"
+              id="roomCode"
                     className="w-full px-4 py-3 text-lg font-bold tracking-wider text-center uppercase border-2 border-gray-200 rounded-lg focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-colors"
-                    placeholder="ABCD12"
-                    maxLength="6"
-                    value={roomCode}
-                    onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                    required
-                  />
+              placeholder="ABCD12"
+              maxLength="6"
+              value={roomCode}
+              onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+              required
+            />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
@@ -92,9 +92,9 @@ function JoinRoom() {
                   </div>
                 </div>
                 <p className="mt-2 text-sm text-gray-500 text-center">
-                  Enter the 6-digit code provided by the room host
-                </p>
-              </div>
+              Enter the 6-digit code provided by the room host
+            </p>
+          </div>
 
               <div className="flex flex-col space-y-4">
                 <button
@@ -115,13 +115,13 @@ function JoinRoom() {
                   )}
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => navigate("/dashboard")}
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard")}
                   className="w-full py-3 px-4 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-colors"
-                >
-                  Cancel
-                </button>
+            >
+              Cancel
+            </button>
               </div>
             </form>
           </div>
@@ -129,16 +129,16 @@ function JoinRoom() {
           <div className="bg-gray-50 px-8 py-6 border-t border-gray-200">
             <div className="text-center">
               <h2 className="text-lg font-semibold text-gray-800 mb-3">
-                Want to create your own room?
-              </h2>
-              <button
-                onClick={() => navigate("/create-room")}
+            Want to create your own room?
+          </h2>
+          <button
+            onClick={() => navigate("/create-room")}
                 className="w-full py-3 px-4 bg-white text-teal-600 font-medium rounded-lg border-2 border-teal-600 hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-200 transition-colors"
-              >
-                Create a Room
-              </button>
-            </div>
-          </div>
+          >
+            Create a Room
+          </button>
+        </div>
+      </div>
         </div>
       </motion.div>
     </div>
