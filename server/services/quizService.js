@@ -198,43 +198,19 @@ const quizService = {
    * Submit quiz answers
    */
   async submitQuizAnswers(quizId, userId, answers) {
-    const quiz = await Quiz.findById(quizId);
-
+    const quiz = await Quiz.findById(quizId).populate('questions.options');
     if (!quiz) {
-      throw new Error("Quiz not found");
+      throw new Error('Quiz not found');
     }
 
-    // Calculate score
-    let score = 0;
-    const results = quiz.questions.map((question, index) => {
-      const userAnswer = answers[index];
-      const isCorrect = question.correctAnswer === userAnswer;
-      if (isCorrect) score++;
-      return {
-        questionId: question._id,
-        userAnswer,
-        isCorrect,
-        correctAnswer: question.correctAnswer,
-      };
-    });
+    // Validate answers format
+    if (!Array.isArray(answers)) {
+      throw new Error('Answers must be an array');
+    }
 
-    const percentageScore = (score / quiz.questions.length) * 100;
-    const passed = percentageScore >= (quiz.passingScore || 60);
-
-    // Create submission record
-    const submission = await Submission.create({
-      quizId: quizId,
-      userId: userId,
-      answers: results,
-      score: percentageScore,
-      totalQuestions: quiz.questions.length,
-      completed: true,
-    });
-
-    return {
-      message: "Quiz submitted successfully",
-      submission,
-    };
+    // Forward to submission service
+    const submissionService = require('./submissionService');
+    return await submissionService.createSubmission(quizId, userId, answers);
   },
 
   /**

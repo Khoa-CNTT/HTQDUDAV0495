@@ -103,14 +103,14 @@ const QuizDetails = ({ user }) => {
 
           {user ? (
             <Link
-              to={`/quiz/${id}/take`}
+              to={`/take-quiz/${id}`}
               className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700"
             >
               Take Quiz
             </Link>
           ) : (
             <Link
-              to={`/login?redirect=/quiz/${id}/take`}
+              to={`/login?redirect=/take-quiz/${id}`}
               className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700"
             >
               Login to Take Quiz
@@ -148,7 +148,7 @@ const QuizDetails = ({ user }) => {
 
         {user ? (
           <Link
-            to={`/quiz/${id}/take`}
+            to={`/take-quiz/${id}`}
             className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 inline-block"
           >
             Start Quiz Now
@@ -159,7 +159,7 @@ const QuizDetails = ({ user }) => {
               You need to be logged in to take this quiz.
             </p>
             <Link
-              to={`/login?redirect=/quiz/${id}/take`}
+              to={`/login?redirect=/take-quiz/${id}`}
               className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 inline-block"
             >
               Login to Continue
@@ -171,4 +171,4 @@ const QuizDetails = ({ user }) => {
   );
 };
 
-export default QuizDetails; 
+export default QuizDetails;

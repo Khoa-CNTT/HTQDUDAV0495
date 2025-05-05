@@ -12,6 +12,99 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import CreateQuizModal from "../components/CreateQuizModal";
 import "../styles/Dashboard.css";
 
+const SubmissionsTable = ({ submissions }) => {
+  // Group submissions by quiz
+  const submissionsByQuiz = submissions.reduce((acc, submission) => {
+    const quizId = submission.quizId._id;
+    if (!acc[quizId]) {
+      acc[quizId] = [];
+    }
+    acc[quizId].push(submission);
+    return acc;
+  }, {});
+
+  return (
+    <div className="space-y-8">
+      {Object.entries(submissionsByQuiz).map(([quizId, quizSubmissions]) => {
+        // Sort submissions by attempt number
+        quizSubmissions.sort((a, b) => b.attemptNumber - a.attemptNumber);
+        const latestSubmission = quizSubmissions[0];
+
+        return (
+          <div key={quizId} className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="px-6 py-4 bg-gray-50 border-b">
+              <h3 className="text-lg font-semibold">{latestSubmission.quizId.title}</h3>
+              <p className="text-sm text-gray-600">
+                {quizSubmissions.length} lần làm
+                {' • '}
+                Điểm cao nhất: {Math.max(...quizSubmissions.map(s => s.percentageScore)).toFixed(1)}%
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Lần thử
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Điểm số
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Thời gian
+                    </th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Thao tác
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {quizSubmissions.map((submission) => (
+                    <tr key={submission._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        #{submission.attemptNumber}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {submission.correctAnswers}/{submission.totalQuestions}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {submission.percentageScore.toFixed(1)}%
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(submission.completedAt).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <Link
+                          to={`/results/${submission._id}`}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          Xem chi tiết
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="px-6 py-4 bg-gray-50 border-t">
+              <Link
+                to={`/take-quiz/${quizId}`}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+              >
+                Làm lại bài này
+              </Link>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 const Dashboard = ({ user, logout }) => {
   const [quizzes, setQuizzes] = useState([]);
   const [publicQuizzes, setPublicQuizzes] = useState([]);
@@ -401,47 +494,20 @@ const Dashboard = ({ user, logout }) => {
 
       {activeTab === "submissions" && (
         <div>
-          <h2 className="quiz-card-title">My Submissions</h2>
+          <h2 className="text-2xl font-bold mb-6">Lịch sử làm bài</h2>
 
-          {Array.isArray(submissions) && submissions.length === 0 ? (
-            <div className="empty-state">
-              <p className="empty-state-text">
-                You haven't taken any quizzes yet.
-              </p>
-              <Link to="/" className="empty-state-link">
-                Find Quizzes to Take
+          {submissions.length === 0 ? (
+            <div className="text-center py-8 bg-gray-50 rounded-lg">
+              <p className="text-gray-600">Bạn chưa làm bài quiz nào.</p>
+              <Link
+                to="/"
+                className="text-indigo-600 hover:text-indigo-700 mt-2 inline-block"
+              >
+                Tìm quiz để làm
               </Link>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="submissions-table">
-                <thead>
-                  <tr>
-                    <th>Quiz</th>
-                    <th>Score</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {submissions.map((submission) => (
-                    <tr key={submission._id}>
-                      <td>{submission.quiz?.title || "Unknown Quiz"}</td>
-                      <td>{submission.score}%</td>
-                      <td>{new Date(submission.createdAt).toLocaleDateString()}</td>
-                      <td>
-                        <Link
-                          to={`/quiz-results/${submission._id}`}
-                          className="take-quiz-btn"
-                        >
-                          View Results
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <SubmissionsTable submissions={submissions} />
           )}
         </div>
       )}

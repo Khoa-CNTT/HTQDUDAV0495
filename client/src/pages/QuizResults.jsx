@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getSubmissionById } from '../services/api';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const QuizResults = () => {
@@ -14,10 +14,10 @@ const QuizResults = () => {
       try {
         const data = await getSubmissionById(id);
         setResult(data);
-        setLoading(false);
       } catch (error) {
         console.error('Error fetching result:', error);
-        setError('Failed to load results. Please try again.');
+        setError(error.response?.data?.message || 'Failed to load results');
+      } finally {
         setLoading(false);
       }
     };
@@ -30,68 +30,102 @@ const QuizResults = () => {
   }
 
   if (error) {
-    return <div className="text-center text-red-500 mt-5">{error}</div>;
+    return (
+      <div className="max-w-3xl mx-auto p-4">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-center" role="alert">
+          <strong className="font-bold">Lỗi: </strong>
+          <span className="block sm:inline">{error}</span>
+          <div className="mt-4">
+            <Link
+              to="/dashboard"
+              className="inline-block bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700"
+            >
+              Quay về Dashboard
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (!result) {
-    return <div className="text-center mt-5">Result not found</div>;
+    return <div className="text-center mt-5">Không tìm thấy kết quả</div>;
   }
-
-  const percentage = Math.round((result.score / result.totalQuestions) * 100);
-  const isPassing = percentage >= 60;
 
   return (
     <div className="max-w-3xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Quiz Results</h1>
-      
-      <div className={`p-6 rounded-lg mb-8 text-center ${isPassing ? 'bg-green-100' : 'bg-red-100'}`}>
-        <h2 className="text-xl font-semibold mb-2">
-          Your Score: {result.score} / {result.totalQuestions}
-        </h2>
-        <div className="text-3xl font-bold mb-4">
-          {percentage}%
+      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h1 className="text-2xl font-bold mb-2">{result.quizId?.title || 'Quiz Results'}</h1>
+
+        <div className="flex items-center text-sm text-gray-600 mb-6">
+          <span className="mr-4">Lần thử #{result.attemptNumber}</span>
+          <span>{new Date(result.completedAt).toLocaleString()}</span>
         </div>
-        <p className={isPassing ? 'text-green-700' : 'text-red-700'}>
-          {isPassing ? 'Congratulations! You passed!' : 'Keep practicing! You can do better next time.'}
-        </p>
-      </div>
-      
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-4">Question Answers</h3>
-        
-        {result.answers.map((answer, index) => (
-          <div 
-            key={index}
-            className={`p-4 mb-4 rounded-lg ${answer.isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}
-          >
-            <div className="flex items-center">
-              <div className={`mr-2 p-1 rounded-full ${answer.isCorrect ? 'bg-green-500' : 'bg-red-500'}`}>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
-                  {answer.isCorrect ? (
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  ) : (
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                  )}
-                </svg>
-              </div>
-              <span className="text-sm font-medium">
-                Question {index + 1}: {answer.isCorrect ? 'Correct' : 'Incorrect'}
-              </span>
+
+        <div className={`p-6 rounded-lg mb-8 ${result.percentageScore >= 60 ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+          <div className="text-center">
+            <h2 className="text-xl font-semibold mb-2">
+              Điểm số của bạn: {result.correctAnswers} / {result.totalQuestions}
+            </h2>
+            <div className="text-3xl font-bold mb-2">
+              {result.percentageScore.toFixed(1)}%
             </div>
+            <p className={result.percentageScore >= 60 ? 'text-green-700' : 'text-red-700'}>
+              {result.percentageScore >= 60 ? 'Chúc mừng! Bạn đã vượt qua bài kiểm tra!' : 'Cố gắng luyện tập thêm nhé!'}
+            </p>
           </div>
-        ))}
-      </div>
-      
-      <div className="text-center">
-        <a 
-          href="/dashboard" 
-          className="inline-block bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700"
-        >
-          Return to Dashboard
-        </a>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-4">Chi tiết từng câu</h3>
+
+          {result.answers.map((answer, index) => (
+            <div
+              key={index}
+              className={`p-4 mb-4 rounded-lg ${answer.isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}
+            >
+              <div className="mb-3">
+                <span className="font-medium text-gray-800">Câu {index + 1}:</span>
+                <p className="mt-1">{answer.question}</p>
+              </div>
+
+              <div className="ml-4">
+                <div className="mb-2">
+                  <span className="font-medium text-gray-700">Câu trả lời của bạn:</span>
+                  <p className={`mt-1 ${answer.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                    {answer.selectedOptionText || 'Chưa trả lời'}
+                  </p>
+                </div>
+
+                {!answer.isCorrect && (
+                  <div>
+                    <span className="font-medium text-gray-700">Đáp án đúng:</span>
+                    <p className="mt-1 text-green-600">{answer.correctAnswer}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex justify-between items-center">
+          <Link
+            to="/dashboard"
+            className="inline-block bg-gray-600 text-white px-6 py-2 rounded hover:bg-gray-700"
+          >
+            Quay về Dashboard
+          </Link>
+
+          <Link
+            to={`/take-quiz/${result.quizId._id}`}
+            className="inline-block bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700"
+          >
+            Thử lại
+          </Link>
+        </div>
       </div>
     </div>
   );
 };
 
-export default QuizResults; 
+export default QuizResults;

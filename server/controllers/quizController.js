@@ -166,10 +166,20 @@ const submitQuizAnswers = async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error("Error submitting quiz:", error);
+    let status = 500;
+
     if (error.message === "Quiz not found") {
-      return res.status(404).json({ message: error.message });
+      status = 404;
+    } else if (error.message === "You have already submitted this quiz") {
+      status = 409;
+    } else if (error.message.includes("validation failed") || error.message.includes("required")) {
+      status = 422;
     }
-    res.status(500).json({ message: "Error submitting quiz" });
+
+    res.status(status).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 

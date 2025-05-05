@@ -15,7 +15,20 @@ const createSubmission = async (req, res) => {
     res.status(201).json(result);
   } catch (error) {
     console.error('Error creating submission:', error);
-    res.status(400).json({ message: error.message });
+    let status = 400;
+
+    if (error.message === 'Quiz not found') {
+      status = 404;
+    } else if (error.message === 'You have already submitted this quiz') {
+      status = 409; // Conflict
+    } else if (error.message.includes('validation failed')) {
+      status = 422; // Unprocessable Entity
+    }
+
+    res.status(status).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -30,10 +43,24 @@ const getQuizSubmissions = async (req, res) => {
       req.params.quizId,
       req.user._id
     );
-    res.status(200).json(submissions);
+    res.json({
+      success: true,
+      data: submissions
+    });
   } catch (error) {
     console.error('Error getting quiz submissions:', error);
-    res.status(400).json({ message: error.message });
+    let status = 500;
+
+    if (error.message === 'Quiz not found') {
+      status = 404;
+    } else if (error.message === 'Not authorized') {
+      status = 403;
+    }
+
+    res.status(status).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -63,10 +90,24 @@ const getSubmissionDetails = async (req, res) => {
       req.params.id,
       req.user._id
     );
-    res.status(200).json(submission);
+    res.json({
+      success: true,
+      data: submission
+    });
   } catch (error) {
     console.error('Error getting submission details:', error);
-    res.status(400).json({ message: error.message });
+    let status = 500;
+
+    if (error.message === 'Submission not found') {
+      status = 404;
+    } else if (error.message === 'Not authorized') {
+      status = 403;
+    }
+
+    res.status(status).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -94,4 +135,4 @@ module.exports = {
   getUserSubmissions,
   getSubmissionDetails,
   deleteSubmission
-}; 
+};

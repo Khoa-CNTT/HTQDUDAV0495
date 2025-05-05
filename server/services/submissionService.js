@@ -1,57 +1,80 @@
 const Submission = require('../models/Submission');
 const Quiz = require('../models/Quiz');
 const User = require('../models/User');
+const crypto = require('crypto');
 
 const submissionService = {
   /**
    * Create a new submission
    */
   async createSubmission(quizId, userId, answers) {
-    const quiz = await Quiz.findById(quizId);
+    const quiz = await Quiz.findById(quizId).populate('questions.options');
     if (!quiz) {
       throw new Error('Quiz not found');
     }
 
-    // Check if user has already submitted this quiz
-    const existingSubmission = await Submission.findOne({
-      quizId: quizId,
-      userId: userId
+    // Generate a unique submission ID
+    const submissionId = crypto.randomBytes(16).toString('hex');
+
+    // Get attempt number
+    const attemptCount = await Submission.countDocuments({
+      quizId,
+      userId
     });
 
-    if (existingSubmission) {
-      throw new Error('You have already submitted this quiz');
-    }
+    // Calculate score and validate answers
+    let correctAnswers = 0;
+    const results = answers.map(answer => {
+      const question = quiz.questions.find(q => q._id.toString() === answer.questionId);
+      if (!question) {
+        throw new Error(`Question ${answer.questionId} not found`);
+      }
 
-    // Calculate score
-    let score = 0;
-    const results = quiz.questions.map((question, index) => {
-      const userAnswer = answers[index];
-      const isCorrect = question.correctAnswer === userAnswer;
-      if (isCorrect) score++;
+      const correctOption = question.options.find(opt => opt.isCorrect);
+      if (!correctOption) {
+        throw new Error(`No correct answer found for question ${answer.questionId}`);
+      }
+
+      const isCorrect = answer.selectedAnswer && correctOption._id.toString() === answer.selectedAnswer;
+      if (isCorrect) correctAnswers++;
+
       return {
         questionId: question._id,
-        selectedAnswer: userAnswer,
-        isCorrect,
+        question: question.content,
+        selectedAnswer: answer.selectedAnswer,
+        selectedOptionText: answer.selectedOptionText,
+        correctAnswer: correctOption.label,
+        isCorrect
       };
     });
 
-    const percentageScore = (score / quiz.questions.length) * 100;
-    const passed = percentageScore >= (quiz.passingScore || 60);
+    const percentageScore = (correctAnswers / quiz.questions.length) * 100;
 
-    // Create submission
+    // Create new submission
     const submission = await Submission.create({
-      quizId: quizId,
-      userId: userId,
+      submissionId,
+      quizId,
+      userId,
       answers: results,
-      score: percentageScore,
+      score: correctAnswers,
       totalQuestions: quiz.questions.length,
+      correctAnswers,
+      percentageScore,
       completed: true,
-      timeSpent: 0
+      attemptNumber: attemptCount + 1,
+      completedAt: new Date()
     });
 
     return {
       message: 'Quiz submitted successfully',
-      submission
+      submission: {
+        ...submission.toObject(),
+        submissionInfo: {
+          score: `${correctAnswers}/${quiz.questions.length} (${percentageScore.toFixed(1)}%)`,
+          completedAt: submission.completedAt.toLocaleString(),
+          attemptNumber: submission.attemptNumber
+        }
+      }
     };
   },
 
@@ -101,12 +124,30 @@ const submissionService = {
 
     // Check if user owns the submission or the quiz
     const quiz = await Quiz.findById(submission.quizId);
-    if (submission.userId.toString() !== userId && 
-        quiz && quiz.createdBy.toString() !== userId) {
+    if (!quiz) {
+      throw new Error('Quiz not found');
+    }
+
+    if (submission.userId.toString() !== userId &&
+      quiz.createdBy.toString() !== userId) {
       throw new Error('Not authorized to view this submission');
     }
 
-    return submission;
+    // Add question text and correct answer text to each answer
+    const detailedAnswers = submission.answers.map(answer => {
+      const question = quiz.questions.find(q => q._id.toString() === answer.questionId.toString());
+      if (!question) return answer;
+
+      return {
+        ...answer.toObject(),
+        question: question.text,
+        correctAnswer: question.options.find(opt => opt.isCorrect)?.text
+      };
+    });
+
+    const result = submission.toObject();
+    result.answers = detailedAnswers;
+    return result;
   },
 
   /**
@@ -131,4 +172,4 @@ const submissionService = {
   }
 };
 
-module.exports = submissionService; 
+module.exports = submissionService;
