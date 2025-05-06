@@ -15,7 +15,20 @@ const createSubmission = async (req, res) => {
     res.status(201).json(result);
   } catch (error) {
     console.error('Error creating submission:', error);
-    res.status(400).json({ message: error.message });
+    let status = 400;
+
+    if (error.message === 'Quiz not found') {
+      status = 404;
+    } else if (error.message === 'You have already submitted this quiz') {
+      status = 409; // Conflict
+    } else if (error.message.includes('validation failed')) {
+      status = 422; // Unprocessable Entity
+    }
+
+    res.status(status).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -30,10 +43,24 @@ const getQuizSubmissions = async (req, res) => {
       req.params.quizId,
       req.user._id
     );
-    res.status(200).json(submissions);
+    res.json({
+      success: true,
+      data: submissions
+    });
   } catch (error) {
     console.error('Error getting quiz submissions:', error);
-    res.status(400).json({ message: error.message });
+    let status = 500;
+
+    if (error.message === 'Quiz not found') {
+      status = 404;
+    } else if (error.message === 'Not authorized') {
+      status = 403;
+    }
+
+    res.status(status).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -45,10 +72,16 @@ const getQuizSubmissions = async (req, res) => {
 const getUserSubmissions = async (req, res) => {
   try {
     const submissions = await submissionService.getUserSubmissions(req.user._id);
-    res.status(200).json(submissions);
+    res.json({
+      success: true,
+      data: submissions
+    });
   } catch (error) {
     console.error('Error getting user submissions:', error);
-    res.status(400).json({ message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -59,14 +92,25 @@ const getUserSubmissions = async (req, res) => {
  */
 const getSubmissionDetails = async (req, res) => {
   try {
-    const submission = await submissionService.getSubmissionDetails(
+    const result = await submissionService.getSubmissionDetails(
       req.params.id,
       req.user._id
     );
-    res.status(200).json(submission);
+    res.json(result);
   } catch (error) {
     console.error('Error getting submission details:', error);
-    res.status(400).json({ message: error.message });
+    let status = 500;
+
+    if (error.message === 'Submission not found') {
+      status = 404;
+    } else if (error.message === 'Not authorized to view this submission') {
+      status = 403;
+    }
+
+    res.status(status).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -81,10 +125,24 @@ const deleteSubmission = async (req, res) => {
       req.params.id,
       req.user._id
     );
-    res.status(200).json(result);
+    res.json({
+      success: true,
+      message: result.message
+    });
   } catch (error) {
     console.error('Error deleting submission:', error);
-    res.status(400).json({ message: error.message });
+    let status = 400;
+
+    if (error.message === 'Submission not found') {
+      status = 404;
+    } else if (error.message === 'Not authorized to delete this submission') {
+      status = 403;
+    }
+
+    res.status(status).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -94,4 +152,4 @@ module.exports = {
   getUserSubmissions,
   getSubmissionDetails,
   deleteSubmission
-}; 
+};

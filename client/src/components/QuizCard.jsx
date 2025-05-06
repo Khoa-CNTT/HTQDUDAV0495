@@ -52,10 +52,13 @@ const QuizCard = ({ quiz, onDelete, showCreator = false }) => {
             Created by: {getCreatorName()}
           </div>
         )}
-        <div className="flex space-x-3">
-          <span className="bg-indigo-50 text-indigo-700 px-4 py-2 rounded cursor-pointer group-hover:bg-indigo-100 transition-colors">
-            Xem chi tiết
-          </span>
+        <div className="flex justify-between mt-4">
+          <Link
+            to={`/take-quiz/${quiz._id}`}
+            className="text-indigo-600 hover:text-indigo-700"
+          >
+            Take Quiz
+          </Link>
         </div>
       </Link>
       {onDelete && (

@@ -1,16 +1,44 @@
 const mongoose = require('mongoose');
 
-const submissionSchema = new mongoose.Schema({
-  userId: {
+const answerSchema = new mongoose.Schema({
+  questionId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    required: true,
+    ref: 'Question'
+  },
+  question: {
+    type: String,
     required: true
   },
+  selectedAnswer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Option'
+  },
+  selectedOptionText: {
+    type: String
+  },
+  correctAnswer: {
+    type: String,
+    required: true
+  },
+  isCorrect: {
+    type: Boolean,
+    required: true
+  }
+});
+
+const submissionSchema = new mongoose.Schema({
   quizId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Quiz',
     required: true
   },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  answers: [answerSchema],
   score: {
     type: Number,
     required: true
@@ -19,40 +47,48 @@ const submissionSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  answers: [
-    {
-      questionId: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true
-      },
-      selectedAnswer: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true
-      },
-      isCorrect: {
-        type: Boolean,
-        required: true
-      }
-    }
-  ],
+  correctAnswers: {
+    type: Number,
+    required: true
+  },
+  percentageScore: {
+    type: Number,
+    required: true
+  },
   timeSpent: {
     type: Number,
     default: 0
+  },
+  attemptNumber: {
+    type: Number,
+    required: true
   },
   completed: {
     type: Boolean,
     default: true
   },
-  createdAt: {
+  completedAt: {
     type: Date,
     default: Date.now
   }
-}, { timestamps: true });
+}, {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
 
-// Indexes for faster queries
-submissionSchema.index({ userId: 1 });
-submissionSchema.index({ quizId: 1 });
-submissionSchema.index({ createdAt: -1 });
-submissionSchema.index({ userId: 1, quizId: 1 });
+// Virtual field để hiển thị thông tin rõ ràng hơn
+submissionSchema.virtual('submissionInfo').get(function () {
+  return {
+    score: `${this.correctAnswers}/${this.totalQuestions} (${this.percentageScore}%)`,
+    completedAt: this.completedAt.toLocaleString(),
+    attemptNumber: this.attemptNumber
+  };
+});
 
-module.exports = mongoose.model('Submission', submissionSchema); 
+// Indexes cho tối ưu truy vấn
+submissionSchema.index({ userId: 1, quizId: 1, attemptNumber: -1 });
+submissionSchema.index({ quizId: 1, createdAt: -1 });
+submissionSchema.index({ userId: 1, createdAt: -1 });
+
+module.exports = mongoose.model('Submission', submissionSchema);

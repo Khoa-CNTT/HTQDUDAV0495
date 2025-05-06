@@ -80,9 +80,8 @@ const Navbar = ({ user, logout }) => {
                     <span>{user.displayName || user.username}</span>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className={`h-4 w-4 transition-transform ${
-                        menuOpen ? "rotate-180" : ""
-                      }`}
+                      className={`h-4 w-4 transition-transform ${menuOpen ? "rotate-180" : ""
+                        }`}
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -108,8 +107,8 @@ const Navbar = ({ user, logout }) => {
                       <button
                         onClick={() => {
                           closeMenu();
-                          handleLogout();     
-                          navigate('/login');                     
+                          handleLogout();
+                          navigate('/login');
                         }}
                         className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-indigo-50"
                       >

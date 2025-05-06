@@ -12,21 +12,30 @@ const TakeQuiz = () => {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  const { id } = useParams();
+  const { quizId } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchQuiz();
-  }, []);
+  }, [quizId]);
 
   const fetchQuiz = async () => {
     try {
-      const response = await getQuizById(id);
-      setQuiz(response.quiz);
+      if (!quizId) {
+        setError('Quiz ID is required');
+        setLoading(false);
+        return;
+      }
+
+      const response = await getQuizById(quizId);
+      if (!response) {
+        throw new Error('Failed to load quiz');
+      }
+      setQuiz(response);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching quiz:', error);
-      setError('Failed to load quiz. Please try again.');
+      setError(error.message || 'Failed to load quiz. Please try again.');
       setLoading(false);
     }
   };
@@ -63,31 +72,41 @@ const TakeQuiz = () => {
   };
 
   const handleSubmit = async () => {
-    // Check if all questions have been answered
     if (Object.keys(selectedOptions).length < quiz.questions.length) {
       const unansweredCount = quiz.questions.length - Object.keys(selectedOptions).length;
-      if (!window.confirm(`You have ${unansweredCount} unanswered question(s). Are you sure you want to submit?`)) {
+      if (!window.confirm(`Bạn còn ${unansweredCount} câu chưa trả lời. Bạn có chắc muốn nộp bài không?`)) {
         return;
       }
     }
-    
+
     setIsSubmitting(true);
     try {
-      // Format answers for submission
-      const answers = Object.entries(selectedOptions).map(([index, optionIndex]) => ({
-        questionId: quiz.questions[parseInt(index)]._id,
-        selectedOptionIndex: optionIndex
-      }));
-      
-      const result = await submitQuizSubmission(id, answers);
-      toast.success('Quiz submitted successfully!');
-      setIsSubmitting(false);
-      navigate(`/results/${result.data._id}`);
+      // Format answers theo đúng cấu trúc server yêu cầu
+      const answers = quiz.questions.map((question, index) => {
+        const selectedOptionIndex = selectedOptions[index];
+        const selectedOption = selectedOptionIndex !== undefined ? question.options[selectedOptionIndex] : null;
+
+        return {
+          questionId: question._id,
+          selectedAnswer: selectedOption ? selectedOption._id : null,
+          selectedOptionText: selectedOption ? selectedOption.label : null,
+          question: question.content
+        };
+      }).filter(answer => answer.selectedAnswer !== null);
+
+      const result = await submitQuizSubmission(quizId, answers);
+
+      if (result.submission && result.submission._id) {
+        toast.success('Nộp bài thành công!');
+        navigate(`/results/${result.submission._id}`);
+      } else {
+        throw new Error('Invalid submission result');
+      }
     } catch (error) {
+      console.error('Lỗi khi nộp bài:', error);
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi nộp bài');
+    } finally {
       setIsSubmitting(false);
-      setError('Failed to submit quiz. Please try again.');
-      toast.error('Failed to submit quiz');
-      console.error(error);
     }
   };
 
@@ -97,26 +116,26 @@ const TakeQuiz = () => {
   return (
     <div className="max-w-3xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">{quiz.title}</h1>
-      
+
       <div className="mb-4 text-sm text-gray-600">
         Question {currentQuestionIndex + 1} of {quiz.questions.length}
       </div>
-      
-      <QuestionCard 
+
+      <QuestionCard
         question={currentQuestion}
         selectedOption={selectedOptions[currentQuestionIndex]}
-        onOptionSelect={handleOptionSelect}
+        onSelectOption={handleOptionSelect}
       />
-      
+
       <div className="flex justify-between mt-6">
-        <button 
+        <button
           onClick={handlePrevQuestion}
           disabled={currentQuestionIndex === 0}
           className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 disabled:opacity-50"
         >
           Previous
         </button>
-        
+
         {isLastQuestion ? (
           <button
             onClick={handleSubmit}
@@ -126,7 +145,7 @@ const TakeQuiz = () => {
             {isSubmitting ? 'Submitting...' : 'Submit Quiz'}
           </button>
         ) : (
-          <button 
+          <button
             onClick={handleNextQuestion}
             className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
           >
@@ -138,4 +157,4 @@ const TakeQuiz = () => {
   );
 };
 
-export default TakeQuiz; 
+export default TakeQuiz;
