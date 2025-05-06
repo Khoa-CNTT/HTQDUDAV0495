@@ -94,13 +94,13 @@ const TakeQuiz = () => {
         };
       }).filter(answer => answer.selectedAnswer !== null);
 
-      const result = await submitQuizSubmission(quizId, { answers });
+      const result = await submitQuizSubmission(quizId, answers);
 
-      if (result.submission) {
+      if (result.submission && result.submission._id) {
         toast.success('Nộp bài thành công!');
         navigate(`/results/${result.submission._id}`);
       } else {
-        throw new Error('Failed to submit quiz');
+        throw new Error('Invalid submission result');
       }
     } catch (error) {
       console.error('Lỗi khi nộp bài:', error);

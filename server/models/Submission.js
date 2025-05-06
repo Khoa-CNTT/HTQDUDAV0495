@@ -28,11 +28,6 @@ const answerSchema = new mongoose.Schema({
 });
 
 const submissionSchema = new mongoose.Schema({
-  submissionId: {
-    type: String,
-    required: true,
-    unique: true
-  },
   quizId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Quiz',
@@ -92,7 +87,6 @@ submissionSchema.virtual('submissionInfo').get(function () {
 });
 
 // Indexes cho tối ưu truy vấn
-submissionSchema.index({ submissionId: 1 }, { unique: true });
 submissionSchema.index({ userId: 1, quizId: 1, attemptNumber: -1 });
 submissionSchema.index({ quizId: 1, createdAt: -1 });
 submissionSchema.index({ userId: 1, createdAt: -1 });
