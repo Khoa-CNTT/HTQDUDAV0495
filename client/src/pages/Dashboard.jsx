@@ -11,10 +11,22 @@ import toast from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
 import CreateQuizModal from "../components/CreateQuizModal";
 import "../styles/Dashboard.css";
+import PaginatedSubmissionsTable from '../components/PaginatedSubmissionsTable';
+import CollapsibleSubmissionsTable from '../components/CollapsibleSubmissionsTable';
 
 const SubmissionsTable = ({ submissions }) => {
-  // Group submissions by quiz
+  if (!Array.isArray(submissions) || submissions.length === 0) {
+    return (
+      <div className="text-center py-8 bg-gray-50 rounded-lg">
+        <p className="text-gray-600">Không có bài nộp nào.</p>
+      </div>
+    );
+  }
+
+  // Group submissions by quiz with null checks
   const submissionsByQuiz = submissions.reduce((acc, submission) => {
+    if (!submission?.quizId?._id) return acc;
+
     const quizId = submission.quizId._id;
     if (!acc[quizId]) {
       acc[quizId] = [];
@@ -27,17 +39,21 @@ const SubmissionsTable = ({ submissions }) => {
     <div className="space-y-8">
       {Object.entries(submissionsByQuiz).map(([quizId, quizSubmissions]) => {
         // Sort submissions by attempt number
-        quizSubmissions.sort((a, b) => b.attemptNumber - a.attemptNumber);
+        quizSubmissions.sort((a, b) => (b.attemptNumber || 0) - (a.attemptNumber || 0));
         const latestSubmission = quizSubmissions[0];
+
+        // Calculate highest score safely
+        const scores = quizSubmissions.map(s => s.percentageScore || 0).filter(score => !isNaN(score));
+        const highestScore = scores.length > 0 ? Math.max(...scores) : 0;
 
         return (
           <div key={quizId} className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="px-6 py-4 bg-gray-50 border-b">
-              <h3 className="text-lg font-semibold">{latestSubmission.quizId.title}</h3>
+              <h3 className="text-lg font-semibold">{latestSubmission?.quizId?.title || 'Untitled Quiz'}</h3>
               <p className="text-sm text-gray-600">
                 {quizSubmissions.length} lần làm
                 {' • '}
-                Điểm cao nhất: {Math.max(...quizSubmissions.map(s => s.percentageScore)).toFixed(1)}%
+                Điểm cao nhất: {highestScore.toFixed(1)}%
               </p>
             </div>
 
@@ -63,26 +79,31 @@ const SubmissionsTable = ({ submissions }) => {
                   {quizSubmissions.map((submission) => (
                     <tr key={submission._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        #{submission.attemptNumber}
+                        #{submission.attemptNumber || '?'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
-                          {submission.correctAnswers}/{submission.totalQuestions}
+                          {submission.correctAnswers || 0}/{submission.totalQuestions || 0}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {submission.percentageScore.toFixed(1)}%
+                          {(submission.percentageScore || 0).toFixed(1)}%
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(submission.completedAt).toLocaleString()}
+                        {submission.completedAt
+                          ? new Date(submission.completedAt).toLocaleString()
+                          : 'N/A'
+                        }
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Link
-                          to={`/results/${submission._id}`}
-                          className="text-indigo-600 hover:text-indigo-900"
-                        >
-                          Xem chi tiết
-                        </Link>
+                        {submission._id && (
+                          <Link
+                            to={`/results/${submission._id}`}
+                            className="text-indigo-600 hover:text-indigo-900"
+                          >
+                            Xem chi tiết
+                          </Link>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -495,20 +516,7 @@ const Dashboard = ({ user, logout }) => {
       {activeTab === "submissions" && (
         <div>
           <h2 className="text-2xl font-bold mb-6">Lịch sử làm bài</h2>
-
-          {submissions.length === 0 ? (
-            <div className="text-center py-8 bg-gray-50 rounded-lg">
-              <p className="text-gray-600">Bạn chưa làm bài quiz nào.</p>
-              <Link
-                to="/"
-                className="text-indigo-600 hover:text-indigo-700 mt-2 inline-block"
-              >
-                Tìm quiz để làm
-              </Link>
-            </div>
-          ) : (
-            <SubmissionsTable submissions={submissions} />
-          )}
+          <CollapsibleSubmissionsTable submissions={submissions} />
         </div>
       )}
 
