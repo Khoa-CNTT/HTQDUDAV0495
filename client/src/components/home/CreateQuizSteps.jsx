@@ -15,7 +15,7 @@ const steps = [
     subtitle: "Create & Customize",
     description:
       "Start by designing your quiz with our intuitive interface. Choose from multiple question types, set difficulty levels, and customize the appearance to match your brand.",
-    image: "/images/step1.webp",
+    image: "/images/step1.jpg",
     icon: <FaPencilAlt className="w-6 h-6" />,
     features: [
       "Multiple question types",
@@ -30,7 +30,7 @@ const steps = [
     subtitle: "Fine-tune & Optimize",
     description:
       "Fine-tune your quiz settings for the perfect experience. Set time limits, scoring rules, and feedback options to create an engaging assessment.",
-    image: "/images/step2.webp",
+    image: "/images/step2.jpg",
     icon: <FaCog className="w-6 h-6" />,
     features: [
       "Time management",
@@ -45,7 +45,7 @@ const steps = [
     subtitle: "Publish & Engage",
     description:
       "Launch your quiz and share it with your audience. Track results in real-time, analyze performance, and gather valuable insights.",
-    image: "/images/step3.webp",
+    image: "/images/step3z.jpg",
     icon: <FaRocket className="w-6 h-6" />,
     features: [
       "Instant publishing",
@@ -150,7 +150,7 @@ export default function CreateQuizSteps() {
               <img
                 src={steps[activeStep].image}
                 alt={steps[activeStep].title}
-                className="object-cover w-full h-full"
+                className="object-contain w-full h-full "
               />
             </div>
 

@@ -148,18 +148,18 @@ export default function Footer() {
             <ul className="space-y-4">
               <li className="flex items-start space-x-3">
                 <FaEnvelope className="w-5 h-5 mt-1 text-indigo-600" />
-                <span className="text-gray-600">support@quizwhiz.com</span>
+                <span className="text-gray-600">support@ctequiz.com</span>
               </li>
               <li className="flex items-start space-x-3">
                 <FaPhone className="w-5 h-5 mt-1 text-indigo-600" />
-                <span className="text-gray-600">+1 (555) 123-4567</span>
+                <span className="text-gray-600">+84 123-4567</span>
               </li>
               <li className="flex items-start space-x-3">
                 <FaMapMarkerAlt className="w-5 h-5 mt-1 text-indigo-600" />
                 <span className="text-gray-600">
-                  123 Education Street
+                  123 Nguyen van linh
                   <br />
-                  San Francisco, CA 94107
+                  Vietnam, Da Nang
                 </span>
               </li>
             </ul>

@@ -163,13 +163,22 @@ const Dashboard = ({ user, logout }) => {
         <h1 className="dashboard-title">Dashboard</h1>
         <div className="user-info" ref={dropdownRef}>
           <div className="avatar-container" onClick={toggleDropdown}>
-            <div className="avatar">{getInitial(user?.username)}</div>
+            <img
+              src={user?.profilePicture || "/images/df_avatar.png"}
+              alt="User Avatar"
+              className="w-10 h-10 rounded-full"
+            />
             <span className="username">{user?.username || "User"}</span>
           </div>
 
           <div className={`dropdown-menu ${dropdownOpen ? "active" : ""}`}>
             <div className="dropdown-header">
-              <div className="avatar">{getInitial(user?.username)}</div>
+              <img
+                src={user?.profilePicture || "/images/df_avatar.png"}
+                alt="User Avatar"
+                className="w-10 h-10 rounded-full"
+              />
+
               <div className="dropdown-header-info">
                 <div className="dropdown-header-name">
                   {user?.username || "User"}

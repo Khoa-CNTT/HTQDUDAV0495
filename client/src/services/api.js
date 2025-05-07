@@ -75,9 +75,26 @@ export const getUserProfile = async () => {
   return response.data;
 };
 
-export const updateUserProfile = async (profileData) => {
-  const response = await api.put("/users/profile", profileData);
-  return response.data;
+export const updateUserProfile = async (formData) => {
+  try {
+    // Get the current user data with token
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.token) {
+      throw new Error("Authentication required");
+    }
+
+    const response = await api.put("/users/profile", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${user.token}`,
+      },
+    });
+    console.log("Server response:", response.data); // Debug log
+    return response.data;
+  } catch (error) {
+    console.error("Profile update error:", error.response?.data || error);
+    throw error;
+  }
 };
 
 // Quiz API calls

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { createRoom, getPublicQuizzes, getUserQuizzes } from '../services/api';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import { FaUsers, FaClock, FaEnvelope, FaCheck } from 'react-icons/fa';
 
 function CreateRoom({ user }) {
   const [quizzes, setQuizzes] = useState([]);
@@ -102,10 +103,10 @@ function CreateRoom({ user }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-600 mx-auto"></div>
+          <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading quizzes...</p>
           </div>
         </div>
@@ -115,38 +116,45 @@ function CreateRoom({ user }) {
 
   if (roomCreated) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="w-full max-w-md"
         >
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden">
             <div className="p-8 text-center">
-              <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h1 className="text-2xl font-bold text-gray-800 mb-2">Room Created Successfully!</h1>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2 }}
+                className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6"
+              >
+                <FaCheck className="w-8 h-8 text-indigo-600" />
+              </motion.div>
+              <h1 className="text-2xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text mb-2">
+                Room Created Successfully!
+              </h1>
               <p className="text-gray-600 mb-6">Share the room code with your participants</p>
               
-              <div className="bg-gray-50 p-6 rounded-lg mb-6">
+              <div className="bg-white/50 backdrop-blur-sm p-6 rounded-lg mb-6 border border-indigo-100">
                 <p className="text-sm font-medium text-gray-500 mb-2">Room Code</p>
                 <div className="flex items-center justify-center space-x-3">
-                  <span className="text-3xl font-bold tracking-wider bg-white px-6 py-3 rounded-lg border-2 border-gray-200">
+                  <span className="text-3xl font-bold tracking-wider bg-white px-6 py-3 rounded-lg border-2 border-indigo-200 text-indigo-600">
                     {roomCode}
                   </span>
-                  <button 
+                  <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={copyInviteLink}
-                    className="p-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors"
+                    className="p-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
                     title="Copy invite link"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
-                  </button>
+                  </motion.button>
                 </div>
                 <p className="mt-3 text-sm text-gray-500">
                   Click the copy button to share an invite link
@@ -154,18 +162,22 @@ function CreateRoom({ user }) {
               </div>
               
               <div className="flex flex-col space-y-3">
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleJoinCreatedRoom}
-                  className="w-full py-3 px-4 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors"
+                  className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
                 >
                   Join Room Now
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => navigate('/dashboard')}
-                  className="w-full py-3 px-4 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-colors"
+                  className="w-full py-3 px-4 bg-white text-gray-700 font-medium rounded-lg border-2 border-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all"
                 >
                   Go to Dashboard
-                </button>
+                </motion.button>
               </div>
             </div>
           </div>
@@ -175,17 +187,19 @@ function CreateRoom({ user }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
         className="w-full max-w-md"
       >
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden">
           <div className="p-8">
             <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">Create a Room</h1>
+              <h1 className="text-3xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text mb-2">
+                Create a Room
+              </h1>
               <p className="text-gray-600">Set up a multiplayer quiz session</p>
             </div>
 
@@ -206,24 +220,32 @@ function CreateRoom({ user }) {
 
             <div className="mb-6">
               <div className="flex rounded-lg overflow-hidden border border-gray-200">
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="button"
-                  className={`flex-1 py-3 px-4 text-sm font-medium ${
-                    !showMyQuizzes ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-700'
+                  className={`flex-1 py-3 px-4 text-sm font-medium transition-all ${
+                    !showMyQuizzes 
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white' 
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
                   }`}
                   onClick={() => setShowMyQuizzes(false)}
                 >
                   Public Quizzes
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="button"
-                  className={`flex-1 py-3 px-4 text-sm font-medium ${
-                    showMyQuizzes ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-700'
+                  className={`flex-1 py-3 px-4 text-sm font-medium transition-all ${
+                    showMyQuizzes 
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white' 
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
                   }`}
                   onClick={() => setShowMyQuizzes(true)}
                 >
                   My Quizzes
-                </button>
+                </motion.button>
               </div>
             </div>
 
@@ -234,7 +256,7 @@ function CreateRoom({ user }) {
                 </label>
                 <select
                   id="quiz"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-colors"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
                   value={selectedQuiz}
                   onChange={(e) => setSelectedQuiz(e.target.value)}
                   required
@@ -256,12 +278,15 @@ function CreateRoom({ user }) {
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="maxParticipants">
-                  Maximum Participants
+                  <div className="flex items-center">
+                    <FaUsers className="w-4 h-4 mr-2 text-indigo-600" />
+                    Maximum Participants
+                  </div>
                 </label>
                 <input
                   type="number"
                   id="maxParticipants"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-colors"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
                   min="2"
                   max="50"
                   value={maxParticipants}
@@ -272,12 +297,15 @@ function CreateRoom({ user }) {
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="timeLimit">
-                  Time Limit (seconds per question)
+                  <div className="flex items-center">
+                    <FaClock className="w-4 h-4 mr-2 text-indigo-600" />
+                    Time Limit (seconds per question)
+                  </div>
                 </label>
                 <input
                   type="number"
                   id="timeLimit"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-colors"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
                   min="10"
                   max="300"
                   value={timeLimit}
@@ -288,11 +316,14 @@ function CreateRoom({ user }) {
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="inviteEmails">
-                  Invite Users (optional)
+                  <div className="flex items-center">
+                    <FaEnvelope className="w-4 h-4 mr-2 text-indigo-600" />
+                    Invite Users (optional)
+                  </div>
                 </label>
                 <textarea
                   id="inviteEmails"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-colors"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
                   rows="3"
                   placeholder="Enter email addresses separated by commas"
                   value={inviteEmails}
@@ -301,10 +332,12 @@ function CreateRoom({ user }) {
               </div>
 
               <div className="flex flex-col space-y-4">
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={creating}
-                  className="w-full py-3 px-4 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {creating ? (
                     <div className="flex items-center justify-center">
@@ -317,15 +350,17 @@ function CreateRoom({ user }) {
                   ) : (
                     "Create Room"
                   )}
-                </button>
+                </motion.button>
 
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={() => navigate("/dashboard")}
-                  className="w-full py-3 px-4 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-colors"
+                  className="w-full py-3 px-4 bg-white text-gray-700 font-medium rounded-lg border-2 border-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all"
                 >
                   Cancel
-                </button>
+                </motion.button>
               </div>
             </form>
           </div>

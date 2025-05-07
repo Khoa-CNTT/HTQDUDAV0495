@@ -11,16 +11,16 @@ const QuizCard = ({ quiz }) => {
       y: 0,
       transition: {
         duration: 0.5,
-        ease: "easeOut"
-      }
+        ease: "easeOut",
+      },
     },
     hover: {
       y: -5,
       transition: {
         duration: 0.3,
-        ease: "easeOut"
-      }
-    }
+        ease: "easeOut",
+      },
+    },
   };
 
   const buttonVariants = {
@@ -28,12 +28,12 @@ const QuizCard = ({ quiz }) => {
       scale: 1.05,
       transition: {
         duration: 0.2,
-        ease: "easeOut"
-      }
+        ease: "easeOut",
+      },
     },
     tap: {
-      scale: 0.95
-    }
+      scale: 0.95,
+    },
   };
 
   return (
@@ -43,21 +43,21 @@ const QuizCard = ({ quiz }) => {
       whileInView="visible"
       whileHover="hover"
       viewport={{ once: true, margin: "-100px" }}
-      className="group relative overflow-hidden transition-all duration-300 bg-white border border-gray-100 shadow-lg rounded-2xl hover:shadow-2xl"
+      className="relative overflow-hidden transition-all duration-300 bg-white border border-gray-100 shadow-lg group rounded-2xl hover:shadow-2xl"
     >
       {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute inset-0 transition-opacity duration-300 opacity-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 group-hover:opacity-100" />
 
       <div className="relative p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <motion.h3 
-            className="text-xl font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors duration-300"
+          <motion.h3
+            className="text-xl font-semibold text-gray-800 transition-colors duration-300 group-hover:text-indigo-600"
             whileHover={{ scale: 1.02 }}
           >
             {quiz.title}
           </motion.h3>
-          <motion.span 
+          <motion.span
             className="px-3 py-1 text-sm font-medium text-indigo-600 rounded-full bg-indigo-50"
             whileHover={{ scale: 1.05 }}
           >
@@ -66,7 +66,7 @@ const QuizCard = ({ quiz }) => {
         </div>
 
         {/* Description */}
-        <p className="mb-6 text-gray-600 line-clamp-2 group-hover:text-gray-700 transition-colors duration-300">
+        <p className="mb-6 text-gray-600 transition-colors duration-300 line-clamp-2 group-hover:text-gray-700">
           {quiz.description}
         </p>
 
@@ -74,7 +74,7 @@ const QuizCard = ({ quiz }) => {
         <div className="flex items-center gap-4 mb-6 text-sm text-gray-500">
           <div className="flex items-center gap-1">
             <FaClock className="w-4 h-4" />
-            <span>{quiz.timeLimit || 'No time limit'}</span>
+            <span>{quiz.timeLimit || "No time limit"}</span>
           </div>
           <div className="flex items-center gap-1">
             <FaUsers className="w-4 h-4" />
@@ -90,8 +90,8 @@ const QuizCard = ({ quiz }) => {
             whileTap="tap"
           >
             <Link
-              to={`/quiz/${quiz._id}/take`}
-              className="inline-flex items-center px-6 py-3 text-sm font-medium text-white transition-all duration-300 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-lg hover:shadow-xl"
+              to={`/quiz/${quiz._id}`}
+              className="inline-flex items-center px-6 py-3 text-sm font-medium text-white transition-all duration-300 shadow-lg rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover:shadow-xl"
             >
               <FaPlay className="w-4 h-4 mr-2" />
               Take Quiz
