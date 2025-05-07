@@ -11,120 +11,8 @@ import toast from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
 import CreateQuizModal from "../components/CreateQuizModal";
 import "../styles/Dashboard.css";
-import PaginatedSubmissionsTable from '../components/PaginatedSubmissionsTable';
-import CollapsibleSubmissionsTable from '../components/CollapsibleSubmissionsTable';
-
-const SubmissionsTable = ({ submissions }) => {
-  if (!Array.isArray(submissions) || submissions.length === 0) {
-    return (
-      <div className="text-center py-8 bg-gray-50 rounded-lg">
-        <p className="text-gray-600">Không có bài nộp nào.</p>
-      </div>
-    );
-  }
-
-  // Group submissions by quiz with null checks
-  const submissionsByQuiz = submissions.reduce((acc, submission) => {
-    if (!submission?.quizId?._id) return acc;
-
-    const quizId = submission.quizId._id;
-    if (!acc[quizId]) {
-      acc[quizId] = [];
-    }
-    acc[quizId].push(submission);
-    return acc;
-  }, {});
-
-  return (
-    <div className="space-y-8">
-      {Object.entries(submissionsByQuiz).map(([quizId, quizSubmissions]) => {
-        // Sort submissions by attempt number
-        quizSubmissions.sort((a, b) => (b.attemptNumber || 0) - (a.attemptNumber || 0));
-        const latestSubmission = quizSubmissions[0];
-
-        // Calculate highest score safely
-        const scores = quizSubmissions.map(s => s.percentageScore || 0).filter(score => !isNaN(score));
-        const highestScore = scores.length > 0 ? Math.max(...scores) : 0;
-
-        return (
-          <div key={quizId} className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="px-6 py-4 bg-gray-50 border-b">
-              <h3 className="text-lg font-semibold">{latestSubmission?.quizId?.title || 'Untitled Quiz'}</h3>
-              <p className="text-sm text-gray-600">
-                {quizSubmissions.length} lần làm
-                {' • '}
-                Điểm cao nhất: {highestScore.toFixed(1)}%
-              </p>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Lần thử
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Điểm số
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Thời gian
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Thao tác
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {quizSubmissions.map((submission) => (
-                    <tr key={submission._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        #{submission.attemptNumber || '?'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {submission.correctAnswers || 0}/{submission.totalQuestions || 0}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {(submission.percentageScore || 0).toFixed(1)}%
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {submission.completedAt
-                          ? new Date(submission.completedAt).toLocaleString()
-                          : 'N/A'
-                        }
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {submission._id && (
-                          <Link
-                            to={`/results/${submission._id}`}
-                            className="text-indigo-600 hover:text-indigo-900"
-                          >
-                            Xem chi tiết
-                          </Link>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="px-6 py-4 bg-gray-50 border-t">
-              <Link
-                to={`/take-quiz/${quizId}`}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                Làm lại bài này
-              </Link>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
+import PaginatedSubmissionsTable from "../components/PaginatedSubmissionsTable";
+import CollapsibleSubmissionsTable from "../components/CollapsibleSubmissionsTable";
 
 const Dashboard = ({ user, logout }) => {
   const [quizzes, setQuizzes] = useState([]);
@@ -227,11 +115,20 @@ const Dashboard = ({ user, logout }) => {
   };
 
   // Log ra console để debug dữ liệu quiz
-  console.log('Danh sách quizzes:', quizzes);
-  const validQuizzes = Array.isArray(quizzes) ? quizzes.filter(quiz => typeof quiz._id === 'string' && quiz._id.trim() !== '') : [];
-  const invalidQuizzes = Array.isArray(quizzes) ? quizzes.filter(quiz => !quiz._id || typeof quiz._id !== 'string' || quiz._id.trim() === '') : [];
+  console.log("Danh sách quizzes:", quizzes);
+  const validQuizzes = Array.isArray(quizzes)
+    ? quizzes.filter(
+        (quiz) => typeof quiz._id === "string" && quiz._id.trim() !== ""
+      )
+    : [];
+  const invalidQuizzes = Array.isArray(quizzes)
+    ? quizzes.filter(
+        (quiz) =>
+          !quiz._id || typeof quiz._id !== "string" || quiz._id.trim() === ""
+      )
+    : [];
   if (invalidQuizzes.length > 0) {
-    console.warn('Quiz bị thiếu _id:', invalidQuizzes);
+    console.warn("Quiz bị thiếu _id:", invalidQuizzes);
   }
 
   if (loading) {
@@ -266,26 +163,36 @@ const Dashboard = ({ user, logout }) => {
         <h1 className="dashboard-title">Dashboard</h1>
         <div className="user-info" ref={dropdownRef}>
           <div className="avatar-container" onClick={toggleDropdown}>
-            <div className="avatar">
-              {getInitial(user?.username)}
-            </div>
+            <div className="avatar">{getInitial(user?.username)}</div>
             <span className="username">{user?.username || "User"}</span>
           </div>
 
-          <div className={`dropdown-menu ${dropdownOpen ? 'active' : ''}`}>
+          <div className={`dropdown-menu ${dropdownOpen ? "active" : ""}`}>
             <div className="dropdown-header">
-              <div className="avatar">
-                {getInitial(user?.username)}
-              </div>
+              <div className="avatar">{getInitial(user?.username)}</div>
               <div className="dropdown-header-info">
-                <div className="dropdown-header-name">{user?.username || "User"}</div>
-                <div className="dropdown-header-email">{user?.email || "user@example.com"}</div>
+                <div className="dropdown-header-name">
+                  {user?.username || "User"}
+                </div>
+                <div className="dropdown-header-email">
+                  {user?.email || "user@example.com"}
+                </div>
               </div>
             </div>
 
             <Link to="/profile" className="dropdown-item">
               <div className="dropdown-item-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
@@ -295,7 +202,17 @@ const Dashboard = ({ user, logout }) => {
 
             <Link to="/friends" className="dropdown-item">
               <div className="dropdown-item-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                   <circle cx="9" cy="7" r="4"></circle>
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -307,7 +224,17 @@ const Dashboard = ({ user, logout }) => {
 
             <Link to="/achievements" className="dropdown-item">
               <div className="dropdown-item-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z"></path>
                 </svg>
               </div>
@@ -318,7 +245,17 @@ const Dashboard = ({ user, logout }) => {
 
             <button onClick={handleLogout} className="dropdown-item">
               <div className="dropdown-item-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                   <polyline points="16 17 21 12 16 7"></polyline>
                   <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -344,7 +281,9 @@ const Dashboard = ({ user, logout }) => {
           Public Quizzes
         </button>
         <button
-          className={`tab-button ${activeTab === "submissions" ? "active" : ""}`}
+          className={`tab-button ${
+            activeTab === "submissions" ? "active" : ""
+          }`}
           onClick={() => setActiveTab("submissions")}
         >
           My Submissions
@@ -383,25 +322,25 @@ const Dashboard = ({ user, logout }) => {
                   className="quiz-card"
                   onClick={() => {
                     if (!quiz._id) {
-                      console.error('Quiz without valid ID:', quiz);
-                      toast.error('Cannot view quiz details - Invalid quiz ID');
+                      console.error("Quiz without valid ID:", quiz);
+                      toast.error("Cannot view quiz details - Invalid quiz ID");
                       return;
                     }
                     const quizId = String(quiz._id).trim();
-                    console.log('Quiz click:', quiz);
-                    console.log('Quiz _id click:', quizId);
+                    console.log("Quiz click:", quiz);
+                    console.log("Quiz _id click:", quizId);
                     navigate(`/quiz/${quizId}`);
                   }}
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: "pointer" }}
                 >
-                  <div className="flex justify-between items-start mb-2">
+                  <div className="flex items-start justify-between mb-2">
                     <h3 className="quiz-card-title">{quiz.title}</h3>
                     {quiz.isPublic ? (
-                      <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                      <span className="px-2 py-1 text-xs text-green-800 bg-green-100 rounded">
                         Public
                       </span>
                     ) : (
-                      <span className="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
+                      <span className="px-2 py-1 text-xs text-gray-800 bg-gray-100 rounded">
                         Private
                       </span>
                     )}
@@ -419,8 +358,11 @@ const Dashboard = ({ user, logout }) => {
                         e.stopPropagation();
                         if (!quiz._id) {
                           e.preventDefault();
-                          console.error('Quiz without valid ID (Take Quiz button):', quiz);
-                          toast.error('Cannot take quiz - Invalid quiz ID');
+                          console.error(
+                            "Quiz without valid ID (Take Quiz button):",
+                            quiz
+                          );
+                          toast.error("Cannot take quiz - Invalid quiz ID");
                         }
                       }}
                     >
@@ -428,13 +370,16 @@ const Dashboard = ({ user, logout }) => {
                     </Link>
                     {isCreator(quiz) && (
                       <button
-                        onClick={e => {
+                        onClick={(e) => {
                           e.stopPropagation();
                           if (quiz._id) {
                             handleDeleteQuiz(quiz._id);
                           } else {
-                            console.error('Cannot delete quiz without ID:', quiz);
-                            toast.error('Cannot delete quiz - Invalid quiz ID');
+                            console.error(
+                              "Cannot delete quiz without ID:",
+                              quiz
+                            );
+                            toast.error("Cannot delete quiz - Invalid quiz ID");
                           }
                         }}
                         className="delete-quiz-btn"
@@ -462,23 +407,27 @@ const Dashboard = ({ user, logout }) => {
             <div className="quiz-grid">
               {Array.isArray(publicQuizzes) &&
                 publicQuizzes.map((quiz) => (
-                  <div key={quiz._id} className="quiz-card"
+                  <div
+                    key={quiz._id}
+                    className="quiz-card"
                     onClick={() => {
                       if (!quiz._id) {
-                        console.error('Public quiz without valid ID:', quiz);
-                        toast.error('Cannot view quiz details - Invalid quiz ID');
+                        console.error("Public quiz without valid ID:", quiz);
+                        toast.error(
+                          "Cannot view quiz details - Invalid quiz ID"
+                        );
                         return;
                       }
                       const quizId = String(quiz._id).trim();
-                      console.log('Public quiz click:', quiz);
-                      console.log('Public quiz _id click:', quizId);
+                      console.log("Public quiz click:", quiz);
+                      console.log("Public quiz _id click:", quizId);
                       navigate(`/quiz/${quizId}`);
                     }}
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: "pointer" }}
                   >
-                    <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-start justify-between mb-2">
                       <h3 className="quiz-card-title">{quiz.title}</h3>
-                      <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                      <span className="px-2 py-1 text-xs text-green-800 bg-green-100 rounded">
                         Public
                       </span>
                     </div>
@@ -498,8 +447,11 @@ const Dashboard = ({ user, logout }) => {
                           e.stopPropagation();
                           if (!quiz._id) {
                             e.preventDefault();
-                            console.error('Public quiz without valid ID (Take Quiz button):', quiz);
-                            toast.error('Cannot take quiz - Invalid quiz ID');
+                            console.error(
+                              "Public quiz without valid ID (Take Quiz button):",
+                              quiz
+                            );
+                            toast.error("Cannot take quiz - Invalid quiz ID");
                           }
                         }}
                       >
@@ -514,8 +466,8 @@ const Dashboard = ({ user, logout }) => {
       )}
 
       {activeTab === "submissions" && (
-        <div>
-          <h2 className="text-2xl font-bold mb-6">Lịch sử làm bài</h2>
+        <div className="h-80">
+          <h2 className="mb-6 text-xl font-bold">My Submissions</h2>
           <CollapsibleSubmissionsTable submissions={submissions} />
         </div>
       )}

@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { login } from '../services/api';
-import toast from 'react-hot-toast';
-import '../styles/Auth.css';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { login } from "../services/api";
+import toast from "react-hot-toast";
+import "../styles/Auth.css";
 
 const Login = ({ login: loginUser, user }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   // ✅ Redirect nếu đã đăng nhập → về dashboard
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      navigate("/dashboard");
     }
   }, [user, navigate]);
 
@@ -25,15 +25,20 @@ const Login = ({ login: loginUser, user }) => {
     try {
       const userData = await login({ email, password });
       loginUser(userData);
-      toast.success('Login successful!');
-      navigate('/dashboard');
+      toast.success("Login successful!");
+      navigate("/dashboard");
     } catch (err) {
-      console.error('Login error:', err);
-      setError('Invalid email or password');
+      console.error("Login error:", err);
+      setError("Invalid email or password");
     } finally {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    if (error) {
+      toast.error("Invalid email or password   ", { duration: 4000 });
+    }
+  }, [error]);
 
   return (
     <div className="auth-container">
@@ -42,18 +47,11 @@ const Login = ({ login: loginUser, user }) => {
           <h1 className="auth-title">Welcome Back</h1>
           <p className="auth-subtitle">Sign in to your account</p>
         </div>
-
-        {error && (
-          <div className="auth-error">
-            <div className="error-icon">⚠️</div>
-            <h2 className="error-title">Error</h2>
-            <p className="error-message">{error}</p>
-          </div>
-        )}
-
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label" htmlFor="email">Email</label>
+            <label className="form-label" htmlFor="email">
+              Email
+            </label>
             <input
               id="email"
               type="email"
@@ -66,7 +64,9 @@ const Login = ({ login: loginUser, user }) => {
           </div>
 
           <div className="form-group">
-            <label className="form-label" htmlFor="password">Password</label>
+            <label className="form-label" htmlFor="password">
+              Password
+            </label>
             <input
               id="password"
               type="password"
@@ -79,7 +79,7 @@ const Login = ({ login: loginUser, user }) => {
           </div>
 
           <button type="submit" className="auth-button" disabled={loading}>
-            {loading ? 'Logging in...' : 'Sign In'}
+            {loading ? "Logging in..." : "Sign In"}
           </button>
         </form>
 
@@ -88,7 +88,7 @@ const Login = ({ login: loginUser, user }) => {
             Forgot password?
           </Link>
           <p>
-            Don't have an account?{' '}
+            Don't have an account?{" "}
             <Link to="/register" className="auth-link">
               Sign up
             </Link>

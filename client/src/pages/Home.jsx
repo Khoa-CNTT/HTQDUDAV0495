@@ -23,11 +23,9 @@ const Home = () => {
         if (response.success) {
           setPublicQuizzes(response.data);
         } else {
-          toast.error(response.message || "Failed to load public quizzes");
         }
       } catch (error) {
         console.error("Error fetching public quizzes:", error);
-        toast.error("Failed to load public quizzes");
       } finally {
         setLoading(false);
       }
@@ -35,11 +33,10 @@ const Home = () => {
 
     fetchPublicQuizzes();
   }, []);
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-pink-50">
       <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-5"></div>
-      
+
       <Hero />
 
       <div className="relative">
@@ -51,37 +48,40 @@ const Home = () => {
           transition={{ duration: 1.2, ease: "easeOut" }}
           className="py-24 bg-white/80 backdrop-blur-sm"
         >
-          <div className="container mx-auto px-4">
+          <div className="container px-4 mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
-              className="text-center mb-16"
+              className="mb-16 text-center"
             >
-              <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+              <h2 className="mb-4 text-4xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text">
                 Popular Quizzes
               </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Discover and take quizzes created by our community. Test your knowledge and learn something new!
+              <p className="max-w-2xl mx-auto text-lg text-gray-600">
+                Discover and take quizzes created by our community. Test your
+                knowledge and learn something new!
               </p>
             </motion.div>
 
             {loading ? (
               <div className="flex justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+                <div className="w-12 h-12 border-t-2 border-b-2 border-indigo-600 rounded-full animate-spin"></div>
               </div>
             ) : publicQuizzes.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-600 text-lg">No quizzes available at the moment.</p>
+              <div className="py-12 text-center">
+                <p className="text-lg text-gray-600">
+                  No quizzes available at the moment.
+                </p>
               </div>
             ) : (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 1.2, ease: "easeOut", delay: 0.4 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
               >
                 {publicQuizzes.slice(0, 6).map((quiz) => (
                   <QuizCard key={quiz._id} quiz={quiz} />
@@ -99,19 +99,20 @@ const Home = () => {
           transition={{ duration: 1.2, ease: "easeOut" }}
           className="py-24 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50"
         >
-          <div className="container mx-auto px-4">
+          <div className="container px-4 mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
-              className="text-center mb-16"
+              className="mb-8 text-center"
             >
-              <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+              <h2 className="mb-4 text-4xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text">
                 Create Your Own Quiz
               </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Follow these simple steps to create engaging quizzes for your students or yourself
+              <p className="max-w-2xl mx-auto text-lg text-gray-600">
+                Follow these simple steps to create engaging quizzes for your
+                students or yourself
               </p>
             </motion.div>
             <CreateQuizSteps />
@@ -126,18 +127,18 @@ const Home = () => {
           transition={{ duration: 1.2, ease: "easeOut" }}
           className="py-24 bg-white/80 backdrop-blur-sm"
         >
-          <div className="container mx-auto px-4">
+          <div className="container px-4 mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
-              className="text-center mb-16"
+              className="mb-8 text-center"
             >
-              <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+              <h2 className="mb-4 text-4xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text">
                 Frequently Asked Questions
               </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              <p className="max-w-2xl mx-auto text-lg text-gray-600">
                 Find answers to common questions about our platform
               </p>
             </motion.div>
@@ -151,20 +152,20 @@ const Home = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 1.2, ease: "easeOut" }}
-          className="py-24 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50"
+          className="py-8 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50"
         >
-          <div className="container mx-auto px-4">
+          <div className="container px-4 mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
+              viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
-              className="text-center mb-16"
+              className="mb-8 text-center"
             >
-              <h2 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+              <h2 className="mb-4 text-4xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text">
                 Latest Updates
               </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              <p className="max-w-2xl mx-auto text-lg text-gray-600">
                 Stay informed with our latest news and educational insights
               </p>
             </motion.div>
@@ -172,7 +173,6 @@ const Home = () => {
           </div>
         </motion.section>
       </div>
-
     </div>
   );
 };

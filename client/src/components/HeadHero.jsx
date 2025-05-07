@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 
 const HeadHero = () => {
   const { isLoggedIn, logout } = useAuth();
+
   const handleLogout = () => {
     logout();
     navigate("/"); // điều hướng về trang chủ sau khi logout
