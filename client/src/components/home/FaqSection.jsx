@@ -5,81 +5,137 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { motion } from "framer-motion";
+import { FaQuestionCircle, FaCheckCircle } from "react-icons/fa";
 
 const faqs = [
   {
-    question: 'What is meant by a "credit"?',
+    question: "What types of quizzes can I create?",
     answer:
-      "A credit is a unit of currency in QuizWhiz for using AI-related features. For example, generating a quiz with about 30 questions from an input of 400 words costs 1 credit.",
+      "You can create various types of quizzes including multiple choice, true/false, fill in the blanks, matching, and short answer questions. Each type can be customized with images, videos, and other media to make your quizzes more engaging.",
+    category: "Quiz Types"
   },
   {
-    question: "What types of quizzes can I generate with QuizWhiz?",
+    question: "How can I track quiz performance?",
     answer:
-      "QuizWhiz supports multiple-choice, short questions, true or false, fill in the blanks, scenario-based, and diagram labeling type questions.",
+      "Our platform provides comprehensive analytics including completion rates, average scores, time taken, and detailed breakdowns of individual question performance. You can export these reports in various formats for further analysis.",
+    category: "Analytics"
   },
   {
-    question: "Can I customize the number of questions generated?",
+    question: "Can I customize the quiz appearance?",
     answer:
-      'Yes, you can control the volume of questions generated with settings like "Fewer," "Moderate," and "More,". Or for full control, you can specify the exact amount.',
+      "Yes, you can fully customize your quiz's appearance including colors, fonts, layouts, and branding elements. You can also add your logo, custom backgrounds, and choose from various themes to match your brand identity.",
+    category: "Customization"
   },
   {
-    question: "How do I download the quizzes?",
+    question: "How do I share my quizzes?",
     answer:
-      "You can download quizzes in various formats including PDF, DOCX, TXT, MD, HTML, EPUB, and JSON. Options are available to combine different question sets and to merge or separate questions from answers.",
+      "You can share your quizzes through direct links, embed them on your website, or share them on social media. You can also set up email invitations and track who has accessed your quizzes.",
+    category: "Sharing"
   },
   {
-    question: "How are study notes created in QuizWhiz?",
+    question: "What security features are available?",
     answer:
-      "Study notes can be generated using our AI-powered tool or accessed from the pre-generated notes in the QuizWhiz database, organized by subject, grade level, and board system.",
+      "We offer multiple security features including password protection, time limits, IP restrictions, and anti-cheating measures. You can also set up user authentication and track quiz attempts.",
+    category: "Security"
   },
   {
-    question: "How does the self-assessment tool work?",
+    question: "Can I import questions from other sources?",
     answer:
-      "The self-assessment tool allows students to take quizzes, track their progress, and identify areas for improvement.",
+      "Yes, you can import questions from various formats including CSV, Excel, and text files. You can also copy questions from other quizzes or use our question bank to quickly create new quizzes.",
+    category: "Import/Export"
   },
   {
-    question: "What is the AI chat feature?",
+    question: "How do I analyze quiz results?",
     answer:
-      "The AI chat feature lets you interact with your saved documents, including texts and study notes, providing instant answers and explanations to make study sessions more interactive.",
+      "Our platform provides detailed analytics including score distributions, question difficulty analysis, and participant performance metrics. You can generate custom reports and export data for further analysis.",
+    category: "Analysis"
   },
   {
-    question: "What support is available if I encounter issues with QuizWhiz?",
+    question: "What support options are available?",
     answer:
-      "If you encounter any issues or have questions, you can reach out to us via email at admin@quizwhiz.ai. We are committed to providing timely and helpful support.",
-  },
-  {
-    question: "Can I decide the difficulty of the questions?",
-    answer:
-      'For most question type there is an option to choose "Higher Order" to generate questions that require more complex reasoning skills and understanding of the subject matter.',
+      "We offer 24/7 support through live chat, email, and phone. Our knowledge base includes detailed guides, video tutorials, and best practices. We also provide regular updates and new features.",
+    category: "Support"
   },
 ];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut"
+    }
+  }
+};
+
 export default function FaqSection() {
   return (
-    <div className="max-w-3xl mx-auto">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-100px" }}
+      className="max-w-4xl mx-auto"
+    >
       <Accordion type="multiple" className="space-y-4">
         {faqs.map((faq, index) => (
           <motion.div
             key={index}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.8, delay: index * 0.1 }}
+            variants={itemVariants}
+            whileHover={{ scale: 1.01 }}
           >
             <AccordionItem
               value={`item-${index}`}
-              className="border border-gray-200 rounded-lg overflow-hidden"
+              className="border border-gray-200 rounded-xl overflow-hidden bg-white/50 backdrop-blur-sm"
             >
-              <AccordionTrigger className="px-4 py-3 text-left text-lg font-medium text-gray-900 hover:text-indigo-600 transition-colors">
-                {faq.question}
+              <AccordionTrigger className="px-6 py-4 text-left text-lg font-medium text-gray-900 hover:text-indigo-600 transition-colors">
+                <div className="flex items-center gap-3">
+                  <FaQuestionCircle className="w-5 h-5 text-indigo-600" />
+                  <span>{faq.question}</span>
+                </div>
               </AccordionTrigger>
-              <AccordionContent className="px-4 py-3 text-gray-600">
-                {faq.answer}
+              <AccordionContent className="px-6 py-4 text-gray-600">
+                <div className="flex items-start gap-3">
+                  <FaCheckCircle className="w-5 h-5 mt-1 text-green-500 flex-shrink-0" />
+                  <div>
+                    <p className="mb-2">{faq.answer}</p>
+                    <span className="inline-block px-3 py-1 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-full">
+                      {faq.category}
+                    </span>
+                  </div>
+                </div>
               </AccordionContent>
             </AccordionItem>
           </motion.div>
         ))}
       </Accordion>
-    </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8, delay: 0.6 }}
+        className="mt-12 text-center"
+      >
+        <p className="text-gray-600">
+          Still have questions?{" "}
+          <a href="#" className="text-indigo-600 hover:text-indigo-700 font-medium">
+            Contact our support team
+          </a>
+        </p>
+      </motion.div>
+    </motion.div>
   );
 }

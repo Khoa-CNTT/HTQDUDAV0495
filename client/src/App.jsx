@@ -1,5 +1,6 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   getUser,
   saveUser,
@@ -31,7 +32,7 @@ import Room from "./pages/Room";
 import Footer from "./components/Footer";
 import { SidebarProvider } from "./components/ui/sidebar";
 import Friends from "./components/Friends";
-import CreateQuiz from './pages/CreateQuiz';
+import CreateQuiz from "./pages/CreateQuiz";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -42,7 +43,11 @@ function App() {
     if (authenticated) {
       setUser(getUser());
     }
-    setLoading(false);
+    // Set a 3-second delay before removing the loading state
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   // Login handler
@@ -60,8 +65,57 @@ function App() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        Loading...
+      <div className="flex items-center justify-center min-h-screen overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50">
+        <div className="relative">
+          {/* Loading text with animation */}
+          <motion.div
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{
+              duration: 0.8,
+              ease: "easeOut",
+            }}
+            className="relative"
+          >
+            <h1 className="text-4xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text">
+              CTEWhiz
+            </h1>
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: "100%" }}
+              transition={{
+                duration: 2,
+                ease: "easeInOut",
+                delay: 0.5,
+              }}
+              className="h-1 mt-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600"
+            />
+          </motion.div>
+
+          {/* Loading dots */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="flex justify-center mt-8 space-x-2"
+          >
+            {[0, 1, 2].map((index) => (
+              <motion.div
+                key={index}
+                className="w-3 h-3 bg-indigo-600 rounded-full"
+                animate={{
+                  y: [0, -10, 0],
+                }}
+                transition={{
+                  duration: 0.6,
+                  repeat: Infinity,
+                  delay: index * 0.2,
+                }}
+              />
+            ))}
+          </motion.div>
+        </div>
+        <div className="absolute bg-purple-100 rounded-full opacity-50 -bottom-40 -left-40 w-80 h-80 blur-3xl" />
       </div>
     );
   }
