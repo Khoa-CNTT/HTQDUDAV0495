@@ -418,3 +418,54 @@ export const getRoomParticipants = async (code) => {
     };
   }
 };
+
+// Achievement APIs
+export const getUserAchievements = async () => {
+  try {
+    const response = await api.get('/achievements');
+    return {
+      success: true,
+      data: response.data.data || [] // Ensure we always return an array
+    };
+  } catch (error) {
+    console.error("Error getting achievements:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to load achievements",
+      data: []
+    };
+  }
+};
+
+export const checkAchievements = async () => {
+  try {
+    const response = await api.post('/achievements/check');
+    return {
+      success: true,
+      data: response.data.data || []
+    };
+  } catch (error) {
+    console.error("Error checking achievements:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to check achievements",
+      data: []
+    };
+  }
+};
+
+export const updateAchievement = async (id, data) => {
+  try {
+    const response = await api.patch(`/achievements/${id}`, data);
+    return {
+      success: true,
+      data: response.data.data
+    };
+  } catch (error) {
+    console.error("Error updating achievement:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to update achievement"
+    };
+  }
+};
