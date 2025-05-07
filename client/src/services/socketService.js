@@ -5,17 +5,18 @@ class SocketService {
     this.socket = null;
     this.isConnected = false;
     this.callbacks = {
-      onConnect: () => {},
-      onDisconnect: () => {},
-      onError: () => {},
-      onUserJoined: () => {},
-      onUserLeft: () => {},
-      onRoomData: () => {},
-      onGameStarted: () => {},
-      onUserAnswered: () => {},
-      onAnswerProcessed: () => {},
-      onGameProgress: () => {},
-      onGameEnded: () => {}
+      onConnect: () => { },
+      onDisconnect: () => { },
+      onError: () => { },
+      onUserJoined: () => { },
+      onUserLeft: () => { },
+      onRoomData: () => { },
+      onGameStarted: () => { },
+      onUserAnswered: () => { },
+      onAnswerProcessed: () => { },
+      onGameProgress: () => { },
+      onGameEnded: () => { },
+      onAchievementsUnlocked: () => { } // New callback
     };
   }
 
@@ -46,7 +47,7 @@ class SocketService {
     });
 
     this._setupListeners();
-    
+
     return true;
   }
 
@@ -59,7 +60,7 @@ class SocketService {
       console.error('Socket not connected');
       return false;
     }
-    
+
     this.socket.emit('join-room', roomCode);
     return true;
   }
@@ -73,7 +74,7 @@ class SocketService {
       console.error('Socket not connected');
       return false;
     }
-    
+
     this.socket.emit('start-game', roomCode);
     return true;
   }
@@ -89,7 +90,7 @@ class SocketService {
       console.error('Socket not connected');
       return false;
     }
-    
+
     this.socket.emit('submit-answer', { roomCode, questionId, answerId });
     return true;
   }
@@ -103,8 +104,21 @@ class SocketService {
       console.error('Socket not connected');
       return false;
     }
-    
+
     this.socket.emit('end-game', roomCode);
+    return true;
+  }
+
+  /**
+   * Check achievements
+   */
+  checkAchievements() {
+    if (!this.socket || !this.isConnected) {
+      console.error('Socket not connected');
+      return false;
+    }
+
+    this.socket.emit('check-achievements');
     return true;
   }
 
@@ -192,9 +206,14 @@ class SocketService {
       console.log('Game ended:', data);
       this.callbacks.onGameEnded(data);
     });
+
+    this.socket.on('achievements-unlocked', (data) => {
+      console.log('Achievements unlocked:', data);
+      this.callbacks.onAchievementsUnlocked(data);
+    });
   }
 }
 
 // Export singleton instance
 const socketService = new SocketService();
-export default socketService; 
+export default socketService;

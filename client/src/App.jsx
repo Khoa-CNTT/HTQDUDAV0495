@@ -33,6 +33,7 @@ import Footer from "./components/Footer";
 import { SidebarProvider } from "./components/ui/sidebar";
 import Friends from "./components/Friends";
 import CreateQuiz from "./pages/CreateQuiz";
+import Achievements from "./pages/Achievements";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -164,6 +165,15 @@ function App() {
                 {/* Your main content here */}
                 <Dashboard user={user} logout={logout} />
               </SidebarProvider>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/achievements"
+          element={
+            <ProtectedRoute user={user}>
+              <Achievements />
             </ProtectedRoute>
           }
         />
