@@ -1,6 +1,6 @@
 import { Route, Routes, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   getUser,
   saveUser,
@@ -65,9 +65,14 @@ function App() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50">
-        <div className="relative">
-          {/* Loading text with animation */}
+      <div className="relative flex items-center justify-center min-h-screen overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50">
+        {/* Decorative Elements */}
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-100 rounded-full opacity-50 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-100 rounded-full opacity-50 blur-3xl" />
+
+        {/* Loading Content */}
+        <div className="relative z-10">
+          {/* Logo Animation */}
           <motion.div
             initial={{ opacity: 0, x: -100 }}
             animate={{ opacity: 1, x: 0 }}
@@ -75,7 +80,6 @@ function App() {
               duration: 0.8,
               ease: "easeOut",
             }}
-            className="relative"
           >
             <h1 className="text-4xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text">
               CTEWhiz
@@ -92,7 +96,7 @@ function App() {
             />
           </motion.div>
 
-          {/* Loading dots */}
+          {/* Loading Dots */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -115,7 +119,6 @@ function App() {
             ))}
           </motion.div>
         </div>
-        <div className="absolute bg-purple-100 rounded-full opacity-50 -bottom-40 -left-40 w-80 h-80 blur-3xl" />
       </div>
     );
   }

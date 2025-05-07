@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { createQuiz } from "../services/api";
 import toast from "react-hot-toast";
+import { FiPlus, FiTrash2, FiCheck, FiX } from "react-icons/fi";
 
 const CreateQuiz = () => {
   const [formData, setFormData] = useState({
@@ -44,35 +45,34 @@ const CreateQuiz = () => {
 
     // Validate title
     if (!formData.title.trim()) {
-      newErrors.title = "Tiêu đề không được để trống";
+      newErrors.title = "Title is required";
     } else if (formData.title.length < 5) {
-      newErrors.title = "Tiêu đề phải có ít nhất 5 ký tự";
+      newErrors.title = "Title must be at least 5 characters";
     }
 
     // Validate description
     if (formData.description.length > 500) {
-      newErrors.description = "Mô tả không được vượt quá 500 ký tự";
+      newErrors.description = "Description must not exceed 500 characters";
     }
 
     // Validate questions
     formData.questions.forEach((question, qIndex) => {
       if (!question.text.trim()) {
-        newErrors[`question_${qIndex}`] = "Câu hỏi không được để trống";
+        newErrors[`question_${qIndex}`] = "Question is required";
       }
 
       // Validate options
       let hasCorrectAnswer = false;
       question.options.forEach((option, oIndex) => {
         if (!option.text.trim()) {
-          newErrors[`option_${qIndex}_${oIndex}`] =
-            "Lựa chọn không được để trống";
+          newErrors[`option_${qIndex}_${oIndex}`] = "Option is required";
         }
         if (option.isCorrect) hasCorrectAnswer = true;
       });
 
       if (!hasCorrectAnswer) {
         newErrors[`question_${qIndex}_correct`] =
-          "Mỗi câu hỏi phải có ít nhất một đáp án đúng";
+          "Each question must have at least one correct answer";
       }
     });
 
@@ -160,7 +160,7 @@ const CreateQuiz = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      toast.error("Vui lòng kiểm tra lại các trường thông tin");
+      toast.error("Please check all required fields");
       return;
     }
 
@@ -182,7 +182,7 @@ const CreateQuiz = () => {
       };
 
       const response = await createQuiz(formattedData);
-      toast.success("Tạo quiz thành công!");
+      toast.success("Quiz created successfully!");
       navigate("/dashboard");
     } catch (error) {
       console.error("Error creating quiz:", error);
@@ -190,7 +190,7 @@ const CreateQuiz = () => {
       const errorMessage =
         error.response?.data?.message ||
         error.response?.data?.error ||
-        "Có lỗi xảy ra khi tạo quiz. Vui lòng thử lại sau.";
+        "An error occurred while creating the quiz. Please try again later.";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -201,22 +201,22 @@ const CreateQuiz = () => {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
       <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-5"></div>
 
-      <div className="relative flex items-center justify-center min-h-screen p-4">
+      <div className="relative min-h-screen flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="w-full max-w-3xl"
         >
-          <div className="overflow-hidden border shadow-2xl bg-white/80 backdrop-blur-sm rounded-2xl border-white/20">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border border-white/20">
             <div className="p-8">
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="mb-8 text-center"
+                className="text-center mb-8"
               >
-                <h1 className="mb-2 text-4xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
                   Create New Quiz
                 </h1>
                 <p className="text-gray-600">
@@ -233,7 +233,7 @@ const CreateQuiz = () => {
                 >
                   <label
                     htmlFor="title"
-                    className="block mb-2 text-sm font-medium text-gray-700"
+                    className="block text-sm font-medium text-gray-700 mb-2"
                   >
                     Quiz Title
                   </label>
@@ -263,7 +263,7 @@ const CreateQuiz = () => {
                 >
                   <label
                     htmlFor="description"
-                    className="block mb-2 text-sm font-medium text-gray-700"
+                    className="block text-sm font-medium text-gray-700 mb-2"
                   >
                     Description (Optional)
                   </label>
@@ -295,7 +295,7 @@ const CreateQuiz = () => {
                 >
                   <label
                     htmlFor="category"
-                    className="block mb-2 text-sm font-medium text-gray-700"
+                    className="block text-sm font-medium text-gray-700 mb-2"
                   >
                     Category
                   </label>
@@ -304,7 +304,7 @@ const CreateQuiz = () => {
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 transition-colors border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
                   >
                     {categories.map((category) => (
                       <option key={category} value={category}>
@@ -326,13 +326,13 @@ const CreateQuiz = () => {
                       name="isPublic"
                       checked={formData.isPublic}
                       onChange={handleChange}
-                      className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />
                     <span className="ml-2 text-gray-700">
                       Make this quiz public
                     </span>
                   </label>
-                  <p className="mt-1 ml-6 text-sm text-gray-500">
+                  <p className="text-sm text-gray-500 mt-1 ml-6">
                     Public quizzes can be viewed and taken by everyone
                   </p>
                 </motion.div>
@@ -343,14 +343,14 @@ const CreateQuiz = () => {
                   transition={{ duration: 0.8, delay: 0.7 }}
                   className="mb-8"
                 >
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold text-gray-800">
                       Questions
                     </h2>
                     <button
                       type="button"
                       onClick={addQuestion}
-                      className="flex items-center px-4 py-2 space-x-2 text-indigo-700 transition-colors bg-indigo-100 rounded-lg hover:bg-indigo-200"
+                      className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors flex items-center space-x-2"
                     >
                       <svg
                         className="w-5 h-5"
@@ -375,9 +375,9 @@ const CreateQuiz = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.8, delay: 0.1 * questionIndex }}
-                      className="p-6 mb-6 bg-white border border-gray-100 shadow-sm rounded-xl"
+                      className="mb-6 p-6 bg-white rounded-xl shadow-sm border border-gray-100"
                     >
-                      <div className="flex items-start justify-between mb-4">
+                      <div className="flex justify-between items-start mb-4">
                         <h3 className="text-lg font-medium text-gray-800">
                           Question {questionIndex + 1}
                         </h3>
@@ -385,7 +385,7 @@ const CreateQuiz = () => {
                           <button
                             type="button"
                             onClick={() => removeQuestion(questionIndex)}
-                            className="flex items-center space-x-1 text-red-600 hover:text-red-700"
+                            className="text-red-600 hover:text-red-700 flex items-center space-x-1"
                           >
                             <svg
                               className="w-5 h-5"
@@ -406,7 +406,7 @@ const CreateQuiz = () => {
                       </div>
 
                       <div className="mb-4">
-                        <label className="block mb-2 text-sm font-medium text-gray-700">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           Question Content
                         </label>
                         <input
@@ -434,7 +434,7 @@ const CreateQuiz = () => {
                       </div>
 
                       <div className="space-y-3">
-                        <label className="block mb-2 text-sm font-medium text-gray-700">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
                           Options
                         </label>
                         {question.options.map((option, optionIndex) => (
@@ -459,7 +459,7 @@ const CreateQuiz = () => {
                                   newOptions
                                 );
                               }}
-                              className="w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
                             />
                             <input
                               type="text"
@@ -505,7 +505,7 @@ const CreateQuiz = () => {
                     {loading ? (
                       <div className="flex items-center justify-center">
                         <svg
-                          className="w-5 h-5 mr-3 -ml-1 text-white animate-spin"
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
@@ -534,7 +534,7 @@ const CreateQuiz = () => {
                   <button
                     type="button"
                     onClick={() => navigate("/dashboard")}
-                    className="flex-1 px-6 py-4 font-medium text-gray-700 transition-all duration-300 bg-white border border-gray-200 shadow rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 hover:shadow-md"
+                    className="flex-1 py-4 px-6 bg-white text-gray-700 font-medium rounded-xl border border-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all duration-300 shadow hover:shadow-md"
                   >
                     Cancel
                   </button>
