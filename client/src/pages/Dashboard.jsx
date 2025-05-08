@@ -475,7 +475,7 @@ const Dashboard = ({ user, logout }) => {
       )}
 
       {activeTab === "submissions" && (
-        <div className="h-80">
+        <div>
           <h2 className="mb-6 text-xl font-bold">My Submissions</h2>
           <CollapsibleSubmissionsTable submissions={submissions} />
         </div>
