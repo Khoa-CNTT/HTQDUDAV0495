@@ -1,4 +1,5 @@
 const submissionService = require('../services/submissionService');
+const { checkAndUpdateAchievements } = require('./achievementController');
 
 /**
  * Create a new submission
@@ -12,6 +13,9 @@ const createSubmission = async (req, res) => {
       req.user._id,
       req.body.answers
     );
+
+    await checkAndUpdateAchievements(req.user._id);
+
     res.status(201).json(result);
   } catch (error) {
     console.error('Error creating submission:', error);

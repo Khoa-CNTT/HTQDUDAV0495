@@ -4,6 +4,7 @@ const Participant = require("../models/Participant");
 const Chat = require("../models/Chat");
 const User = require("../models/User");
 const chatService = require("../services/chatService");
+const { checkAndUpdateAchievements } = require("../controllers/achievementController");
 
 /**
  * Setup socket.io server
@@ -285,6 +286,37 @@ function setupSocketServer(server) {
       } catch (error) {
         console.error("Error in end-game event:", error);
         socket.emit("error", { message: "Failed to end game" });
+      }
+    });
+
+    // Achievement notification
+    socket.on("check-achievements", async () => {
+      try {
+        const previousAchievements = await UserAchievement.find({ userId: socket.userId });
+        await checkAndUpdateAchievements(socket.userId);
+        const currentAchievements = await UserAchievement.find({ userId: socket.userId })
+          .populate('achievementId');
+
+        // Find newly unlocked achievements
+        const newAchievements = currentAchievements.filter(
+          current => !previousAchievements.find(
+            prev => prev.achievementId.toString() === current.achievementId._id.toString()
+          )
+        );
+
+        // Notify user of new achievements
+        if (newAchievements.length > 0) {
+          socket.emit("achievements-unlocked", {
+            achievements: newAchievements.map(ua => ({
+              name: ua.achievementId.name,
+              description: ua.achievementId.description,
+              icon: ua.achievementId.icon
+            }))
+          });
+        }
+      } catch (error) {
+        console.error("Error checking achievements:", error);
+        socket.emit("error", { message: "Failed to check achievements" });
       }
     });
 
