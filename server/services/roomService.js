@@ -55,7 +55,9 @@ class RoomService {
     try {
       const room = await Room.findOne({ code })
         .populate('hostId', 'username email profilePicture')
-        .populate('quizId', 'title description');
+        .populate('quizId'); // Include all quiz data, not just title and description
+
+      console.log('Room found:', code, 'Status:', room?.status);
       
       if (!room) {
         throw new Error('Room not found');

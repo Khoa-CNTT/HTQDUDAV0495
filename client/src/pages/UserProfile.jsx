@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserProfile, updateUserProfile } from "../services/api";
 import toast from "react-hot-toast";
-import { motion } from "framer-motion";
 import {
   FiCamera,
   FiEdit2,
@@ -10,6 +9,7 @@ import {
   FiUser,
   FiMail,
   FiCalendar,
+  FiArrowLeft,
 } from "react-icons/fi";
 
 const DEFAULT_PROFILE_IMAGE = "https://cdn-icons-png.flaticon.com/512/147/147144.png";
@@ -22,7 +22,6 @@ const UserProfile = ({ user, updateUser }) => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [previewImage, setPreviewImage] = useState(DEFAULT_PROFILE_IMAGE);
-  const [imageError, setImageError] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -53,7 +52,6 @@ const UserProfile = ({ user, updateUser }) => {
             
           console.log("Setting profile image URL:", imageUrl); // Debug log
           setPreviewImage(imageUrl);
-          setImageError(false);
         } else {
           setPreviewImage(DEFAULT_PROFILE_IMAGE);
         }
@@ -68,12 +66,6 @@ const UserProfile = ({ user, updateUser }) => {
 
     loadProfile();
   }, [user, navigate]);
-
-  const handleImageError = () => {
-    console.log("Image load error, falling back to default"); // Debug log
-    setImageError(true);
-    setPreviewImage(DEFAULT_PROFILE_IMAGE);
-  };
 
   const handleChange = (e) => {
     setFormData({
@@ -106,7 +98,6 @@ const UserProfile = ({ user, updateUser }) => {
         // Update preview immediately
         const previewUrl = URL.createObjectURL(file);
         setPreviewImage(previewUrl);
-        setImageError(false);
 
         // Upload image to server
         const result = await updateUserProfile(formData);
@@ -134,7 +125,6 @@ const UserProfile = ({ user, updateUser }) => {
             
           console.log("Setting new profile image URL:", imageUrl); // Debug log
           setPreviewImage(imageUrl);
-          setImageError(false);
 
           toast.success("Profile picture updated successfully");
         }
@@ -147,7 +137,6 @@ const UserProfile = ({ user, updateUser }) => {
         toast.error(error.response?.data?.message || "Failed to update profile picture");
         // Revert preview if update fails
         setPreviewImage(formData.profilePicture || DEFAULT_PROFILE_IMAGE);
-        setImageError(true);
       }
     }
   };
@@ -197,7 +186,6 @@ const UserProfile = ({ user, updateUser }) => {
           : `http://localhost:5000/${result.user.profilePicture}`;
           
         setPreviewImage(imageUrl);
-        setImageError(false);
 
         toast.success("Profile updated successfully");
       } else {
@@ -231,24 +219,23 @@ const UserProfile = ({ user, updateUser }) => {
   }
 
   return (
-    <div className="min-h-screen px-4 py-12 bg-gradient-to-br from-indigo-50 via-white to-purple-50 sm:px-6 lg:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="max-w-4xl mx-auto"
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 relative">
+      <button
+        className="absolute top-4 left-4 z-30 flex items-center justify-center px-6 h-14 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg border-none hover:from-indigo-700 hover:to-purple-700 transition-all"
+        onClick={() => navigate('/dashboard')}
+        aria-label="Back to dashboard"
       >
+        <FiArrowLeft className="w-8 h-8" />
+      </button>
+      <div className="max-w-4xl mx-auto">
         <div className="overflow-hidden bg-white border border-gray-100 shadow-2xl rounded-3xl">
           <div className="p-8 md:p-10">
             <div className="mb-10 text-center">
-              <motion.h1
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+              <h1
                 className="mb-3 text-4xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text"
               >
                 Your Profile
-              </motion.h1>
+              </h1>
             </div>
 
             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -261,17 +248,14 @@ const UserProfile = ({ user, updateUser }) => {
                         src={previewImage}
                         alt="Profile"
                         className="object-cover w-full h-full"
-                        onError={handleImageError}
                       />
                     </div>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                    <button
                       onClick={() => fileInputRef.current?.click()}
                       className="absolute bottom-0 right-0 p-3 text-white transition-colors bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full shadow-lg hover:from-indigo-700 hover:to-purple-700"
                     >
                       <FiCamera className="w-6 h-6" />
-                    </motion.button>
+                    </button>
                     <input
                       type="file"
                       ref={fileInputRef}
@@ -334,26 +318,22 @@ const UserProfile = ({ user, updateUser }) => {
                     </div>
 
                     <div className="flex justify-end space-x-4">
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                      <button
                         type="button"
                         onClick={() => navigate("/change-password")}
                         className="flex items-center px-6 py-3 font-medium text-gray-700 transition-all duration-200 bg-white border-2 border-gray-200 shadow-lg rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200"
                       >
                         <FiLock className="mr-2" />
                         Change Password
-                      </motion.button>
+                      </button>
 
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                      <button
                         type="submit"
                         disabled={saving}
                         className="px-6 py-3 font-medium text-white transition-all duration-200 shadow-lg bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {saving ? "Saving..." : "Save Changes"}
-                      </motion.button>
+                      </button>
                     </div>
                   </form>
                 </div>
@@ -361,7 +341,7 @@ const UserProfile = ({ user, updateUser }) => {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };

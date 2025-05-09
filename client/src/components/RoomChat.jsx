@@ -33,29 +33,39 @@ const RoomChat = ({ roomCode, roomId }) => {
         }
         
         const response = await axios.get(`/api/chats/room/${roomId}/messages`);
-        setMessages(response.data);
+        // Ensure messages is always an array
+        const messagesData = Array.isArray(response.data) ? response.data : [];
+        setMessages(messagesData);
         setLoading(false);
         scrollToBottom();
       } catch (error) {
         console.error('Failed to fetch messages:', error);
+        setMessages([]); // Set empty array on error
         setLoading(false);
       }
     };
 
     if (roomId) {
       fetchMessages();
+    } else {
+      setLoading(false);
     }
   }, [roomId]);
 
   // Socket event listeners
   useEffect(() => {
-    if (!socketService.isConnected) return;
+    // Initialize socket if not connected
+    if (!socketService.isConnected && user) {
+      socketService.init(user);
+    }
 
     // Set up message handler
-    chatService.onNewRoomMessage((data) => {
-      setMessages(prev => [...prev, data.message]);
+    const handleNewMessage = (data) => {
+      setMessages(prev => [...(Array.isArray(prev) ? prev : []), data.message]);
       scrollToBottom();
-    });
+    };
+    
+    chatService.onNewRoomMessage(handleNewMessage);
 
     // Set up typing handlers
     const socket = socketService.socket;
@@ -74,12 +84,14 @@ const RoomChat = ({ roomCode, roomId }) => {
     }
 
     return () => {
+      // Clean up event listeners
+      chatService.onNewRoomMessage(() => {});
       if (socket) {
         socket.off('user-typing');
         socket.off('user-stop-typing');
       }
     };
-  }, []);
+  }, [user]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -97,7 +109,9 @@ const RoomChat = ({ roomCode, roomId }) => {
 
     // Set new timeout
     typingTimeoutRef.current = setTimeout(() => {
-      socketService.socket.emit('stop-typing-room-chat', roomCode);
+      if (socketService.socket) {
+        socketService.socket.emit('stop-typing-room-chat', roomCode);
+      }
     }, 1000);
   };
 
@@ -131,7 +145,7 @@ const RoomChat = ({ roomCode, roomId }) => {
           </div>
         ) : (
           <>
-            {messages.length === 0 ? (
+            {!Array.isArray(messages) || messages.length === 0 ? (
               <div className="text-center text-gray-500 py-4">
                 No messages yet. Be the first to send a message!
               </div>
@@ -188,7 +202,7 @@ const RoomChat = ({ roomCode, roomId }) => {
           />
           <button
             type="submit"
-            disabled={!newMessage.trim()}
+            disabled={!newMessage.trim() || !socketService.isConnected}
             className="btn btn-primary"
           >
             Send

@@ -156,6 +156,40 @@ class RoomController {
   }
 
   /**
+   * Check if current user is the host of a room
+   */
+  async checkIsHost(req, res) {
+    try {
+      const { code } = req.params;
+      const room = await roomService.getRoomByCode(code);
+      
+      // Extract IDs as strings for reliable comparison
+      const hostId = room.hostId._id ? room.hostId._id.toString() : room.hostId.toString();
+      const userId = req.user._id.toString();
+      
+      console.log('Check host comparison:', {
+        hostId,
+        userId,
+        isMatch: hostId === userId
+      });
+      
+      const isHost = hostId === userId;
+      
+      res.json({
+        success: true,
+        isHost
+      });
+    } catch (error) {
+      console.error('Error checking host status:', error);
+      res.status(404).json({
+        success: false,
+        message: error.message || 'Failed to check host status',
+        isHost: false
+      });
+    }
+  }
+
+  /**
    * Get user's active rooms
    */
   async getUserRooms(req, res) {

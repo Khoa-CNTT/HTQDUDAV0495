@@ -12,6 +12,9 @@ router.get('/user', protect, roomController.getUserRooms);
 // Get a room by code
 router.get('/:code', roomController.getRoomByCode);
 
+// Check if current user is host
+router.get('/:code/check-host', protect, roomController.checkIsHost);
+
 // Join a room
 router.post('/:code/join', protect, roomController.joinRoom);
 
