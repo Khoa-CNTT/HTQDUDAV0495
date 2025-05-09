@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import friendService from "../services/friendService";
 import chatService from "../services/chatService";
+import { useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { FiArrowLeft } from "react-icons/fi";
 
 function Friends({ user }) {
   const [friends, setFriends] = useState([]);
@@ -8,7 +11,10 @@ function Friends({ user }) {
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [newMessage, setNewMessage] = useState("");
   const [chatMessages, setChatMessages] = useState([]);
-  const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const searchTimeout = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Set up friend request listeners
@@ -80,36 +86,111 @@ function Friends({ user }) {
     setChatMessages([]);
   };
 
+  // Lọc bạn bè theo searchTerm (ưu tiên displayName, fallback sang username)
+  const filteredFriends = friends.filter(friend => {
+    const name = friend.displayName || friend.username || '';
+    return name.toLowerCase().includes(searchTerm.toLowerCase());
+  });
+
+  // Tìm kiếm user toàn hệ thống khi nhập searchTerm
+  useEffect(() => {
+    if (!searchTerm) {
+      setSearchResults([]);
+      return;
+    }
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    searchTimeout.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/users/search?query=${encodeURIComponent(searchTerm)}`);
+        if (res.ok) {
+          const users = await res.json();
+          setSearchResults(users);
+        } else {
+          setSearchResults([]);
+        }
+      } catch {
+        setSearchResults([]);
+      }
+    }, 400);
+    return () => clearTimeout(searchTimeout.current);
+  }, [searchTerm]);
+
   return (
-    <div className="grid h-screen grid-cols-3 gap-4 p-4">
+    <div className="h-screen grid grid-cols-1 md:grid-cols-2 gap-4 p-4 relative bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
+      <button
+        className="absolute top-4 left-4 z-30 flex items-center justify-center px-6 h-14 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg border-none hover:from-indigo-700 hover:to-purple-700 transition-all"
+        onClick={() => navigate('/dashboard')}
+        aria-label="Back to dashboard"
+      >
+        <FiArrowLeft className="w-8 h-8" />
+      </button>
       {/* Friends List */}
-      <div className="col-span-1 p-4 bg-white rounded-lg shadow">
+      <div className="p-4 bg-white rounded-lg shadow h-full flex flex-col">
+        <div className="h-10"></div>
         <h2 className="mb-4 text-lg font-semibold">Friends</h2>
-        <div className="space-y-2">
-          {friends.map((friend) => (
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          placeholder="Search by name..."
+          className="mb-3 p-2 border rounded w-full"
+        />
+        {/* Hiển thị kết quả tìm kiếm user toàn hệ thống nếu có searchTerm */}
+        {searchTerm && (
+          <div className="mb-3 bg-gray-50 rounded shadow p-2 max-h-60 overflow-y-auto">
+            {searchResults.length === 0 ? (
+              <div className="text-gray-400 text-center">No users found</div>
+            ) : (
+              searchResults.map(result => {
+                const isFriend = friends.some(f => f._id === result._id);
+                return (
+                  <div key={result._id} className="flex items-center justify-between py-1 px-2 hover:bg-gray-100 rounded">
+                    <div className="flex items-center gap-2">
+                      <img src={result.profilePicture || "/images/df_avatar.png"} alt={result.displayName || result.username} className="w-8 h-8 rounded-full object-cover" />
+                      <span>{result.displayName || result.username}</span>
+                    </div>
+                    {isFriend ? (
+                      <span className="text-xs text-green-600 font-semibold">Friend</span>
+                    ) : (
+                      <button className="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600" onClick={() => friendService.sendFriendRequest(result._id)}>
+                        Add Friend
+                      </button>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        )}
+        <div className="space-y-2 flex-1 overflow-y-auto">
+          {filteredFriends.length === 0 && (
+            <div className="text-gray-400">No friends found</div>
+          )}
+          {filteredFriends.map((friend) => (
             <button
               key={friend._id}
               onClick={() => handleSelectFriend(friend)}
-              className={`w-full p-2 text-left rounded ${
+              className={`w-full p-2 text-left rounded transition ${
                 selectedFriend?._id === friend._id
-                  ? "bg-blue-100"
+                  ? "bg-blue-100 font-bold"
                   : "hover:bg-gray-100"
               }`}
             >
-              {friend.username}
+              {friend.displayName || friend.username}
             </button>
           ))}
         </div>
       </div>
 
       {/* Chat Area */}
-      <div className="col-span-2 p-4 bg-white rounded-lg shadow">
+      <div className="p-4 bg-white rounded-lg shadow h-full flex flex-col">
         {selectedFriend ? (
           <>
-            <h2 className="mb-4 text-lg font-semibold">
-              Chat with {selectedFriend.username}
-            </h2>
-            <div className="p-2 mb-4 overflow-y-auto border rounded h-96">
+            <h2 className="mb-4 text-lg font-semibold border-b pb-2">Chat with {selectedFriend.username}</h2>
+            <div className="flex-1 p-2 mb-4 overflow-y-auto border rounded h-96 bg-gray-50">
+              {chatMessages.length === 0 && (
+                <div className="text-gray-400 text-center mt-10">No messages yet</div>
+              )}
               {chatMessages.map((msg, index) => (
                 <div
                   key={index}
@@ -149,7 +230,7 @@ function Friends({ user }) {
             </form>
           </>
         ) : (
-          <div className="flex items-center justify-center h-full text-gray-500">
+          <div className="flex items-center justify-center h-full text-gray-400">
             Select a friend to start chatting
           </div>
         )}
@@ -183,12 +264,6 @@ function Friends({ user }) {
               </div>
             ))}
           </div>
-        </div>
-      )}
-
-      {error && (
-        <div className="col-span-3 p-3 text-red-700 bg-red-100 rounded">
-          {error}
         </div>
       )}
     </div>

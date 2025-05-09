@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { createQuiz } from "../services/api";
 import toast from "react-hot-toast";
 import { FiPlus, FiTrash2, FiCheck, FiX } from "react-icons/fi";
+import { FaGamepad, FaStar, FaTrophy } from "react-icons/fa";
 
 const CreateQuiz = () => {
   const [formData, setFormData] = useState({
@@ -198,30 +199,45 @@ const CreateQuiz = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-      <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-5"></div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center py-8 relative overflow-hidden">
+      {/* Animated SVG background */}
+      <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-0" style={{filter:'blur(2px)'}}>
+        <defs>
+          <radialGradient id="g1" cx="50%" cy="50%" r="80%">
+            <stop offset="0%" stopColor="#f472b6" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        <circle cx="80%" cy="20%" r="300" fill="url(#g1)">
+          <animate attributeName="cx" values="80%;20%;80%" dur="12s" repeatCount="indefinite" />
+        </circle>
+        <circle cx="20%" cy="80%" r="200" fill="url(#g1)">
+          <animate attributeName="cy" values="80%;20%;80%" dur="16s" repeatCount="indefinite" />
+        </circle>
+      </svg>
+      <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-10 pointer-events-none z-0"></div>
 
-      <div className="relative min-h-screen flex items-center justify-center p-4">
+      <div className="relative min-h-screen flex items-center justify-center p-4 w-full z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="w-full max-w-3xl"
         >
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border border-white/20">
-            <div className="p-8">
+          <div className="bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border-4 border-pink-400/40 animate-pulse-slow hover:shadow-[0_0_40px_10px_rgba(236,72,153,0.7)] transition-shadow duration-500">
+            <div className="p-10">
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
-                className="text-center mb-8"
+                className="text-center mb-10"
               >
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                <h1 className="text-4xl md:text-5xl font-extrabold font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 drop-shadow-lg mb-2 flex items-center justify-center gap-3">
+                  <FaGamepad className="inline-block text-yellow-300 animate-bounce" />
                   Create New Quiz
+                  <FaStar className="inline-block text-pink-300 animate-spin-slow" />
                 </h1>
-                <p className="text-gray-600">
-                  Create a quiz manually by adding questions and answers
-                </p>
+                <p className="text-lg text-pink-200 font-orbitron tracking-wide drop-shadow">Create a quiz manually by adding questions and answers</p>
               </motion.div>
 
               <form onSubmit={handleSubmit}>
@@ -233,7 +249,7 @@ const CreateQuiz = () => {
                 >
                   <label
                     htmlFor="title"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-bold text-pink-200 mb-2 font-orbitron tracking-wide"
                   >
                     Quiz Title
                   </label>
@@ -243,15 +259,15 @@ const CreateQuiz = () => {
                     name="title"
                     value={formData.title}
                     onChange={handleChange}
-                    className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 transition-colors ${
+                    className={`w-full px-4 py-3 border-2 rounded-xl font-orbitron text-lg bg-black/60 text-white placeholder:text-pink-200 focus:ring-2 focus:ring-yellow-400 transition-colors shadow-lg ${
                       errors.title
                         ? "border-red-500 focus:ring-red-200"
-                        : "border-gray-200 focus:border-indigo-500 focus:ring-indigo-200"
+                        : "border-pink-400 focus:border-yellow-400"
                     }`}
                     placeholder="Enter a title for your quiz"
                   />
                   {errors.title && (
-                    <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+                    <p className="mt-1 text-sm text-red-400 font-orbitron">{errors.title}</p>
                   )}
                 </motion.div>
 
@@ -263,7 +279,7 @@ const CreateQuiz = () => {
                 >
                   <label
                     htmlFor="description"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-bold text-pink-200 mb-2 font-orbitron tracking-wide"
                   >
                     Description (Optional)
                   </label>
@@ -273,15 +289,15 @@ const CreateQuiz = () => {
                     value={formData.description}
                     onChange={handleChange}
                     rows="3"
-                    className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 transition-colors ${
+                    className={`w-full px-4 py-3 border-2 rounded-xl font-orbitron text-lg bg-black/60 text-white placeholder:text-pink-200 focus:ring-2 focus:ring-yellow-400 transition-colors shadow-lg ${
                       errors.description
                         ? "border-red-500 focus:ring-red-200"
-                        : "border-gray-200 focus:border-indigo-500 focus:ring-indigo-200"
+                        : "border-pink-400 focus:border-yellow-400"
                     }`}
                     placeholder="Describe what this quiz is about"
                   ></textarea>
                   {errors.description && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p className="mt-1 text-sm text-red-400 font-orbitron">
                       {errors.description}
                     </p>
                   )}
@@ -295,7 +311,7 @@ const CreateQuiz = () => {
                 >
                   <label
                     htmlFor="category"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-bold text-pink-200 mb-2 font-orbitron tracking-wide"
                   >
                     Category
                   </label>
@@ -304,10 +320,10 @@ const CreateQuiz = () => {
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-colors"
+                    className="w-full px-4 py-3 border-2 border-pink-400 rounded-xl font-orbitron text-lg bg-black/60 text-white focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400 transition-colors shadow-lg"
                   >
                     {categories.map((category) => (
-                      <option key={category} value={category}>
+                      <option key={category} value={category} className="bg-black/80">
                         {category}
                       </option>
                     ))}
@@ -320,19 +336,17 @@ const CreateQuiz = () => {
                   transition={{ duration: 0.8, delay: 0.6 }}
                   className="mb-8"
                 >
-                  <label className="flex items-center">
+                  <label className="flex items-center font-orbitron text-pink-200">
                     <input
                       type="checkbox"
                       name="isPublic"
                       checked={formData.isPublic}
                       onChange={handleChange}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-yellow-400 focus:ring-yellow-400 border-pink-400 rounded shadow"
                     />
-                    <span className="ml-2 text-gray-700">
-                      Make this quiz public
-                    </span>
+                    <span className="ml-2">Make this quiz public</span>
                   </label>
-                  <p className="text-sm text-gray-500 mt-1 ml-6">
+                  <p className="text-sm text-pink-300 mt-1 ml-6 font-orbitron">
                     Public quizzes can be viewed and taken by everyone
                   </p>
                 </motion.div>
@@ -344,29 +358,7 @@ const CreateQuiz = () => {
                   className="mb-8"
                 >
                   <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-semibold text-gray-800">
-                      Questions
-                    </h2>
-                    <button
-                      type="button"
-                      onClick={addQuestion}
-                      className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors flex items-center space-x-2"
-                    >
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                        />
-                      </svg>
-                      <span>Add Question</span>
-                    </button>
+                    <h2 className="text-2xl font-bold font-orbitron text-yellow-400 drop-shadow">Questions</h2>
                   </div>
 
                   {formData.questions.map((question, questionIndex) => (
@@ -375,40 +367,24 @@ const CreateQuiz = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.8, delay: 0.1 * questionIndex }}
-                      className="mb-6 p-6 bg-white rounded-xl shadow-sm border border-gray-100"
+                      className="mb-6 p-6 bg-gradient-to-br from-black/70 via-indigo-900/60 to-pink-900/60 rounded-2xl shadow-xl border-2 border-pink-400/40"
                     >
                       <div className="flex justify-between items-start mb-4">
-                        <h3 className="text-lg font-medium text-gray-800">
-                          Question {questionIndex + 1}
-                        </h3>
+                        <h3 className="text-lg font-bold font-orbitron text-pink-200">Question {questionIndex + 1}</h3>
                         {formData.questions.length > 1 && (
                           <button
                             type="button"
                             onClick={() => removeQuestion(questionIndex)}
-                            className="text-red-600 hover:text-red-700 flex items-center space-x-1"
+                            className="text-red-400 hover:text-red-600 font-orbitron flex items-center space-x-1 transition drop-shadow-glow"
                           >
-                            <svg
-                              className="w-5 h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
+                            <FiTrash2 className="w-5 h-5 animate-pulse" />
                             <span>Delete</span>
                           </button>
                         )}
                       </div>
 
                       <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Question Content
-                        </label>
+                        <label className="block text-sm font-bold text-pink-200 mb-2 font-orbitron">Question Content</label>
                         <input
                           type="text"
                           value={question.text}
@@ -419,24 +395,22 @@ const CreateQuiz = () => {
                               e.target.value
                             )
                           }
-                          className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 transition-colors ${
+                          className={`w-full px-4 py-3 border-2 rounded-xl font-orbitron text-lg bg-black/60 text-white placeholder:text-pink-200 focus:ring-2 focus:ring-yellow-400 transition-colors shadow-lg ${
                             errors[`question_${questionIndex}`]
                               ? "border-red-500 focus:ring-red-200"
-                              : "border-gray-200 focus:border-indigo-500 focus:ring-indigo-200"
+                              : "border-pink-400 focus:border-yellow-400"
                           }`}
                           placeholder="Enter your question"
                         />
                         {errors[`question_${questionIndex}`] && (
-                          <p className="mt-1 text-sm text-red-600">
+                          <p className="mt-1 text-sm text-red-400 font-orbitron">
                             {errors[`question_${questionIndex}`]}
                           </p>
                         )}
                       </div>
 
                       <div className="space-y-3">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Options
-                        </label>
+                        <label className="block text-sm font-bold text-pink-200 mb-2 font-orbitron">Options</label>
                         {question.options.map((option, optionIndex) => (
                           <div
                             key={optionIndex}
@@ -459,7 +433,7 @@ const CreateQuiz = () => {
                                   newOptions
                                 );
                               }}
-                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                              className="h-4 w-4 text-yellow-400 focus:ring-yellow-400 border-pink-400"
                             />
                             <input
                               type="text"
@@ -472,35 +446,45 @@ const CreateQuiz = () => {
                                   e.target.value
                                 )
                               }
-                              className={`flex-1 px-4 py-3 border-2 rounded-lg focus:ring-2 transition-colors ${
+                              className={`flex-1 px-4 py-3 border-2 rounded-xl font-orbitron text-lg bg-black/60 text-white placeholder:text-pink-200 focus:ring-2 focus:ring-yellow-400 transition-colors shadow-lg ${
                                 errors[`option_${questionIndex}_${optionIndex}`]
                                   ? "border-red-500 focus:ring-red-200"
-                                  : "border-gray-200 focus:border-indigo-500 focus:ring-indigo-200"
+                                  : "border-pink-400 focus:border-yellow-400"
                               }`}
                               placeholder={`Option ${optionIndex + 1}`}
                             />
                           </div>
                         ))}
                         {errors[`question_${questionIndex}_correct`] && (
-                          <p className="mt-1 text-sm text-red-600">
+                          <p className="mt-1 text-sm text-red-400 font-orbitron">
                             {errors[`question_${questionIndex}_correct`]}
                           </p>
                         )}
                       </div>
                     </motion.div>
                   ))}
+                  <div className="flex justify-end mt-4">
+                    <button
+                      type="button"
+                      onClick={addQuestion}
+                      className="px-6 py-2 font-orbitron rounded-xl bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 text-white shadow-lg border-2 border-white/30 hover:from-pink-400 hover:to-yellow-400 transition-all text-lg drop-shadow-glow hover:scale-105 active:scale-95 animate-pulse-slow"
+                    >
+                      <FiPlus className="w-5 h-5 inline-block mr-2 align-middle animate-bounce text-yellow-200" />
+                      <span>Add Question</span>
+                    </button>
+                  </div>
                 </motion.div>
 
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.8 }}
-                  className="flex space-x-4"
+                  className="flex space-x-4 mt-8"
                 >
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 py-4 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 py-4 px-6 font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 text-white font-bold rounded-2xl shadow-xl border-2 border-white/30 hover:from-pink-400 hover:to-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed text-xl drop-shadow-glow hover:scale-105 active:scale-95 animate-pulse-slow"
                   >
                     {loading ? (
                       <div className="flex items-center justify-center">
@@ -527,14 +511,14 @@ const CreateQuiz = () => {
                         Creating...
                       </div>
                     ) : (
-                      "Create Quiz"
+                      <span className="flex items-center gap-2 justify-center"><FaTrophy className="inline-block text-yellow-300 animate-bounce" />Create Quiz</span>
                     )}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => navigate("/dashboard")}
-                    className="flex-1 py-4 px-6 bg-white text-gray-700 font-medium rounded-xl border border-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all duration-300 shadow hover:shadow-md"
+                    className="flex-1 py-4 px-6 font-orbitron bg-black/60 text-pink-200 font-bold rounded-2xl border-2 border-pink-400 hover:bg-pink-900 hover:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all duration-300 shadow-xl text-xl"
                   >
                     Cancel
                   </button>
