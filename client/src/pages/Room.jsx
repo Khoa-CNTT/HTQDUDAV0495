@@ -478,11 +478,14 @@ function Room({ user: propUser }) {
               <h1 className="text-2xl font-bold mb-4">Room: {code}</h1>
               
               {isHost && (
-                <div className="bg-blue-100 text-blue-800 p-3 rounded-lg mb-4 flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <div className="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-4 rounded-lg mb-4 flex items-center shadow-md">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
-                  <span>You are the host of this room. You can start the game when players have joined.</span>
+                  <div>
+                    <span className="font-bold block text-lg">You are the Quiz Host</span>
+                    <span>You have control over when the game starts and ends</span>
+                  </div>
                 </div>
               )}
               
@@ -490,16 +493,14 @@ function Room({ user: propUser }) {
                 <div className="mb-4">
                   <h2 className="text-xl font-semibold mb-2 flex items-center">
                     <span className="mr-2">Host:</span> 
-                    {isHost ? (
-                      <div className="bg-primary text-white px-3 py-1 rounded-lg flex items-center">
-                        <span className="font-bold">{getUserName(getHostDetails(room.hostId, participants))}</span>
-                        <span className="ml-2 bg-white text-primary px-2 py-0.5 rounded-full text-sm font-bold">
+                    <div className={`px-3 py-1 rounded-lg flex items-center ${isHost ? 'bg-blue-600 text-white' : ''}`}>
+                      <span className="font-bold">{getUserName(getHostDetails(room.hostId, participants))}</span>
+                      {isHost && (
+                        <span className="ml-2 bg-white text-blue-600 px-2 py-0.5 rounded-full text-sm font-bold">
                           YOU
                         </span>
-                      </div>
-                    ) : (
-                      <span>{getUserName(getHostDetails(room.hostId, participants))}</span>
-                    )}
+                      )}
+                    </div>
                   </h2>
                   <p className="text-gray-600">
                     Quiz: {quiz?.title || 'Loading...'}
@@ -533,10 +534,10 @@ function Room({ user: propUser }) {
                 <p className="text-lg mb-4">Waiting for the game to start...</p>
                 
                 {isHost && (
-                  <div className="border-2 border-primary p-4 rounded-lg bg-primary bg-opacity-5 inline-block">
-                    <h3 className="text-xl font-bold mb-2">Host Controls</h3>
+                  <div className="border-2 border-blue-600 p-6 rounded-lg bg-blue-50 inline-block">
+                    <h3 className="text-xl font-bold mb-4 text-blue-800">Host Controls</h3>
                     <button
-                      className="btn btn-primary btn-lg text-lg px-8 py-3 shadow-lg"
+                      className="btn btn-lg w-full bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-4 shadow-lg transition-all duration-200 transform hover:scale-105"
                       onClick={handleStartGame}
                       disabled={!room || participants.length < 1}
                     >
@@ -544,11 +545,11 @@ function Room({ user: propUser }) {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Start Game
+                      START GAME
                     </button>
                     
                     {participants.length < 1 && (
-                      <p className="text-amber-500 mt-2">Need at least one participant to start</p>
+                      <p className="text-amber-600 mt-3 font-semibold">Need at least one participant to start</p>
                     )}
                   </div>
                 )}
@@ -626,20 +627,31 @@ function Room({ user: propUser }) {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow p-4 mb-4">
               <h1 className="text-2xl font-bold mb-4">Room: {code}</h1>
+              
+              {isHost && (
+                <div className="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-4 rounded-lg mb-4 flex items-center shadow-md">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  <div>
+                    <span className="font-bold block text-lg">You are the Quiz Host</span>
+                    <span>You have control over when the game starts and ends</span>
+                  </div>
+                </div>
+              )}
+              
               {room && (
                 <div className="mb-4">
                   <h2 className="text-xl font-semibold mb-2 flex items-center">
                     <span className="mr-2">Host:</span> 
-                    {isHost ? (
-                      <div className="bg-primary text-white px-3 py-1 rounded-lg flex items-center">
-                        <span className="font-bold">{getUserName(getHostDetails(room.hostId, participants))}</span>
-                        <span className="ml-2 bg-white text-primary px-2 py-0.5 rounded-full text-sm font-bold">
+                    <div className={`px-3 py-1 rounded-lg flex items-center ${isHost ? 'bg-blue-600 text-white' : ''}`}>
+                      <span className="font-bold">{getUserName(getHostDetails(room.hostId, participants))}</span>
+                      {isHost && (
+                        <span className="ml-2 bg-white text-blue-600 px-2 py-0.5 rounded-full text-sm font-bold">
                           YOU
                         </span>
-                      </div>
-                    ) : (
-                      <span>{getUserName(getHostDetails(room.hostId, participants))}</span>
-                    )}
+                      )}
+                    </div>
                   </h2>
                   <p className="text-gray-600">
                     Quiz: {quiz?.title || 'Loading...'}
@@ -697,15 +709,15 @@ function Room({ user: propUser }) {
                 
                 {isHost && (
                   <div className="mt-6 border-t border-gray-200 pt-4">
-                    <h3 className="text-lg font-semibold mb-3">Host Controls</h3>
+                    <h3 className="text-xl font-bold mb-4 text-blue-800">Host Controls</h3>
                     <button
                       onClick={handleEndGame}
-                      className="btn btn-outline btn-error"
+                      className="btn btn-lg w-full bg-red-600 hover:bg-red-700 text-white text-lg px-8 py-4 shadow-lg transition-all duration-200 transform hover:scale-105"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                      End Game
+                      END GAME
                     </button>
                   </div>
                 )}
@@ -729,42 +741,96 @@ function Room({ user: propUser }) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Main game area */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow p-4">
-              <h1 className="text-2xl font-bold mb-4">Game Results</h1>
-              <div className="overflow-x-auto">
-                <table className="table w-full">
-                  <thead>
-                    <tr>
-                      <th>Rank</th>
-                      <th>Player</th>
-                      <th>Score</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {participants && Array.isArray(participants) &&
-                      participants
-                      .sort((a, b) => b.score - a.score)
-                      .map((participant, index) => (
-                        <tr
-                          key={participant._id}
-                          className={
-                            getUserId(participant.userId) === user._id
-                              ? 'bg-primary bg-opacity-10'
-                              : ''
-                          }
-                        >
-                          <td>{index + 1}</td>
-                          <td>{getUserName(participant.userId)}</td>
-                          <td>{participant.score}</td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold">Quiz Results</h1>
+                <div className="badge badge-success py-2 px-4 text-white">Game Completed</div>
               </div>
-              <div className="mt-4 flex gap-2">
+              
+              <div className="mb-8">
+                <h2 className="text-xl font-bold mb-2 text-center">Final Leaderboard</h2>
+                <p className="text-gray-500 text-center mb-6">Quiz: {quiz?.title || 'Loading...'}</p>
+                
+                {participants && Array.isArray(participants) && participants.length > 0 && (
+                  <div className="flex flex-col items-center mb-8">
+                    {/* Top 3 Podium */}
+                    <div className="flex items-end justify-center w-full max-w-xl mx-auto mb-8">
+                      {participants.sort((a, b) => b.score - a.score).slice(0, 3).map((participant, index) => {
+                        // Define heights and colors based on position
+                        const heights = ["h-28", "h-36", "h-20"];
+                        const bgColors = ["bg-gray-300", "bg-yellow-400", "bg-orange-400"];
+                        const positions = [2, 1, 3]; // Silver, Gold, Bronze
+                        const marginTop = ["mt-8", "mt-0", "mt-16"];
+                        
+                        return (
+                          <div key={participant._id} className="flex flex-col items-center mx-2">
+                            <div className="rounded-full w-16 h-16 mb-2 flex items-center justify-center bg-blue-100 border-4 border-white shadow-lg">
+                              <span className="text-2xl font-bold">{getUserInitial(participant.userId)}</span>
+                            </div>
+                            <p className="text-center font-semibold mb-2 w-24 truncate">{getUserName(participant.userId)}</p>
+                            <p className="text-lg font-bold text-blue-600">{participant.score} pts</p>
+                            <div className={`${bgColors[index]} ${heights[index]} w-24 ${marginTop[index]} rounded-t-lg flex items-start justify-center pt-2 shadow-lg`}>
+                              <span className="bg-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg">
+                                {positions[index]}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* All participants list */}
+                    <div className="w-full max-w-2xl bg-gray-50 rounded-lg overflow-hidden shadow">
+                      <div className="bg-blue-600 text-white px-4 py-3">
+                        <h3 className="font-bold">Complete Rankings</h3>
+                      </div>
+                      <div className="divide-y divide-gray-200">
+                        {participants.sort((a, b) => b.score - a.score).map((participant, index) => (
+                          <div 
+                            key={participant._id}
+                            className={`px-4 py-3 flex items-center justify-between hover:bg-blue-50 transition-colors ${
+                              getUserId(participant.userId) === user._id ? 'bg-blue-100' : ''
+                            }`}
+                          >
+                            <div className="flex items-center">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 ${
+                                index === 0 ? 'bg-yellow-400 text-yellow-800' : 
+                                index === 1 ? 'bg-gray-300 text-gray-700' : 
+                                index === 2 ? 'bg-orange-400 text-orange-800' : 'bg-blue-100 text-blue-800'
+                              }`}>
+                                {index + 1}
+                              </div>
+                              <div>
+                                <p className="font-medium">
+                                  {getUserName(participant.userId)}
+                                  {getUserId(participant.userId) === user._id && (
+                                    <span className="ml-2 text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">YOU</span>
+                                  )}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-lg font-bold">
+                              {participant.score} 
+                              <span className="text-sm text-gray-500 ml-1">pts</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {(!participants || !Array.isArray(participants) || participants.length === 0) && (
+                  <div className="text-center py-10">
+                    <p className="text-gray-500">No results available</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="mt-8 flex justify-center gap-4">
                 <button
                   onClick={() => navigate('/dashboard')}
-                  className="btn btn-primary"
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md font-bold"
                 >
                   Back to Dashboard
                 </button>
@@ -772,7 +838,7 @@ function Room({ user: propUser }) {
                 {isHost && (
                   <button
                     onClick={() => navigate('/create-room')}
-                    className="btn btn-outline"
+                    className="px-6 py-3 bg-white border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors shadow-md font-bold"
                   >
                     Create New Room
                   </button>

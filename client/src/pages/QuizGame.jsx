@@ -47,6 +47,20 @@ const getUserName = (user) => {
   return user.toString();
 };
 
+const getUserInitial = (user) => {
+  if (!user) return '?';
+  if (typeof user === 'object' && user.username) {
+    return user.username.charAt(0).toUpperCase();
+  }
+  if (typeof user === 'object' && user.displayName) {
+    return user.displayName.charAt(0).toUpperCase();
+  }
+  if (typeof user === 'string') {
+    return user.charAt(0).toUpperCase();
+  }
+  return '?';
+};
+
 function QuizGame({ user: propUser }) {
   const { code } = useParams();
   const navigate = useNavigate();
@@ -503,67 +517,103 @@ function QuizGame({ user: propUser }) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Main game area */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow p-4 mb-4">
-              <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold">Game Results</h1>
-                <button
-                  onClick={handleBackToRoom}
-                  className="px-3 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
-                >
-                  Back to Room
-                </button>
-              </div>
-            </div>
-            
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-bold mb-6 text-center">Final Scores</h2>
-              <div className="overflow-x-auto">
-                <table className="table w-full">
-                  <thead>
-                    <tr>
-                      <th>Rank</th>
-                      <th>Player</th>
-                      <th>Score</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {participants && Array.isArray(participants) &&
-                      participants
-                      .sort((a, b) => b.score - a.score)
-                      .map((participant, index) => (
-                        <tr
-                          key={participant._id || index}
-                          className={
-                            getUserId(participant.userId) === user._id
-                              ? 'bg-blue-50'
-                              : index === 0 ? 'bg-yellow-50' : ''
-                          }
-                        >
-                          <td>
-                            {index === 0 ? (
-                              <span className="text-yellow-500">🏆</span>
-                            ) : (
-                              index + 1
-                            )}
-                          </td>
-                          <td>{getUserName(participant.userId)}</td>
-                          <td>{participant.score}</td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-2xl font-bold">Quiz Results</h1>
+                <div className="badge badge-success py-2 px-4 text-white">Game Completed</div>
+              </div>
+              
+              <div className="mb-8">
+                <h2 className="text-xl font-bold mb-2 text-center">Final Leaderboard</h2>
+                <p className="text-gray-500 text-center mb-6">Quiz: {quiz?.title || 'Loading...'}</p>
+                
+                {participants && Array.isArray(participants) && participants.length > 0 && (
+                  <div className="flex flex-col items-center mb-8">
+                    {/* Top 3 Podium */}
+                    <div className="flex items-end justify-center w-full max-w-xl mx-auto mb-8">
+                      {participants.sort((a, b) => b.score - a.score).slice(0, 3).map((participant, index) => {
+                        // Define heights and colors based on position
+                        const heights = ["h-28", "h-36", "h-20"];
+                        const bgColors = ["bg-gray-300", "bg-yellow-400", "bg-orange-400"];
+                        const positions = [2, 1, 3]; // Silver, Gold, Bronze
+                        const marginTop = ["mt-8", "mt-0", "mt-16"];
+                        
+                        return (
+                          <div key={participant._id || index} className="flex flex-col items-center mx-2">
+                            <div className="rounded-full w-16 h-16 mb-2 flex items-center justify-center bg-blue-100 border-4 border-white shadow-lg">
+                              <span className="text-2xl font-bold">{getUserInitial(participant.userId)}</span>
+                            </div>
+                            <p className="text-center font-semibold mb-2 w-24 truncate">{getUserName(participant.userId)}</p>
+                            <p className="text-lg font-bold text-blue-600">{participant.score} pts</p>
+                            <div className={`${bgColors[index]} ${heights[index]} w-24 ${marginTop[index]} rounded-t-lg flex items-start justify-center pt-2 shadow-lg`}>
+                              <span className="bg-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg">
+                                {positions[index]}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* All participants list */}
+                    <div className="w-full max-w-2xl bg-gray-50 rounded-lg overflow-hidden shadow">
+                      <div className="bg-blue-600 text-white px-4 py-3">
+                        <h3 className="font-bold">Complete Rankings</h3>
+                      </div>
+                      <div className="divide-y divide-gray-200">
+                        {participants.sort((a, b) => b.score - a.score).map((participant, index) => (
+                          <div 
+                            key={participant._id || index}
+                            className={`px-4 py-3 flex items-center justify-between hover:bg-blue-50 transition-colors ${
+                              getUserId(participant.userId) === user._id ? 'bg-blue-100' : ''
+                            }`}
+                          >
+                            <div className="flex items-center">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 ${
+                                index === 0 ? 'bg-yellow-400 text-yellow-800' : 
+                                index === 1 ? 'bg-gray-300 text-gray-700' : 
+                                index === 2 ? 'bg-orange-400 text-orange-800' : 'bg-blue-100 text-blue-800'
+                              }`}>
+                                {index + 1}
+                              </div>
+                              <div>
+                                <p className="font-medium">
+                                  {getUserName(participant.userId)}
+                                  {getUserId(participant.userId) === user._id && (
+                                    <span className="ml-2 text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">YOU</span>
+                                  )}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-lg font-bold">
+                              {participant.score} 
+                              <span className="text-sm text-gray-500 ml-1">pts</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {(!participants || !Array.isArray(participants) || participants.length === 0) && (
+                  <div className="text-center py-10">
+                    <p className="text-gray-500">No results available</p>
+                  </div>
+                )}
               </div>
               
               <div className="mt-8 flex justify-center gap-4">
                 <button
                   onClick={() => navigate('/dashboard')}
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md font-bold"
                 >
                   Back to Dashboard
                 </button>
+                
                 <button
                   onClick={handleBackToRoom}
-                  className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                  className="px-6 py-3 bg-white border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors shadow-md font-bold"
                 >
                   Back to Room
                 </button>
