@@ -29,6 +29,7 @@ import UserProfile from "./pages/UserProfile";
 import CreateRoom from "./pages/CreateRoom";
 import JoinRoom from "./pages/JoinRoom";
 import Room from "./pages/Room";
+import QuizGame from "./pages/QuizGame";
 import Footer from "./components/Footer";
 import { SidebarProvider } from "./components/ui/sidebar";
 import Friends from "./components/Friends";
@@ -219,6 +220,15 @@ function App() {
           element={
             <ProtectedRoute user={user}>
               <Room user={user} />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/quiz-game/:code"
+          element={
+            <ProtectedRoute user={user}>
+              <QuizGame user={user} />
             </ProtectedRoute>
           }
         />

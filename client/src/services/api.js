@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getToken, saveUser } from "../utils/jwtUtils";
+import { saveUser } from "../utils/jwtUtils";
 
 const API_URL = "http://localhost:5000/api";
 
@@ -287,6 +287,7 @@ export const getSubmissionById = async (submissionId) => {
 // Room API calls for multiplayer functionality
 export const createRoom = async (quizId, options = {}) => {
   try {
+    console.log("Creating room with quizId:", quizId, "options:", options);
     const response = await api.post("/rooms", { quizId, ...options });
 
     // Ensure we have a valid response with data
@@ -294,25 +295,23 @@ export const createRoom = async (quizId, options = {}) => {
       throw new Error("Invalid response from server");
     }
 
+    console.log("Server response for createRoom:", response.data);
     const roomData = response.data.data;
-
-    // Make sure we extract the room code
+    
+    // Ensure the user knows they are the host by adding a flag
     return {
       success: true,
       data: {
         ...roomData,
-        // Ensure code exists (it should be in roomData directly)
         code: roomData.code,
-        // Make sure hostId is properly formatted if it's an object
-        hostId:
-          typeof roomData.hostId === "object"
-            ? roomData.hostId._id
-            : roomData.hostId,
-        // Format any other objects that might cause rendering issues
-        hostName:
-          typeof roomData.hostId === "object"
-            ? roomData.hostId.displayName || roomData.hostId.username
-            : "Host",
+        // Make sure hostId is properly formatted
+        hostId: typeof roomData.hostId === "object" ? roomData.hostId._id : roomData.hostId,
+        // Explicit flag to indicate this user is the host
+        isCreator: true,
+        // Host name for display
+        hostName: typeof roomData.hostId === "object" 
+          ? roomData.hostId.displayName || roomData.hostId.username
+          : "Host",
       },
     };
   } catch (error) {
@@ -350,6 +349,21 @@ export const getRoomByCode = async (code) => {
 
     // Handle different response structures
     const roomData = response.data.data || response.data;
+    
+    // Log the raw data we received from the server
+    console.log("Raw room data from server:", JSON.stringify(roomData));
+    
+    // Special handling for hostId to ensure consistency
+    if (roomData.hostId) {
+      console.log("Original hostId:", roomData.hostId);
+      // If hostId is an object, extract just the _id
+      if (typeof roomData.hostId === "object" && roomData.hostId._id) {
+        console.log("Converting hostId object to string:", roomData.hostId._id);
+        roomData.hostId = roomData.hostId._id.toString();
+      } else if (typeof roomData.hostId === "string") {
+        console.log("hostId is already a string:", roomData.hostId);
+      }
+    }
 
     return {
       success: true,
@@ -483,6 +497,24 @@ export const updateAchievement = async (id, data) => {
     return {
       success: false,
       message: error.response?.data?.message || "Failed to update achievement"
+    };
+  }
+};
+
+export const checkIsHost = async (code) => {
+  try {
+    // Call an endpoint that requires authentication to see if the current user is the host
+    const response = await api.get(`/rooms/${code}/check-host`);
+    return {
+      success: true,
+      isHost: response.data?.isHost || false
+    };
+  } catch (error) {
+    // If there's an error, default to false but don't treat it as a failure
+    console.log("Error checking host status:", error);
+    return {
+      success: true,
+      isHost: false
     };
   }
 };
