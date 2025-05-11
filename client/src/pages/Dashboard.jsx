@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   deleteQuiz,
   getUserSubmissions,
@@ -13,6 +14,17 @@ import CreateQuizModal from "../components/CreateQuizModal";
 import "../styles/Dashboard.css";
 import PaginatedSubmissionsTable from "../components/PaginatedSubmissionsTable";
 import CollapsibleSubmissionsTable from "../components/CollapsibleSubmissionsTable";
+import {
+  FaGamepad,
+  FaStar,
+  FaTrophy,
+  FaUsers,
+  FaDoorOpen,
+  FaSignOutAlt,
+  FaUser,
+  FaUserFriends,
+  FaMedal,
+} from "react-icons/fa";
 
 const Dashboard = ({ user, logout }) => {
   const [quizzes, setQuizzes] = useState([]);
@@ -133,398 +145,493 @@ const Dashboard = ({ user, logout }) => {
 
   if (loading) {
     return (
-      <div className="dashboard-container">
-        <div className="empty-state">
-          <LoadingSpinner />
-        </div>
+      <div className="flex items-center justify-center w-screen min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+        <LoadingSpinner />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="dashboard-container">
-        <div className="empty-state">
-          <p className="empty-state-text">{error}</p>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-8 text-center border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
+        >
+          <p className="mb-4 text-xl text-pink-200 font-orbitron">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="create-quiz-btn"
+            className="px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-2xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
           >
             Try Again
           </button>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
-        <h1 className="dashboard-title">Dashboard</h1>
-        <div className="user-info" ref={dropdownRef}>
-          <div className="avatar-container" onClick={toggleDropdown}>
-            <img
-              src={user?.profilePicture || "/images/df_avatar.png"}
-              alt="User Avatar"
-              className="w-10 h-10 rounded-full"
-            />
-            <span className="username">{user?.username || "User"}</span>
-          </div>
+    <div className="relative w-screen min-h-screen overflow-x-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+      {/* Animated SVG background */}
+      <svg
+        className="absolute top-0 left-0 z-0 w-full h-full pointer-events-none"
+        style={{ filter: "blur(2px)" }}
+      >
+        <defs>
+          <radialGradient id="g1" cx="50%" cy="50%" r="80%">
+            <stop offset="0%" stopColor="#f472b6" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        <circle cx="80%" cy="20%" r="300" fill="url(#g1)">
+          <animate
+            attributeName="cx"
+            values="80%;20%;80%"
+            dur="12s"
+            repeatCount="indefinite"
+          />
+        </circle>
+        <circle cx="20%" cy="80%" r="200" fill="url(#g1)">
+          <animate
+            attributeName="cy"
+            values="80%;20%;80%"
+            dur="16s"
+            repeatCount="indefinite"
+          />
+        </circle>
+      </svg>
 
-          <div className={`dropdown-menu ${dropdownOpen ? "active" : ""}`}>
-            <div className="dropdown-header">
+      <div className="relative z-10 px-4 py-8 sm:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="flex items-center justify-between mb-8"
+        >
+          <h1 className="flex items-center gap-3 text-4xl font-extrabold text-transparent md:text-5xl font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 drop-shadow-lg">
+            <FaGamepad className="inline-block text-yellow-300 animate-bounce" />
+            Dashboard
+            <FaStar className="inline-block text-pink-300 animate-spin-slow" />
+          </h1>
+
+          <div className="relative user-info" ref={dropdownRef}>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="flex items-center gap-3 cursor-pointer avatar-container"
+              onClick={toggleDropdown}
+            >
               <img
                 src={user?.profilePicture || "/images/df_avatar.png"}
                 alt="User Avatar"
-                className="w-10 h-10 rounded-full"
+                className="w-12 h-12 border-2 rounded-full shadow-lg border-pink-400/40"
               />
+              <span className="text-black username font-orbitron">
+                {user?.username || "User"}
+              </span>
+            </motion.div>
 
-              <div className="dropdown-header-info">
-                <div className="dropdown-header-name">
-                  {user?.username || "User"}
-                </div>
-                <div className="dropdown-header-email">
-                  {user?.email || "user@example.com"}
-                </div>
-              </div>
-            </div>
-
-            <Link to="/profile" className="dropdown-item">
-              <div className="dropdown-item-icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+            <AnimatePresence>
+              {dropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute right-0 z-20 w-64 mt-2 overflow-hidden border-2 shadow-2xl top-16 bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-2xl border-pink-400/40"
                 >
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-              </div>
-              <span className="dropdown-item-text">Profile</span>
-            </Link>
-
-            <Link to="/friends" className="dropdown-item">
-              <div className="dropdown-item-icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-              </div>
-              <span className="dropdown-item-text">Friends</span>
-            </Link>
-
-            <Link to="/achievements" className="dropdown-item">
-              <div className="dropdown-item-icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 2L15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2z"></path>
-                </svg>
-              </div>
-              <span className="dropdown-item-text">Achievements</span>
-            </Link>
-
-            <div className="dropdown-divider"></div>
-
-            <button onClick={handleLogout} className="dropdown-item">
-              <div className="dropdown-item-icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                  <polyline points="16 17 21 12 16 7"></polyline>
-                  <line x1="21" y1="12" x2="9" y2="12"></line>
-                </svg>
-              </div>
-              <span className="dropdown-item-text">Logout</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="tab-container">
-        <button
-          className={`tab-button ${activeTab === "quizzes" ? "active" : ""}`}
-          onClick={() => setActiveTab("quizzes")}
-        >
-          My Quizzes
-        </button>
-        <button
-          className={`tab-button ${activeTab === "public" ? "active" : ""}`}
-          onClick={() => setActiveTab("public")}
-        >
-          Public Quizzes
-        </button>
-        <button
-          className={`tab-button ${
-            activeTab === "submissions" ? "active" : ""
-          }`}
-          onClick={() => setActiveTab("submissions")}
-        >
-          My Submissions
-        </button>
-      </div>
-
-      {activeTab === "quizzes" && (
-        <div>
-          <div className="dashboard-header">
-            <h2 className="quiz-card-title">My Quizzes</h2>
-            <button
-              onClick={() => setIsCreateQuizModalOpen(true)}
-              className="create-quiz-btn"
-            >
-              Create New Quiz
-            </button>
-          </div>
-
-          {Array.isArray(quizzes) && quizzes.length === 0 ? (
-            <div className="empty-state">
-              <p className="empty-state-text">
-                You haven't created any quizzes yet.
-              </p>
-              <button
-                onClick={() => setIsCreateQuizModalOpen(true)}
-                className="empty-state-link"
-              >
-                Create your first quiz
-              </button>
-            </div>
-          ) : (
-            <div className="quiz-grid">
-              {validQuizzes.map((quiz) => (
-                <div
-                  key={quiz._id}
-                  className="quiz-card"
-                  onClick={() => {
-                    if (!quiz._id) {
-                      console.error("Quiz without valid ID:", quiz);
-                      toast.error("Cannot view quiz details - Invalid quiz ID");
-                      return;
-                    }
-                    const quizId = String(quiz._id).trim();
-                    console.log("Quiz click:", quiz);
-                    console.log("Quiz _id click:", quizId);
-                    navigate(`/quiz/${quizId}`);
-                  }}
-                  style={{ cursor: "pointer" }}
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="quiz-card-title">{quiz.title}</h3>
-                    {quiz.isPublic ? (
-                      <span className="px-2 py-1 text-xs text-green-800 bg-green-100 rounded">
-                        Public
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 text-xs text-gray-800 bg-gray-100 rounded">
-                        Private
-                      </span>
-                    )}
+                  <div className="flex items-center gap-3 p-4 border-b dropdown-header border-pink-400/40">
+                    <img
+                      src={user?.profilePicture || "/images/df_avatar.png"}
+                      alt="User Avatar"
+                      className="w-12 h-12 border-2 rounded-full border-pink-400/40"
+                    />
+                    <div className="dropdown-header-info">
+                      <div className="text-pink-200 dropdown-header-name font-orbitron">
+                        {user?.username || "User"}
+                      </div>
+                      <div className="text-sm dropdown-header-email font-orbitron text-pink-300/80">
+                        {user?.email || "user@example.com"}
+                      </div>
+                    </div>
                   </div>
-                  <p className="quiz-card-info">
-                    {quiz.questions
-                      ? `${quiz.questions.length} questions`
-                      : "Loading questions..."}
+
+                  <Link
+                    to="/profile"
+                    className="flex items-center gap-3 px-4 py-3 dropdown-item hover:bg-black/20"
+                  >
+                    <div className="dropdown-item-icon">
+                      <FaUser className="w-5 h-5 text-yellow-400" />
+                    </div>
+                    <span className="text-pink-200 dropdown-item-text font-orbitron">
+                      Profile
+                    </span>
+                  </Link>
+
+                  <Link
+                    to="/friends"
+                    className="flex items-center gap-3 px-4 py-3 dropdown-item hover:bg-black/20 "
+                  >
+                    <div className="dropdown-item-icon">
+                      <FaUserFriends className="w-5 h-5 text-yellow-400" />
+                    </div>
+                    <span className="text-pink-200 dropdown-item-text font-orbitron ">
+                      Friends
+                    </span>
+                  </Link>
+
+                  <Link
+                    to="/achievements"
+                    className="flex items-center gap-3 px-4 py-3 dropdown-item hover:bg-black/20"
+                  >
+                    <div className="dropdown-item-icon">
+                      <FaMedal className="w-5 h-5 text-yellow-400" />
+                    </div>
+                    <span className="text-pink-200 dropdown-item-text font-orbitron ">
+                      Achievements
+                    </span>
+                  </Link>
+
+                  <div className="border-t dropdown-divider border-pink-400/40"></div>
+
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center w-full gap-3 px-4 py-3 text-left dropdown-item hover:bg-black/20"
+                  >
+                    <div className="dropdown-item-icon">
+                      <FaSignOutAlt className="w-5 h-5 text-yellow-400" />
+                    </div>
+                    <span className="text-pink-200 dropdown-item-text font-orbitron ">
+                      Logout
+                    </span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="p-2 mb-8 border-2 shadow-2xl tab-container bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-2xl border-pink-400/40"
+        >
+          <button
+            className={`tab-button ${activeTab === "quizzes" ? "active" : ""}`}
+            onClick={() => setActiveTab("quizzes")}
+          >
+            <FaGamepad className="w-5 h-5" />
+            My Quizzes
+          </button>
+          <button
+            className={`tab-button ${activeTab === "public" ? "active" : ""}`}
+            onClick={() => setActiveTab("public")}
+          >
+            <FaUsers className="w-5 h-5" />
+            Public Quizzes
+          </button>
+          <button
+            className={`tab-button ${
+              activeTab === "submissions" ? "active" : ""
+            }`}
+            onClick={() => setActiveTab("submissions")}
+          >
+            <FaTrophy className="w-5 h-5" />
+            My Submissions
+          </button>
+        </motion.div>
+
+        <AnimatePresence mode="wait">
+          {activeTab === "quizzes" && (
+            <motion.div
+              key="quizzes"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                  My Quizzes
+                </h2>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsCreateQuizModalOpen(true)}
+                  className="px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-2xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
+                >
+                  Create New Quiz
+                </motion.button>
+              </div>
+
+              {Array.isArray(quizzes) && quizzes.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-8 text-center border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
+                >
+                  <p className="mb-4 text-xl text-pink-200 font-orbitron">
+                    You haven't created any quizzes yet.
                   </p>
-                  <div className="quiz-card-actions">
-                    <Link
-                      to={`/quiz/${quiz._id}`}
-                      className="take-quiz-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsCreateQuizModalOpen(true)}
+                    className="px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-2xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
+                  >
+                    Create your first quiz
+                  </motion.button>
+                </motion.div>
+              ) : (
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {validQuizzes.map((quiz, index) => (
+                    <motion.div
+                      key={quiz._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                      className="quiz-card bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-4 border-pink-400/40 hover:shadow-[0_0_40px_10px_rgba(236,72,153,0.7)] transition-all duration-500"
+                      onClick={() => {
                         if (!quiz._id) {
-                          e.preventDefault();
-                          console.error(
-                            "Quiz without valid ID (Take Quiz button):",
-                            quiz
+                          console.error("Quiz without valid ID:", quiz);
+                          toast.error(
+                            "Cannot view quiz details - Invalid quiz ID"
                           );
-                          toast.error("Cannot take quiz - Invalid quiz ID");
+                          return;
                         }
+                        const quizId = String(quiz._id).trim();
+                        navigate(`/quiz/${quizId}`);
                       }}
                     >
-                      Take Quiz
-                    </Link>
-                    {isCreator(quiz) && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (quiz._id) {
-                            handleDeleteQuiz(quiz._id);
-                          } else {
-                            console.error(
-                              "Cannot delete quiz without ID:",
-                              quiz
-                            );
-                            toast.error("Cannot delete quiz - Invalid quiz ID");
-                          }
-                        }}
-                        className="delete-quiz-btn"
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </div>
+                      <div className="p-6">
+                        <div className="flex items-start justify-between mb-4">
+                          <h3 className="text-xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                            {quiz.title}
+                          </h3>
+                          {quiz.isPublic ? (
+                            <span className="px-3 py-1 text-sm text-green-800 bg-green-100 rounded-full font-orbitron">
+                              Public
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 text-sm text-gray-800 bg-gray-100 rounded-full font-orbitron">
+                              Private
+                            </span>
+                          )}
+                        </div>
+                        <p className="mb-4 text-pink-200 font-orbitron">
+                          {quiz.questions
+                            ? `${quiz.questions.length} questions`
+                            : "Loading questions..."}
+                        </p>
+                        <div className="flex gap-3">
+                          <Link
+                            to={`/quiz/${quiz._id}`}
+                            className="flex-1 px-4 py-2 text-center text-white transition-all duration-300 font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-xl hover:from-pink-400 hover:to-yellow-400"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!quiz._id) {
+                                e.preventDefault();
+                                toast.error(
+                                  "Cannot take quiz - Invalid quiz ID"
+                                );
+                              }
+                            }}
+                          >
+                            Take Quiz
+                          </Link>
+                          {isCreator(quiz) && (
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (quiz._id) {
+                                  handleDeleteQuiz(quiz._id);
+                                } else {
+                                  toast.error(
+                                    "Cannot delete quiz - Invalid quiz ID"
+                                  );
+                                }
+                              }}
+                              className="px-4 py-2 text-white transition-all duration-300 bg-red-500 font-orbitron rounded-xl hover:bg-red-600"
+                            >
+                              Delete
+                            </motion.button>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              )}
+            </motion.div>
           )}
-        </div>
-      )}
 
-      {activeTab === "public" && (
-        <div>
-          <h2 className="quiz-card-title">Public Quizzes</h2>
+          {activeTab === "public" && (
+            <motion.div
+              key="public"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h2 className="mb-6 text-2xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                Public Quizzes
+              </h2>
 
-          {Array.isArray(publicQuizzes) && publicQuizzes.length === 0 ? (
-            <div className="empty-state">
-              <p className="empty-state-text">No public quizzes available.</p>
-            </div>
-          ) : (
-            <div className="quiz-grid">
-              {Array.isArray(publicQuizzes) &&
-                publicQuizzes.map((quiz) => (
-                  <div
-                    key={quiz._id}
-                    className="quiz-card"
-                    onClick={() => {
-                      if (!quiz._id) {
-                        console.error("Public quiz without valid ID:", quiz);
-                        toast.error(
-                          "Cannot view quiz details - Invalid quiz ID"
-                        );
-                        return;
-                      }
-                      const quizId = String(quiz._id).trim();
-                      console.log("Public quiz click:", quiz);
-                      console.log("Public quiz _id click:", quizId);
-                      navigate(`/quiz/${quizId}`);
-                    }}
-                    style={{ cursor: "pointer" }}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="quiz-card-title">{quiz.title}</h3>
-                      <span className="px-2 py-1 text-xs text-green-800 bg-green-100 rounded">
-                        Public
-                      </span>
-                    </div>
-                    <p className="quiz-card-info">
-                      {quiz.questions
-                        ? `${quiz.questions.length} questions`
-                        : "Loading questions..."}
-                    </p>
-                    <p className="quiz-card-info">
-                      Created by: {quiz.createdBy?.username || "Unknown"}
-                    </p>
-                    <div className="quiz-card-actions">
-                      <Link
-                        to={`/quiz/${quiz._id}`}
-                        className="take-quiz-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
+              {Array.isArray(publicQuizzes) && publicQuizzes.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-8 text-center border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
+                >
+                  <p className="text-xl text-pink-200 font-orbitron">
+                    No public quizzes available.
+                  </p>
+                </motion.div>
+              ) : (
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {Array.isArray(publicQuizzes) &&
+                    publicQuizzes.map((quiz, index) => (
+                      <motion.div
+                        key={quiz._id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                        className="quiz-card bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-4 border-pink-400/40 hover:shadow-[0_0_40px_10px_rgba(236,72,153,0.7)] transition-all duration-500"
+                        onClick={() => {
                           if (!quiz._id) {
-                            e.preventDefault();
-                            console.error(
-                              "Public quiz without valid ID (Take Quiz button):",
-                              quiz
+                            toast.error(
+                              "Cannot view quiz details - Invalid quiz ID"
                             );
-                            toast.error("Cannot take quiz - Invalid quiz ID");
+                            return;
                           }
+                          navigate(`/quiz/${quiz._id}`);
                         }}
                       >
-                        Take Quiz
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-            </div>
+                        <div className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <h3 className="text-xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                              {quiz.title}
+                            </h3>
+                            <span className="px-3 py-1 text-sm text-green-800 bg-green-100 rounded-full font-orbitron">
+                              Public
+                            </span>
+                          </div>
+                          <p className="mb-2 text-pink-200 font-orbitron">
+                            {quiz.questions
+                              ? `${quiz.questions.length} questions`
+                              : "Loading questions..."}
+                          </p>
+                          <p className="mb-4 text-pink-200 font-orbitron">
+                            Created by: {quiz.createdBy?.username || "Unknown"}
+                          </p>
+                          <Link
+                            to={`/quiz/${quiz._id}`}
+                            className="block w-full px-4 py-2 text-center text-white transition-all duration-300 font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-xl hover:from-pink-400 hover:to-yellow-400"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!quiz._id) {
+                                e.preventDefault();
+                                toast.error(
+                                  "Cannot take quiz - Invalid quiz ID"
+                                );
+                              }
+                            }}
+                          >
+                            Take Quiz
+                          </Link>
+                        </div>
+                      </motion.div>
+                    ))}
+                </div>
+              )}
+            </motion.div>
           )}
-        </div>
-      )}
 
-      {activeTab === "submissions" && (
-        <div>
-          <h2 className="mb-6 text-xl font-bold">My Submissions</h2>
-          <CollapsibleSubmissionsTable submissions={submissions} />
-        </div>
-      )}
-
-      {/* Multiplayer section */}
-      <div className="multiplayer-section">
-        <h2 className="multiplayer-title">Multiplayer Quizzes</h2>
-        <p className="multiplayer-description">
-          Challenge your friends or join public quiz rooms for a competitive
-          experience.
-        </p>
-
-        <div className="multiplayer-grid">
-          <div className="multiplayer-card">
-            <h3 className="multiplayer-card-title">Create a Room</h3>
-            <p className="multiplayer-card-description">
-              Create a multiplayer room with one of your quizzes and invite
-              others to join.
-            </p>
-            <button
-              onClick={() => {
-                // Check if we have quizzes available
-                if (!Array.isArray(quizzes) || quizzes.length === 0) {
-                  toast.error("You need to create a quiz first!");
-                  setTimeout(() => navigate("/upload"), 1500);
-                } else {
-                  navigate("/create-room");
-                }
-              }}
-              className="multiplayer-btn create-room-btn"
+          {activeTab === "submissions" && (
+            <motion.div
+              key="submissions"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3 }}
             >
-              Create Room
-            </button>
-          </div>
+              <h2 className="mb-6 text-2xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                My Submissions
+              </h2>
+              <CollapsibleSubmissionsTable submissions={submissions} />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-          <div className="multiplayer-card">
-            <h3 className="multiplayer-card-title">Join a Room</h3>
-            <p className="multiplayer-card-description">
-              Join an existing quiz room using a room code from another player.
-            </p>
-            <button
-              onClick={() => navigate("/join-room")}
-              className="multiplayer-btn join-room-btn"
+        {/* Multiplayer section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="p-8 mt-12 border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
+        >
+          <h2 className="mb-4 text-2xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+            Multiplayer Quizzes
+          </h2>
+          <p className="mb-8 text-pink-200 font-orbitron">
+            Challenge your friends or join public quiz rooms for a competitive
+            experience.
+          </p>
+
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="p-6 border-2 multiplayer-card bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 backdrop-blur-xl rounded-2xl border-pink-400/40"
             >
-              Join Room
-            </button>
+              <h3 className="mb-3 text-xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                Create a Room
+              </h3>
+              <p className="mb-6 text-pink-200 font-orbitron">
+                Create a multiplayer room with one of your quizzes and invite
+                others to join.
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  if (!Array.isArray(quizzes) || quizzes.length === 0) {
+                    toast.error("You need to create a quiz first!");
+                    setTimeout(() => navigate("/upload"), 1500);
+                  } else {
+                    navigate("/create-room");
+                  }
+                }}
+                className="w-full px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
+              >
+                Create Room
+              </motion.button>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              className="p-6 border-2 multiplayer-card bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 backdrop-blur-xl rounded-2xl border-pink-400/40"
+            >
+              <h3 className="mb-3 text-xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                Join a Room
+              </h3>
+              <p className="mb-6 text-pink-200 font-orbitron">
+                Join an existing quiz room using a room code from another
+                player.
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate("/join-room")}
+                className="w-full px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
+              >
+                Join Room
+              </motion.button>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       <CreateQuizModal

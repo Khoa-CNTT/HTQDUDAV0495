@@ -45,7 +45,7 @@ function App() {
   useEffect(() => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth"
+      behavior: "smooth",
     });
   }, [location.pathname]);
 
@@ -244,8 +244,6 @@ function App() {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
-
-      <Footer />
     </div>
   );
 }

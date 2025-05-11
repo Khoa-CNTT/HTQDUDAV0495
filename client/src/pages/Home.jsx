@@ -8,6 +8,7 @@ import FaqSection from "@/components/home/FaqSection";
 import BlogList from "@/components/home/BlogList";
 import QuizCard from "@/components/home/QuizCard";
 import { motion } from "framer-motion";
+import Footer from "@/components/Footer";
 
 const Home = () => {
   const { isLoggedIn } = useAuth();
@@ -209,6 +210,7 @@ const Home = () => {
           </div>
         </motion.section>
       </div>
+      <Footer />
     </div>
   );
 };
