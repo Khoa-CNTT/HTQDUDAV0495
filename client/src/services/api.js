@@ -297,7 +297,7 @@ export const createRoom = async (quizId, options = {}) => {
 
     console.log("Server response for createRoom:", response.data);
     const roomData = response.data.data;
-    
+
     // Ensure the user knows they are the host by adding a flag
     return {
       success: true,
@@ -309,7 +309,7 @@ export const createRoom = async (quizId, options = {}) => {
         // Explicit flag to indicate this user is the host
         isCreator: true,
         // Host name for display
-        hostName: typeof roomData.hostId === "object" 
+        hostName: typeof roomData.hostId === "object"
           ? roomData.hostId.displayName || roomData.hostId.username
           : "Host",
       },
@@ -349,10 +349,10 @@ export const getRoomByCode = async (code) => {
 
     // Handle different response structures
     const roomData = response.data.data || response.data;
-    
+
     // Log the raw data we received from the server
     console.log("Raw room data from server:", JSON.stringify(roomData));
-    
+
     // Special handling for hostId to ensure consistency
     if (roomData.hostId) {
       console.log("Original hostId:", roomData.hostId);
@@ -515,6 +515,68 @@ export const checkIsHost = async (code) => {
     return {
       success: true,
       isHost: false
+    };
+  }
+};
+
+// Admin API endpoints
+
+// Get all users (admin only)
+export const getAllUsers = async () => {
+  try {
+    const response = await api.get('/admin/users');
+    return response.data;
+  } catch (error) {
+    console.error("Error getting all users:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to load users",
+      data: []
+    };
+  }
+};
+
+// Delete user by ID (admin only)
+export const deleteUserById = async (userId) => {
+  try {
+    const response = await api.delete(`/admin/users/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to delete user",
+      data: null
+    };
+  }
+};
+
+// Get all quizzes (admin only)
+export const getAllQuizzes = async () => {
+  try {
+    const response = await api.get('/admin/quizzes');
+    return response.data;
+  } catch (error) {
+    console.error("Error getting all quizzes:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to load quizzes",
+      data: []
+    };
+  }
+};
+
+// Delete quiz by ID (admin only)
+export const deleteQuizById = async (quizId) => {
+  try {
+    const response = await api.delete(`/admin/quizzes/${quizId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting quiz:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to delete quiz",
+      data: null
     };
   }
 };

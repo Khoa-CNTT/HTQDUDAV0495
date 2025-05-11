@@ -24,6 +24,7 @@ import {
   FaUser,
   FaUserFriends,
   FaMedal,
+  FaUserCog,
 } from "react-icons/fa";
 
 const Dashboard = ({ user, logout }) => {
@@ -130,14 +131,14 @@ const Dashboard = ({ user, logout }) => {
   console.log("Danh sách quizzes:", quizzes);
   const validQuizzes = Array.isArray(quizzes)
     ? quizzes.filter(
-        (quiz) => typeof quiz._id === "string" && quiz._id.trim() !== ""
-      )
+      (quiz) => typeof quiz._id === "string" && quiz._id.trim() !== ""
+    )
     : [];
   const invalidQuizzes = Array.isArray(quizzes)
     ? quizzes.filter(
-        (quiz) =>
-          !quiz._id || typeof quiz._id !== "string" || quiz._id.trim() === ""
-      )
+      (quiz) =>
+        !quiz._id || typeof quiz._id !== "string" || quiz._id.trim() === ""
+    )
     : [];
   if (invalidQuizzes.length > 0) {
     console.warn("Quiz bị thiếu _id:", invalidQuizzes);
@@ -280,6 +281,21 @@ const Dashboard = ({ user, logout }) => {
                     </span>
                   </Link>
 
+                  {/* Admin link - only shown for admin users */}
+                  {user?.accountType === 'admin' && (
+                    <Link
+                      to="/admin"
+                      className="flex items-center gap-3 px-4 py-3 dropdown-item hover:bg-black/20"
+                    >
+                      <div className="dropdown-item-icon">
+                        <FaUserCog className="w-5 h-5 text-yellow-400" />
+                      </div>
+                      <span className="text-pink-200 dropdown-item-text font-orbitron">
+                        Admin Panel
+                      </span>
+                    </Link>
+                  )}
+
                   <Link
                     to="/achievements"
                     className="flex items-center gap-3 px-4 py-3 dropdown-item hover:bg-black/20"
@@ -332,9 +348,8 @@ const Dashboard = ({ user, logout }) => {
             Public Quizzes
           </button>
           <button
-            className={`tab-button ${
-              activeTab === "submissions" ? "active" : ""
-            }`}
+            className={`tab-button ${activeTab === "submissions" ? "active" : ""
+              }`}
             onClick={() => setActiveTab("submissions")}
           >
             <FaTrophy className="w-5 h-5" />
