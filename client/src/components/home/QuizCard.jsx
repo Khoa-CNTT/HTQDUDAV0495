@@ -43,22 +43,22 @@ const QuizCard = ({ quiz }) => {
       whileInView="visible"
       whileHover="hover"
       viewport={{ once: true, margin: "-100px" }}
-      className="relative overflow-hidden transition-all duration-300 bg-white border border-gray-100 shadow-lg group rounded-2xl hover:shadow-2xl"
+      className="relative overflow-hidden transition-all duration-300 bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-4 border-pink-400/40 group"
     >
       {/* Gradient Overlay */}
-      <div className="absolute inset-0 transition-opacity duration-300 opacity-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 group-hover:opacity-100" />
+      <div className="absolute inset-0 transition-opacity duration-300 opacity-0 bg-gradient-to-br from-yellow-400/10 via-pink-500/10 to-indigo-500/10 group-hover:opacity-100" />
 
       <div className="relative p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <motion.h3
-            className="text-xl font-semibold text-gray-800 transition-colors duration-300 group-hover:text-indigo-600"
+            className="text-xl font-semibold text-pink-200 transition-colors duration-300 group-hover:text-yellow-400 font-orbitron"
             whileHover={{ scale: 1.02 }}
           >
             {quiz.title}
           </motion.h3>
           <motion.span
-            className="px-3 py-1 text-sm font-medium text-indigo-600 rounded-full bg-indigo-50"
+            className="px-3 py-1 text-sm font-medium text-yellow-400 rounded-full bg-yellow-400/10 font-orbitron"
             whileHover={{ scale: 1.05 }}
           >
             {quiz.questions?.length || 0} questions
@@ -66,12 +66,12 @@ const QuizCard = ({ quiz }) => {
         </div>
 
         {/* Description */}
-        <p className="mb-6 text-gray-600 transition-colors duration-300 line-clamp-2 group-hover:text-gray-700">
+        <p className="mb-6 text-pink-200/80 transition-colors duration-300 line-clamp-2 group-hover:text-pink-200 font-orbitron">
           {quiz.description}
         </p>
 
         {/* Stats */}
-        <div className="flex items-center gap-4 mb-6 text-sm text-gray-500">
+        <div className="flex items-center gap-4 mb-6 text-sm text-pink-200/60">
           <div className="flex items-center gap-1">
             <FaClock className="w-4 h-4" />
             <span>{quiz.timeLimit || "No time limit"}</span>
@@ -91,7 +91,7 @@ const QuizCard = ({ quiz }) => {
           >
             <Link
               to={`/quiz/${quiz._id}`}
-              className="inline-flex items-center px-6 py-3 text-sm font-medium text-white transition-all duration-300 shadow-lg rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 hover:shadow-xl"
+              className="inline-flex items-center px-6 py-3 text-sm font-medium text-white transition-all duration-300 shadow-lg rounded-xl bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 hover:from-pink-400 hover:to-yellow-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 hover:shadow-xl font-orbitron"
             >
               <FaPlay className="w-4 h-4 mr-2" />
               Take Quiz

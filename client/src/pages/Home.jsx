@@ -9,6 +9,7 @@ import BlogList from "@/components/home/BlogList";
 import QuizCard from "@/components/home/QuizCard";
 import { motion } from "framer-motion";
 import Footer from "@/components/Footer";
+import { FaGamepad, FaStar, FaTrophy, FaUsers } from "react-icons/fa";
 
 const Home = () => {
   const { isLoggedIn } = useAuth();
@@ -33,12 +34,92 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-50 via-purple-50 to-pink-50">
-      <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-5"></div>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 relative overflow-x-hidden">
+      {/* Animated SVG background */}
+      <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-0" style={{filter:'blur(2px)'}}>
+        <defs>
+          <radialGradient id="g1" cx="50%" cy="50%" r="80%">
+            <stop offset="0%" stopColor="#f472b6" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        <motion.circle 
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          cx="80%" 
+          cy="20%" 
+          r="300" 
+          fill="url(#g1)"
+        >
+          <animate 
+            attributeName="cx" 
+            values="80%;20%;80%" 
+            dur="12s" 
+            repeatCount="indefinite" 
+          />
+          <animate 
+            attributeName="r" 
+            values="300;350;300" 
+            dur="8s" 
+            repeatCount="indefinite" 
+          />
+        </motion.circle>
+        <motion.circle 
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
+          cx="20%" 
+          cy="80%" 
+          r="200" 
+          fill="url(#g1)"
+        >
+          <animate 
+            attributeName="cy" 
+            values="80%;20%;80%" 
+            dur="16s" 
+            repeatCount="indefinite" 
+          />
+          <animate 
+            attributeName="r" 
+            values="200;250;200" 
+            dur="10s" 
+            repeatCount="indefinite" 
+          />
+        </motion.circle>
+        <motion.circle 
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1.5, delay: 1, ease: "easeOut" }}
+          cx="50%" 
+          cy="50%" 
+          r="150" 
+          fill="url(#g1)"
+        >
+          <animate 
+            attributeName="cx" 
+            values="50%;70%;50%" 
+            dur="14s" 
+            repeatCount="indefinite" 
+          />
+          <animate 
+            attributeName="cy" 
+            values="50%;30%;50%" 
+            dur="14s" 
+            repeatCount="indefinite" 
+          />
+          <animate 
+            attributeName="r" 
+            values="150;200;150" 
+            dur="12s" 
+            repeatCount="indefinite" 
+          />
+        </motion.circle>
+      </svg>
 
-      <Hero />
+      <div className="relative z-10">
+        <Hero />
 
-      <div className="relative">
         {/* Popular Quizzes Section */}
         <motion.section
           initial={{ opacity: 0 }}
@@ -56,10 +137,10 @@ const Home = () => {
               transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
               className="mb-16 text-center"
             >
-              <h2 className="mb-4 text-5xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text">
+              <h2 className="mb-4 text-5xl font-bold text-transparent bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 bg-clip-text font-orbitron">
                 Explore Popular Quizzes
               </h2>
-              <p className="max-w-2xl mx-auto text-xl leading-relaxed text-gray-600">
+              <p className="max-w-2xl mx-auto text-xl leading-relaxed text-pink-200 font-orbitron">
                 Discover and take quizzes created by our community. Test your
                 knowledge and learn something new!
               </p>
@@ -67,11 +148,11 @@ const Home = () => {
 
             {loading ? (
               <div className="flex justify-center py-12">
-                <div className="w-16 h-16 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
+                <div className="w-16 h-16 border-4 border-pink-400 rounded-full border-t-transparent animate-spin"></div>
               </div>
             ) : publicQuizzes.length === 0 ? (
-              <div className="py-12 text-center shadow-lg bg-white/50 backdrop-blur-sm rounded-2xl">
-                <p className="text-xl text-gray-600">
+              <div className="py-12 text-center bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-4 border-pink-400/40">
+                <p className="text-xl text-pink-200 font-orbitron">
                   No quizzes available at the moment.
                 </p>
               </div>
@@ -98,7 +179,7 @@ const Home = () => {
             >
               <Link
                 to="/dashboard"
-                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 text-white font-medium rounded-xl hover:from-pink-400 hover:to-yellow-400 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-orbitron"
               >
                 <span>View All Quizzes</span>
                 <svg
@@ -136,15 +217,15 @@ const Home = () => {
               transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
               className="mb-16 text-center"
             >
-              <h2 className="mb-4 text-5xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text">
+              <h2 className="mb-4 text-5xl font-bold text-transparent bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 bg-clip-text font-orbitron">
                 Create Your Own Quiz
               </h2>
-              <p className="max-w-2xl mx-auto text-xl leading-relaxed text-gray-600">
+              <p className="max-w-2xl mx-auto text-xl leading-relaxed text-pink-200 font-orbitron">
                 Follow these simple steps to create engaging quizzes for your
                 students or yourself
               </p>
             </motion.div>
-            <div className="p-8 shadow-lg bg-white/50 backdrop-blur-sm rounded-2xl">
+            <div className="p-8 bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-4 border-pink-400/40">
               <CreateQuizSteps />
             </div>
           </div>
@@ -167,14 +248,14 @@ const Home = () => {
               transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
               className="mb-16 text-center"
             >
-              <h2 className="mb-4 text-5xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text">
+              <h2 className="mb-4 text-5xl font-bold text-transparent bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 bg-clip-text font-orbitron">
                 Frequently Asked Questions
               </h2>
-              <p className="max-w-2xl mx-auto text-xl leading-relaxed text-gray-600">
+              <p className="max-w-2xl mx-auto text-xl leading-relaxed text-pink-200 font-orbitron">
                 Find answers to common questions about our platform
               </p>
             </motion.div>
-            <div className="p-8 shadow-lg bg-white/50 backdrop-blur-sm rounded-2xl">
+            <div className="p-8 bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-4 border-pink-400/40">
               <FaqSection />
             </div>
           </div>
@@ -197,14 +278,14 @@ const Home = () => {
               transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
               className="mb-16 text-center"
             >
-              <h2 className="mb-4 text-5xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text">
-                Lasted Updates
+              <h2 className="mb-4 text-5xl font-bold text-transparent bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 bg-clip-text font-orbitron">
+                Latest Updates
               </h2>
-              <p className="max-w-2xl mx-auto text-xl leading-relaxed text-gray-600">
+              <p className="max-w-2xl mx-auto text-xl leading-relaxed text-pink-200 font-orbitron">
                 Stay informed with our latest news and educational insights
               </p>
             </motion.div>
-            <div className="p-8 shadow-lg bg-white/50 backdrop-blur-sm rounded-2xl">
+            <div className="p-8 bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-4 border-pink-400/40">
               <BlogList />
             </div>
           </div>
