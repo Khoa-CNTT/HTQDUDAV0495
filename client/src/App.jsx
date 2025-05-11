@@ -35,6 +35,7 @@ import { SidebarProvider } from "./components/ui/sidebar";
 import Friends from "./components/Friends";
 import CreateQuiz from "./pages/CreateQuiz";
 import Achievements from "./pages/Achievements";
+import Admin from "./pages/Admin";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -240,7 +241,23 @@ function App() {
           element={<QuizResults user={user} />}
         />
 
-        <Route path="/create-quiz" element={<CreateQuiz />} />
+        <Route
+          path="/create-quiz"
+          element={<CreateQuiz />}
+        />
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute user={user}>
+              {user && user.accountType === 'admin' ? (
+                <Admin user={user} />
+              ) : (
+                <Navigate to="/dashboard" />
+              )}
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
