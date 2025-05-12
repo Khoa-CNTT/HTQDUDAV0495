@@ -110,32 +110,70 @@ const userService = {
                 profilePicture: user.profilePicture
             }
         };
-    },
-
-    // verify user email
+    },    // verify user email
     async verifyEmail(token) {
-        const user = await User.findOne({
-            verificationToken: token,
-            verificationTokenExpiry: { $gt: new Date() }
-        });
+        try {
+            console.log('Verifying email with token:', token);
 
-        if (!user) {
-            throw new Error('Invalid or expired verification token');
+            // First try to find a user that was verified with this token
+            const verifiedUser = await User.findOne({
+                isActive: true,
+                $or: [
+                    { verificationToken: token },
+                    { lastUsedVerificationToken: token }
+                ]
+            });
+
+            if (verifiedUser) {
+                return {
+                    success: true,
+                    message: 'Your email is already verified. You can now login to your account.',
+                    alreadyVerified: true
+                };
+            }
+
+            // If not found, look for unverified user with this token
+            const user = await User.findOne({ verificationToken: token });
+
+            if (!user) {
+                throw new Error('Invalid verification token. Please check your email link or register again.');
+            }
+
+            // Check if token is expired
+            if (user.verificationTokenExpiry < new Date()) {
+                throw new Error('Verification token has expired. Please register again to get a new verification link.');
+            } console.log('Updating user verification status...');
+
+            // Store the last used token before clearing it (for duplicate request handling)
+            user.lastUsedVerificationToken = user.verificationToken;
+            user.verificationToken = null;
+            user.verificationTokenExpiry = null;
+            user.isActive = true;
+            await user.save();
+
+            let welcomeEmailSent = false;
+
+            // Send welcome email since this is the first successful verification
+            try {
+                console.log('Attempting to send welcome email...');
+                welcomeEmailSent = await emailService.sendWelcomeEmail(user.email, user.username);
+                console.log('Welcome email status:', welcomeEmailSent ? 'sent' : 'failed');
+            } catch (emailError) {
+                console.error('Welcome email error:', emailError);
+                // Continue even if welcome email fails
+            }
+
+            return {
+                success: true,
+                message: welcomeEmailSent
+                    ? 'Email verified successfully. A welcome email has been sent to your inbox.'
+                    : 'Email verified successfully. You can now log in to your account.',
+                userId: user._id
+            };
+        } catch (error) {
+            console.error('Verification error in service:', error);
+            throw error;
         }
-
-        // Update user
-        user.verificationToken = null;
-        user.verificationTokenExpiry = null;
-        user.isActive = true;
-        await user.save();
-
-        // Send welcome email
-        await emailService.sendWelcomeEmail(user.email, user.username);
-
-        return {
-            message: 'Email verified successfully',
-            userId: user._id
-        };
     },
 
     // request password reset

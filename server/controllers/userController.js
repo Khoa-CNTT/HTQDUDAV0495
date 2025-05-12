@@ -129,12 +129,18 @@ const updateUserProfile = async (req, res) => {
 const verifyEmail = async (req, res) => {
   try {
     const result = await userService.verifyEmail(req.params.token);
-    // Redirect to login page after successful verification
-    res.redirect(`${process.env.CLIENT_URL}/login?verified=true`);
+    // Return JSON response instead of redirecting
+    res.json({
+      success: true,
+      message: 'Email verified successfully'
+    });
   } catch (error) {
     console.error('Verification error:', error);
-    // Redirect to login page with error message
-    res.redirect(`${process.env.CLIENT_URL}/login?verified=false&error=${encodeURIComponent(error.message)}`);
+    // Return error as JSON
+    res.status(400).json({
+      success: false,
+      message: error.message || 'Email verification failed'
+    });
   }
 };
 
@@ -146,4 +152,4 @@ module.exports = {
   getUserProfile,
   updateUserProfile,
   verifyEmail
-}; 
+};
