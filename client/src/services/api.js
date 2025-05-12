@@ -525,7 +525,10 @@ export const checkIsHost = async (code) => {
 export const getAllUsers = async () => {
   try {
     const response = await api.get('/admin/users');
-    return response.data;
+    return {
+      success: true,
+      data: response.data
+    };
   } catch (error) {
     console.error("Error getting all users:", error);
     return {
@@ -555,7 +558,10 @@ export const deleteUserById = async (userId) => {
 export const getAllQuizzes = async () => {
   try {
     const response = await api.get('/admin/quizzes');
-    return response.data;
+    return {
+      success: true,
+      data: response.data
+    };
   } catch (error) {
     console.error("Error getting all quizzes:", error);
     return {
