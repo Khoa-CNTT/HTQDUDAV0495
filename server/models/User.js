@@ -59,13 +59,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["standard", "admin"],
       default: "standard",
-    },
-    verificationToken: {
+    }, verificationToken: {
       type: String,
       default: null,
     },
     verificationTokenExpiry: {
       type: Date,
+      default: null,
+    },
+    lastUsedVerificationToken: {
+      type: String,
       default: null,
     },
     resetPasswordToken: {

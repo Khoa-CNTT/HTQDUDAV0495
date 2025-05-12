@@ -6,32 +6,46 @@ import toast from 'react-hot-toast';
 const VerifyEmail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showRetry, setShowRetry] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-
+  
   useEffect(() => {
     const verifyUserEmail = async () => {
       const searchParams = new URLSearchParams(location.search);
       const token = searchParams.get('token');
-      
+
       if (!token) {
-        setError('Missing verification token');
+        setError('Invalid verification link. Please check your email and use the complete verification link.');
         setLoading(false);
         return;
       }
-      
+
       try {
-        await verifyEmail(token);
-        toast.success('Email verification successful!');
-        
-        // Auto redirect to login after 3 seconds
-        setTimeout(() => {
-          navigate('/login');
-        }, 3000);
+        const response = await verifyEmail(token);
+
+        if (response?.success) {
+          if (response?.alreadyVerified) {
+            toast.success('Your email is already verified!');
+          } else {
+            toast.success('Email verification successful!');
+          }
+        } else {
+          throw new Error(response?.message || 'Verification failed. Please try again.');
+        }
       } catch (error) {
-        console.error('Verification error:', error);
-        setError(error.response?.data?.message || 'Email verification failed. The link may have expired.');
-        toast.error('Email verification failed');
+        const errorMessage =
+          error.response?.data?.message ||
+          error.message ||
+          'Email verification failed. Please check your verification link and try again.';
+
+        setError(errorMessage);
+        toast.error(errorMessage);
+
+        // If token expired, add a retry button
+        if (errorMessage.includes('expired')) {
+          setShowRetry(true);
+        }
       } finally {
         setLoading(false);
       }
@@ -61,18 +75,27 @@ const VerifyEmail = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Verification Failed</h2>
           <p className="text-gray-600 mb-6">{error}</p>
           <div className="flex flex-col space-y-3">
-            <Link 
-              to="/login" 
-              className="inline-block bg-indigo-600 text-white py-2 px-6 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            >
-              Go to Login
-            </Link>
-            <button 
-              onClick={() => navigate('/register')}
+            {showRetry ? (
+              <Link
+                to="/register"
+                className="inline-block bg-indigo-600 text-white py-2 px-6 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              >
+                Register Again
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                className="inline-block bg-indigo-600 text-white py-2 px-6 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              >
+                Go to Login
+              </Link>
+            )}
+            <Link
+              to="/help/verify-email"
               className="inline-block bg-gray-200 text-gray-800 py-2 px-6 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
             >
-              Create a New Account
-            </button>
+              Need Help?
+            </Link>
           </div>
         </div>
       </div>
@@ -86,21 +109,30 @@ const VerifyEmail = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Email Verified Successfully!</h2>
-        <p className="text-gray-600 mb-6">
-          Thank you for verifying your email address. Your account is now active, and you can access all features of the platform.
-        </p>
-        <p className="text-gray-500 mb-4">
-          Redirecting to login page in 3 seconds...
-        </p>
-        <Link 
-          to="/login" 
-          className="inline-block bg-indigo-600 text-white py-2 px-6 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        >
-          Login Now
-        </Link>
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Your account is now active and ready to use. You can create and take quizzes, track your progress, and more!
+          </p>
+          <div className="bg-blue-50 text-blue-800 p-4 rounded-lg text-sm">
+            <p>What's next?</p>
+            <ul className="list-disc list-inside mt-2 text-left">
+              <li>Log in to your account</li>
+              <li>Complete your profile</li>
+              <li>Start exploring quizzes</li>
+            </ul>
+          </div>
+          <div className="mt-6">
+            <Link
+              to="/login"
+              className="inline-block bg-indigo-600 text-white py-2 px-6 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            >
+              Login Now
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-export default VerifyEmail; 
+export default VerifyEmail;
