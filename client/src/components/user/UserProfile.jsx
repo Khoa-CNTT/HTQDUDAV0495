@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { motion } from "framer-motion";
 import {
   FaUser,
   FaEdit,
@@ -9,6 +8,7 @@ import {
   FaCalendarAlt,
   FaSignOutAlt,
 } from "react-icons/fa";
+import "../../styles/Dashboard.css";
 
 const UserProfile = () => {
   const { user, logout } = useAuth();
@@ -35,224 +35,223 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="min-h-screen py-12 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-      <div className="container px-4 mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-4xl mx-auto"
-        >
-          {/* Profile Header */}
-          <div className="mb-8 overflow-hidden bg-white shadow-xl rounded-2xl">
-            <div className="relative h-48 bg-gradient-to-r from-indigo-600 to-purple-600">
-              <div className="absolute inset-0 bg-[url('/images/pattern.svg')] opacity-10"></div>
+    <div className="dashboard-container" style={{minHeight: '100vh', position: 'relative', overflow: 'hidden'}}>
+      {/* Hiệu ứng blur động giống dashboard */}
+      <div style={{position: 'absolute', left: '10%', top: '5%', width: 600, height: 600, background: 'radial-gradient(circle, #fff 0%, #8b5cf6 60%, transparent 100%)', opacity: 0.08, filter: 'blur(60px)', zIndex: 0}}></div>
+      <div style={{position: 'absolute', right: '10%', bottom: '5%', width: 400, height: 400, background: 'radial-gradient(circle, #f59e0b 0%, #fbbf24 60%, transparent 100%)', opacity: 0.10, filter: 'blur(80px)', zIndex: 0}}></div>
+      <div className="max-w-4xl mx-auto relative z-10">
+        <div className="mb-8 dashboard-card" style={{
+          background: 'linear-gradient(120deg, #3a2176 0%, #5a3fd4 50%, #8b5cf6 100%)',
+          border: '3px solid #b983ff',
+          borderRadius: '2rem',
+          boxShadow: '0 8px 32px 0 rgba(99,102,241,0.25)',
+          color: '#fff',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          <div className="relative h-48 dashboard-header" style={{background: 'transparent'}}>
+            {/* Có thể thêm icon hoặc hiệu ứng động ở đây nếu muốn */}
+          </div>
+          <div className="relative px-6 py-8">
+            <div className="absolute -top-16 left-6">
+              <div className="flex items-center justify-center w-32 h-32 border-4 border-white rounded-full shadow-lg" style={{background: 'rgba(255,255,255,0.10)', boxShadow: '0 4px 32px 0 #8b5cf6', border: '4px solid #fff'}}>
+                <FaUser className="w-16 h-16" style={{color: '#fbbf24'}} />
+              </div>
             </div>
-            <div className="relative px-6 py-8">
-              <div className="absolute -top-16 left-6">
-                <div className="flex items-center justify-center w-32 h-32 border-4 border-white rounded-full shadow-lg bg-gradient-to-br from-indigo-100 to-purple-100">
-                  <FaUser className="w-16 h-16 text-indigo-600" />
-                </div>
-              </div>
-              <div className="ml-36">
-                <h1 className="mb-2 text-3xl font-bold text-gray-900">
-                  {user?.name || "User Name"}
-                </h1>
-                <p className="flex items-center gap-2 text-gray-600">
-                  <FaEnvelope className="text-indigo-600" />
-                  {user?.email || "user@example.com"}
-                </p>
-              </div>
+            <div className="ml-36">
+              <h1 className="dashboard-title mb-2" style={{fontSize: '2.5rem'}}>
+                {user?.name || "User Name"}
+              </h1>
+              <p className="flex items-center gap-2" style={{color: '#fff', fontWeight: 500}}>
+                <FaEnvelope style={{color: '#fbbf24'}} />
+                {user?.email || "user@example.com"}
+              </p>
             </div>
           </div>
+        </div>
 
-          {/* Profile Content */}
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            {/* Account Information */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="p-6 bg-white shadow-xl rounded-2xl"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Account Information
-                </h2>
-                <button
-                  onClick={() => setIsEditing(!isEditing)}
-                  className="p-2 text-indigo-600 transition-colors rounded-lg bg-indigo-50 hover:bg-indigo-100"
-                >
-                  <FaEdit />
-                </button>
-              </div>
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+          <div className="dashboard-card" style={{
+            background: 'linear-gradient(120deg, #3a2176 0%, #5a3fd4 50%, #8b5cf6 100%)',
+            border: '2px solid #b983ff',
+            borderRadius: '2rem',
+            boxShadow: '0 8px 32px 0 rgba(99,102,241,0.15)',
+            color: '#fff',
+            position: 'relative',
+            overflow: 'hidden',
+          }}>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="dashboard-title text-xl" style={{color: '#fff', fontSize: '1.5rem', background: 'none', WebkitTextFillColor: 'unset'}}>
+                Account Information
+              </h2>
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className="dashboard-btn"
+                style={{padding: '0.5rem 1.2rem', fontSize: '1.2rem', borderRadius: '1rem'}}
+              >
+                <FaEdit />
+              </button>
+            </div>
 
-              {isEditing ? (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                      New Password
-                    </label>
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                    />
-                  </div>
-                  <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                      Confirm Password
-                    </label>
-                    <input
-                      type="password"
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                    />
-                  </div>
-                  <div className="flex gap-4">
-                    <button
-                      type="submit"
-                      className="px-6 py-2 text-white transition-all rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-                    >
-                      Save Changes
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsEditing(false)}
-                      className="px-6 py-2 text-gray-700 transition-all bg-white border border-gray-200 rounded-lg hover:border-indigo-500 hover:text-indigo-600"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-                    <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-                      <FaUser className="text-indigo-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Full Name</p>
-                      <p className="font-medium text-gray-900">
-                        {user?.name || "User Name"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-                    <div className="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-lg">
-                      <FaEnvelope className="text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Email</p>
-                      <p className="font-medium text-gray-900">
-                        {user?.email || "user@example.com"}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-                    <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-                      <FaCalendarAlt className="text-indigo-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Member Since</p>
-                      <p className="font-medium text-gray-900">January 2024</p>
-                    </div>
-                  </div>
+            {isEditing ? (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block mb-1 text-sm font-medium" style={{color: '#fbbf24'}}>Full Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border-2 border-[#b983ff] rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    style={{background: 'rgba(255,255,255,0.10)', color: '#fff'}}
+                  />
                 </div>
-              )}
-            </motion.div>
-
-            {/* Account Actions */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="space-y-6"
-            >
-              {/* Security Settings */}
-              <div className="p-6 bg-white shadow-xl rounded-2xl">
-                <h2 className="mb-6 text-xl font-semibold text-gray-900">
-                  Security Settings
-                </h2>
-                <div className="space-y-4">
-                  <button className="flex items-center w-full gap-3 p-4 transition-all border border-gray-200 rounded-lg hover:border-indigo-500 hover:text-indigo-600">
-                    <div className="flex items-center justify-center w-10 h-10 bg-indigo-100 rounded-lg">
-                      <FaLock className="text-indigo-600" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-medium text-gray-900">
-                        Change Password
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Update your account password
-                      </p>
-                    </div>
+                <div>
+                  <label className="block mb-1 text-sm font-medium" style={{color: '#fbbf24'}}>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border-2 border-[#b983ff] rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    style={{background: 'rgba(255,255,255,0.10)', color: '#fff'}}
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm font-medium" style={{color: '#fbbf24'}}>New Password</label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border-2 border-[#b983ff] rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    style={{background: 'rgba(255,255,255,0.10)', color: '#fff'}}
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm font-medium" style={{color: '#fbbf24'}}>Confirm Password</label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 border-2 border-[#b983ff] rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    style={{background: 'rgba(255,255,255,0.10)', color: '#fff'}}
+                  />
+                </div>
+                <div className="flex gap-4">
+                  <button
+                    type="submit"
+                    className="dashboard-btn"
+                  >
+                    Save Changes
                   </button>
-                  <button className="flex items-center w-full gap-3 p-4 transition-all border border-gray-200 rounded-lg hover:border-indigo-500 hover:text-indigo-600">
-                    <div className="flex items-center justify-center w-10 h-10 bg-purple-100 rounded-lg">
-                      <FaEnvelope className="text-purple-600" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-medium text-gray-900">
-                        Email Preferences
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Manage your email notifications
-                      </p>
-                    </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                    className="dashboard-btn"
+                    style={{background: 'rgba(255,255,255,0.10)', color: '#fbbf24', border: '2px solid #fbbf24'}}
+                  >
+                    Cancel
                   </button>
                 </div>
+              </form>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-3 rounded-lg" style={{background: 'rgba(255,255,255,0.10)'}}>
+                  <div className="flex items-center justify-center w-10 h-10 rounded-lg" style={{background: 'linear-gradient(90deg, #fbbf24 0%, #8b5cf6 100%)'}}>
+                    <FaUser style={{color: 'white'}} />
+                  </div>
+                  <div>
+                    <p className="text-sm" style={{color: '#fbbf24'}}>Full Name</p>
+                    <p className="font-medium" style={{color: '#fff'}}>
+                      {user?.name || "User Name"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-lg" style={{background: 'rgba(255,255,255,0.10)'}}>
+                  <div className="flex items-center justify-center w-10 h-10 rounded-lg" style={{background: 'linear-gradient(90deg, #fbbf24 0%, #8b5cf6 100%)'}}>
+                    <FaEnvelope style={{color: 'white'}} />
+                  </div>
+                  <div>
+                    <p className="text-sm" style={{color: '#fbbf24'}}>Email</p>
+                    <p className="font-medium" style={{color: '#fff'}}>
+                      {user?.email || "user@example.com"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 rounded-lg" style={{background: 'rgba(255,255,255,0.10)'}}>
+                  <div className="flex items-center justify-center w-10 h-10 rounded-lg" style={{background: 'linear-gradient(90deg, #fbbf24 0%, #8b5cf6 100%)'}}>
+                    <FaCalendarAlt style={{color: 'white'}} />
+                  </div>
+                  <div>
+                    <p className="text-sm" style={{color: '#fbbf24'}}>Member Since</p>
+                    <p className="font-medium" style={{color: '#fff'}}>January 2024</p>
+                  </div>
+                </div>
               </div>
+            )}
+          </div>
 
-              {/* Danger Zone */}
-              <div className="p-6 bg-white border border-red-100 shadow-xl rounded-2xl">
-                <h2 className="mb-6 text-xl font-semibold text-gray-900">
-                  Danger Zone
-                </h2>
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center w-full gap-3 p-4 text-red-600 transition-all rounded-lg bg-red-50 hover:bg-red-100"
-                >
-                  <div className="flex items-center justify-center w-10 h-10 bg-red-100 rounded-lg">
-                    <FaSignOutAlt className="text-red-600" />
+          <div className="space-y-6">
+            <div className="dashboard-card" style={{
+              background: 'linear-gradient(120deg, #3a2176 0%, #5a3fd4 50%, #8b5cf6 100%)',
+              border: '2px solid #b983ff',
+              borderRadius: '2rem',
+              boxShadow: '0 8px 32px 0 rgba(99,102,241,0.15)',
+              color: '#fff',
+              position: 'relative',
+              overflow: 'hidden',
+            }}>
+              <h2 className="dashboard-title text-xl mb-6" style={{color: '#fff', fontSize: '1.5rem', background: 'none', WebkitTextFillColor: 'unset'}}>Security Settings</h2>
+              <div className="space-y-4">
+                <button className="dashboard-btn flex items-center w-full gap-3" style={{background: 'linear-gradient(90deg, #fbbf24 0%, #8b5cf6 100%)', color: '#fff', borderRadius: '1rem'}}>
+                  <div className="flex items-center justify-center w-10 h-10 rounded-lg" style={{background: 'rgba(255,255,255,0.10)'}}>
+                    <FaLock style={{color: '#fbbf24'}} />
                   </div>
                   <div className="text-left">
-                    <p className="font-medium">Logout</p>
-                    <p className="text-sm">Sign out of your account</p>
+                    <p className="font-medium" style={{color: '#fff'}}>Change Password</p>
+                    <p className="text-sm" style={{color: '#fbbf24'}}>Update your account password</p>
+                  </div>
+                </button>
+                <button className="dashboard-btn flex items-center w-full gap-3" style={{background: 'linear-gradient(90deg, #8b5cf6 0%, #fbbf24 100%)', color: '#fff', borderRadius: '1rem'}}>
+                  <div className="flex items-center justify-center w-10 h-10 rounded-lg" style={{background: 'rgba(255,255,255,0.10)'}}>
+                    <FaEnvelope style={{color: '#8b5cf6'}} />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium" style={{color: '#fff'}}>Email Preferences</p>
+                    <p className="text-sm" style={{color: '#8b5cf6'}}>Manage your email notifications</p>
                   </div>
                 </button>
               </div>
-            </motion.div>
+            </div>
+
+            <div className="dashboard-card" style={{
+              background: 'linear-gradient(120deg, #3a2176 0%, #5a3fd4 50%, #8b5cf6 100%)',
+              border: '2px solid #f59e0b',
+              borderRadius: '2rem',
+              boxShadow: '0 8px 32px 0 rgba(251,191,36,0.15)',
+              color: '#fff',
+              position: 'relative',
+              overflow: 'hidden',
+            }}>
+              <h2 className="dashboard-title text-xl mb-6" style={{color: '#fbbf24', fontSize: '1.5rem', background: 'none', WebkitTextFillColor: 'unset'}}>Danger Zone</h2>
+              <button
+                onClick={handleLogout}
+                className="dashboard-btn flex items-center w-full gap-3"
+                style={{background: 'linear-gradient(90deg, #fbbf24 0%, #ef4444 100%)', color: '#fff', borderRadius: '1rem'}}
+              >
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg" style={{background: 'rgba(255,255,255,0.10)'}}>
+                  <FaSignOutAlt style={{color: '#ef4444'}} />
+                </div>
+                <div className="text-left">
+                  <p className="font-medium" style={{color: '#fff'}}>Logout</p>
+                  <p className="text-sm" style={{color: '#ef4444'}}>Sign out of your account</p>
+                </div>
+              </button>
+            </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

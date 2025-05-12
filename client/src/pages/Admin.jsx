@@ -153,7 +153,7 @@ const Admin = ({ user }) => {
                             to="/dashboard"
                             className="flex items-center gap-2 text-pink-200 hover:text-white transition-all"
                         >
-                            <FaArrowLeft className="animate-pulse" />
+                            <FaArrowLeft />
                             <span className="font-orbitron">Back to Dashboard</span>
                         </Link>
                     </div>

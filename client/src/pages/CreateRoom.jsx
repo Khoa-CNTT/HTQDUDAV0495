@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createRoom, getPublicQuizzes, getUserQuizzes } from '../services/api';
 import toast from 'react-hot-toast';
-import { motion } from 'framer-motion';
-import { FaUsers, FaClock, FaEnvelope, FaCheck } from 'react-icons/fa';
+import { FaUsers, FaClock, FaEnvelope, FaCheck, FaGamepad } from 'react-icons/fa';
+import '../styles/CreateRoom.css';
 
 function CreateRoom({ user }) {
   const [quizzes, setQuizzes] = useState([]);
@@ -103,269 +103,231 @@ function CreateRoom({ user }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading quizzes...</p>
-          </div>
-        </div>
+      <div className="create-room-container">
+        {/* Animated SVG background */}
+        <svg className="animated-bg-svg" style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',zIndex:0,filter:'blur(2px)'}}>
+          <defs>
+            <radialGradient id="g1" cx="50%" cy="50%" r="80%">
+              <stop offset="0%" stopColor="#f472b6" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <circle cx="80%" cy="20%" r="300" fill="url(#g1)">
+            <animate attributeName="cx" values="80%;20%;80%" dur="12s" repeatCount="indefinite" />
+          </circle>
+          <circle cx="20%" cy="80%" r="200" fill="url(#g1)">
+            <animate attributeName="cy" values="80%;20%;80%" dur="16s" repeatCount="indefinite" />
+          </circle>
+        </svg>
+        <div className="loading-spinner" style={{zIndex:1,position:'relative'}}></div>
       </div>
     );
   }
 
   if (roomCreated) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="w-full max-w-md"
-        >
-          <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden">
-            <div className="p-8 text-center">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2 }}
-                className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6"
-              >
-                <FaCheck className="w-8 h-8 text-indigo-600" />
-              </motion.div>
-              <h1 className="text-2xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text mb-2">
-                Room Created Successfully!
-              </h1>
-              <p className="text-gray-600 mb-6">Share the room code with your participants</p>
-              
-              <div className="bg-white/50 backdrop-blur-sm p-6 rounded-lg mb-6 border border-indigo-100">
-                <p className="text-sm font-medium text-gray-500 mb-2">Room Code</p>
-                <div className="flex items-center justify-center space-x-3">
-                  <span className="text-3xl font-bold tracking-wider bg-white px-6 py-3 rounded-lg border-2 border-indigo-200 text-indigo-600">
-                    {roomCode}
-                  </span>
-                  <motion.button 
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={copyInviteLink}
-                    className="p-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
-                    title="Copy invite link"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                  </motion.button>
-                </div>
-                <p className="mt-3 text-sm text-gray-500">
-                  Click the copy button to share an invite link
-                </p>
-              </div>
-              
-              <div className="flex flex-col space-y-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleJoinCreatedRoom}
-                  className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
-                >
-                  Join Room Now
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => navigate('/dashboard')}
-                  className="w-full py-3 px-4 bg-white text-gray-700 font-medium rounded-lg border-2 border-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all"
-                >
-                  Go to Dashboard
-                </motion.button>
-              </div>
-            </div>
+      <div className="create-room-container">
+        {/* Animated SVG background */}
+        <svg className="animated-bg-svg" style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',zIndex:0,filter:'blur(2px)'}}>
+          <defs>
+            <radialGradient id="g1" cx="50%" cy="50%" r="80%">
+              <stop offset="0%" stopColor="#f472b6" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <circle cx="80%" cy="20%" r="300" fill="url(#g1)">
+            <animate attributeName="cx" values="80%;20%;80%" dur="12s" repeatCount="indefinite" />
+          </circle>
+          <circle cx="20%" cy="80%" r="200" fill="url(#g1)">
+            <animate attributeName="cy" values="80%;20%;80%" dur="16s" repeatCount="indefinite" />
+          </circle>
+        </svg>
+        <div className="create-room-card" style={{zIndex:1,position:'relative'}}>
+          <div className="success-message">
+            <FaCheck className="w-5 h-5" />
+            <span>Room created successfully!</span>
           </div>
-        </motion.div>
+          
+          <div className="room-code-display">
+            <h3 className="form-label">Room Code</h3>
+            <div className="room-code">{roomCode}</div>
+            <button onClick={copyInviteLink} className="copy-button">
+              <FaEnvelope className="w-4 h-4" />
+              Copy Invite Link
+            </button>
+          </div>
+
+          <div className="button-group">
+            <button onClick={handleJoinCreatedRoom} className="create-button">
+              Join Room Now
+            </button>
+            <button onClick={() => navigate('/dashboard')} className="cancel-button">
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="w-full max-w-md"
-      >
-        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl overflow-hidden">
-          <div className="p-8">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text mb-2">
-                Create a Room
-              </h1>
-              <p className="text-gray-600">Set up a multiplayer quiz session</p>
-            </div>
+    <div className="create-room-container">
+      {/* Animated SVG background */}
+      <svg className="animated-bg-svg" style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',zIndex:0,filter:'blur(2px)'}}>
+        <defs>
+          <radialGradient id="g1" cx="50%" cy="50%" r="80%">
+            <stop offset="0%" stopColor="#f472b6" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        <circle cx="80%" cy="20%" r="300" fill="url(#g1)">
+          <animate attributeName="cx" values="80%;20%;80%" dur="12s" repeatCount="indefinite" />
+        </circle>
+        <circle cx="20%" cy="80%" r="200" fill="url(#g1)">
+          <animate attributeName="cy" values="80%;20%;80%" dur="16s" repeatCount="indefinite" />
+        </circle>
+      </svg>
+      <div className="create-room-card" style={{zIndex:1,position:'relative'}}>
+        <h1 className="create-room-title">
+          <FaGamepad className="create-room-animated-icon" />
+          Create a Room
+        </h1>
+        <p className="create-room-subtitle">Set up a multiplayer quiz session</p>
 
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-4 mb-6 bg-red-50 border border-red-200 rounded-lg"
-              >
-                <div className="flex items-center">
-                  <svg className="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="text-red-600">{error}</p>
-                </div>
-              </motion.div>
-            )}
-
-            <div className="mb-6">
-              <div className="flex rounded-lg overflow-hidden border border-gray-200">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="button"
-                  className={`flex-1 py-3 px-4 text-sm font-medium transition-all ${
-                    !showMyQuizzes 
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white' 
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setShowMyQuizzes(false)}
-                >
-                  Public Quizzes
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="button"
-                  className={`flex-1 py-3 px-4 text-sm font-medium transition-all ${
-                    showMyQuizzes 
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white' 
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setShowMyQuizzes(true)}
-                >
-                  My Quizzes
-                </motion.button>
-              </div>
-            </div>
-
-            <form onSubmit={handleCreateRoom}>
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="quiz">
-                  Select Quiz
-                </label>
-                <select
-                  id="quiz"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
-                  value={selectedQuiz}
-                  onChange={(e) => setSelectedQuiz(e.target.value)}
-                  required
-                >
-                  <option value="">-- Select a Quiz --</option>
-                  {quizzes.length === 0 ? (
-                    <option value="" disabled>
-                      {showMyQuizzes ? 'You have not created any quizzes yet' : 'No public quizzes available'}
-                    </option>
-                  ) : (
-                    quizzes.map((quiz) => (
-                      <option key={quiz._id} value={quiz._id}>
-                        {quiz.title} {quiz.category ? `(${quiz.category})` : ''}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="maxParticipants">
-                  <div className="flex items-center">
-                    <FaUsers className="w-4 h-4 mr-2 text-indigo-600" />
-                    Maximum Participants
-                  </div>
-                </label>
-                <input
-                  type="number"
-                  id="maxParticipants"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
-                  min="2"
-                  max="50"
-                  value={maxParticipants}
-                  onChange={(e) => setMaxParticipants(parseInt(e.target.value))}
-                  required
-                />
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="timeLimit">
-                  <div className="flex items-center">
-                    <FaClock className="w-4 h-4 mr-2 text-indigo-600" />
-                    Time Limit (seconds per question)
-                  </div>
-                </label>
-                <input
-                  type="number"
-                  id="timeLimit"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
-                  min="10"
-                  max="300"
-                  value={timeLimit}
-                  onChange={(e) => setTimeLimit(parseInt(e.target.value))}
-                  required
-                />
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="inviteEmails">
-                  <div className="flex items-center">
-                    <FaEnvelope className="w-4 h-4 mr-2 text-indigo-600" />
-                    Invite Users (optional)
-                  </div>
-                </label>
-                <textarea
-                  id="inviteEmails"
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
-                  rows="3"
-                  placeholder="Enter email addresses separated by commas"
-                  value={inviteEmails}
-                  onChange={(e) => setInviteEmails(e.target.value)}
-                />
-              </div>
-
-              <div className="flex flex-col space-y-4">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="submit"
-                  disabled={creating}
-                  className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {creating ? (
-                    <div className="flex items-center justify-center">
-                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Creating...
-                    </div>
-                  ) : (
-                    "Create Room"
-                  )}
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="button"
-                  onClick={() => navigate("/dashboard")}
-                  className="w-full py-3 px-4 bg-white text-gray-700 font-medium rounded-lg border-2 border-gray-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all"
-                >
-                  Cancel
-                </motion.button>
-              </div>
-            </form>
+        {error && (
+          <div className="error-message">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{error}</span>
           </div>
+        )}
+
+        <div className="quiz-selector">
+          <button
+            className={`quiz-selector-button ${!showMyQuizzes ? 'active' : ''}`}
+            onClick={() => setShowMyQuizzes(false)}
+          >
+            Public Quizzes
+          </button>
+          <button
+            className={`quiz-selector-button ${showMyQuizzes ? 'active' : ''}`}
+            onClick={() => setShowMyQuizzes(true)}
+          >
+            My Quizzes
+          </button>
         </div>
-      </motion.div>
+
+        <form onSubmit={handleCreateRoom}>
+          <div className="form-group">
+            <label className="form-label" htmlFor="quiz" style={{color: '#ffe259'}}>
+              Select Quiz
+            </label>
+            <select
+              id="quiz"
+              className="form-select"
+              value={selectedQuiz}
+              onChange={(e) => setSelectedQuiz(e.target.value)}
+              required
+              style={{color: '#000000', backgroundColor: '#ffffff'}}
+            >
+              <option value="">-- Select a Quiz --</option>
+              {quizzes.length === 0 ? (
+                <option value="" disabled>
+                  {showMyQuizzes ? 'You have not created any quizzes yet' : 'No public quizzes available'}
+                </option>
+              ) : (
+                quizzes.map((quiz) => (
+                  <option key={quiz._id} value={quiz._id} style={{backgroundColor: '#ffffff'}}>
+                    {quiz.title} {quiz.category ? `(${quiz.category})` : ''}
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="maxParticipants" style={{color: '#ffe259'}}>
+              <div className="flex items-center">
+                <FaUsers className="w-4 h-4 mr-2" />
+                Maximum Participants
+              </div>
+            </label>
+            <input
+              type="number"
+              id="maxParticipants"
+              className="form-input"
+              min="2"
+              max="50"
+              value={maxParticipants}
+              onChange={(e) => setMaxParticipants(parseInt(e.target.value))}
+              required
+              style={{color: '#000000', backgroundColor: '#ffffff'}}
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="timeLimit" style={{color: '#ffe259'}}>
+              <div className="flex items-center">
+                <FaClock className="w-4 h-4 mr-2" />
+                Time Limit (seconds per question)
+              </div>
+            </label>
+            <input
+              type="number"
+              id="timeLimit"
+              className="form-input"
+              min="10"
+              max="300"
+              value={timeLimit}
+              onChange={(e) => setTimeLimit(parseInt(e.target.value))}
+              required
+              style={{color: '#000000', backgroundColor: '#ffffff'}}
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="inviteEmails" style={{color: '#ffe259'}}>
+              <div className="flex items-center">
+                <FaEnvelope className="w-4 h-4 mr-2" />
+                Invite Users (optional)
+              </div>
+            </label>
+            <textarea
+              id="inviteEmails"
+              className="form-textarea"
+              placeholder="Enter email addresses separated by commas"
+              value={inviteEmails}
+              onChange={(e) => setInviteEmails(e.target.value)}
+              style={{color: '#000000', backgroundColor: '#ffffff'}}
+            />
+          </div>
+
+          <div className="button-group">
+            <button
+              type="submit"
+              disabled={creating}
+              className="create-button"
+            >
+              {creating ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                  Creating...
+                </div>
+              ) : (
+                "Create Room"
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard")}
+              className="cancel-button"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

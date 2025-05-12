@@ -5,6 +5,7 @@ import socketService from '../services/socketService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { toast } from 'react-hot-toast';
 import { FiArrowLeft } from 'react-icons/fi';
+import "../styles/Dashboard.css";
 
 // Always get the latest user from localStorage
 const user = JSON.parse(localStorage.getItem('user'));
@@ -106,9 +107,9 @@ const Achievements = () => {
     const lockedAchievements = achievements.filter(a => !a.unlocked);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 py-10 relative">
+        <div className="dashboard-container" style={{minHeight: '100vh'}}>
             <button
-                className="absolute top-4 left-4 z-30 flex items-center justify-center px-6 h-14 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg border-none hover:from-indigo-700 hover:to-purple-700 transition-all"
+                className="absolute top-4 left-4 z-30 flex items-center justify-center px-6 h-14 rounded-xl create-quiz-btn shadow-lg border-none transition-all"
                 onClick={() => navigate('/dashboard')}
                 aria-label="Back to dashboard"
             >
@@ -116,14 +117,12 @@ const Achievements = () => {
             </button>
             <div className="max-w-5xl mx-auto px-4">
                 <div className="flex justify-between items-center mb-10">
-                    <h1 className="text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent drop-shadow-lg">Achievements</h1>
+                    <h1 className="dashboard-title text-4xl">Achievements</h1>
                     <div className="flex items-center gap-4">
                         <button
                             onClick={handleCheckAchievements}
                             disabled={checking}
-                            className={`px-5 py-2 rounded-xl shadow-md font-semibold text-white transition-all duration-200 text-lg ${checking
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600'} `}
+                            className={`create-quiz-btn text-lg ${checking ? 'opacity-60 cursor-not-allowed' : ''}`}
                         >
                             {checking ? 'Checking...' : 'Check Achievements'}
                         </button>
@@ -295,18 +294,18 @@ const Achievements = () => {
                 </div>
 
                 {/* Progress Overview */}
-                <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl p-8 mb-12 border border-white/30">
-                    <h2 className="text-2xl font-bold mb-4 text-indigo-700">Progress Overview</h2>
+                <div className="dashboard-card p-8 mb-12" style={{background: 'rgba(255,255,255,0.05)', border: '2px solid var(--primary-color)', borderRadius: '2rem', boxShadow: 'var(--shadow-lg)'}}>
+                    <h2 className="dashboard-title text-2xl mb-4" style={{fontWeight: 700}}>Progress Overview</h2>
                     <div className="flex items-center gap-6">
                         <div className="flex-1">
-                            <div className="h-6 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+                            <div className="h-6 rounded-full overflow-hidden" style={{background: 'rgba(255,255,255,0.15)'}}>
                                 <div
-                                    className="h-6 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-700"
-                                    style={{ width: `${(unlockedAchievements.length / achievements.length) * 100}%` }}
+                                    className="h-6"
+                                    style={{background: 'var(--primary-gradient)', width: `${(unlockedAchievements.length / achievements.length) * 100}%`, borderRadius: '999px', transition: 'width 0.7s'}}
                                 />
                             </div>
                         </div>
-                        <span className="text-lg font-bold text-indigo-700">
+                        <span className="text-lg font-bold" style={{color: 'var(--primary-color)'}}>
                             {unlockedAchievements.length}/{achievements.length}
                         </span>
                     </div>
@@ -315,26 +314,26 @@ const Achievements = () => {
                 {/* Unlocked Achievements */}
                 {unlockedAchievements.length > 0 && (
                     <div className="mb-16">
-                        <h2 className="text-2xl font-bold mb-8 text-green-700 flex items-center gap-2">
-                            <svg className="w-7 h-7 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                        <h2 className="dashboard-title text-2xl mb-8 flex items-center gap-2" style={{color: 'var(--accent-color)'}}>
+                            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
                             Unlocked
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {unlockedAchievements.map((achievement, idx) => (
+                            {unlockedAchievements.map((achievement) => (
                                 <div
                                     key={achievement._id}
-                                    className="bg-gradient-to-br from-green-100 via-white to-green-50 border-2 border-green-400 p-8 rounded-2xl shadow-lg transform transition-transform hover:scale-105 hover:shadow-2xl relative overflow-hidden animate-fadeIn"
-                                    style={{ animationDelay: `${idx * 0.1}s` }}
+                                    className="dashboard-card"
+                                    style={{background: 'var(--primary-gradient)', border: '2px solid var(--accent-color)', borderRadius: '2rem', boxShadow: 'var(--shadow-lg)', color: 'white', padding: '2rem', position: 'relative', overflow: 'hidden', transition: 'transform 0.2s, box-shadow 0.2s'}}
                                 >
                                     <div className="flex items-center gap-4 mb-4">
                                         <span className="text-5xl drop-shadow-lg">{achievement.icon}</span>
-                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-200 text-green-800 shadow">
+                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold" style={{background: 'rgba(255,255,255,0.2)', color: 'white', boxShadow: 'var(--shadow-sm)'}}>
                                             Unlocked
                                         </span>
                                     </div>
-                                    <h3 className="text-xl font-bold text-green-800 mb-2">{achievement.name}</h3>
-                                    <p className="text-gray-700 mb-4">{achievement.description}</p>
-                                    <p className="text-sm text-gray-500">Achieved on: <span className="font-semibold">{new Date(achievement.unlockedAt).toLocaleDateString()}</span></p>
+                                    <h3 className="text-xl font-bold mb-2" style={{color: 'white'}}>{achievement.name}</h3>
+                                    <p className="mb-4" style={{color: 'rgba(255,255,255,0.9)'}}>{achievement.description}</p>
+                                    <p className="text-sm" style={{color: 'rgba(255,255,255,0.7)'}}>Achieved on: <span className="font-semibold">{new Date(achievement.unlockedAt).toLocaleDateString()}</span></p>
                                     <div className="absolute right-0 top-0 opacity-10 text-8xl pointer-events-none select-none">🏆</div>
                                 </div>
                             ))}
@@ -345,7 +344,7 @@ const Achievements = () => {
                 {/* Locked Achievements */}
                 {lockedAchievements.length > 0 && (
                     <div>
-                        <h2 className="text-2xl font-bold mb-8 text-gray-500 flex items-center gap-2">
+                        <h2 className="dashboard-title text-2xl mb-8 flex items-center gap-2" style={{color: 'var(--text-tertiary)'}}>
                             <svg className="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 5.636l-1.414 1.414A9 9 0 105.636 18.364l1.414-1.414" /></svg>
                             Locked
                         </h2>
@@ -353,20 +352,21 @@ const Achievements = () => {
                             {lockedAchievements.map((achievement) => (
                                 <div
                                     key={achievement._id}
-                                    className="bg-gradient-to-br from-gray-100 via-white to-gray-50 border-2 border-gray-300 p-8 rounded-2xl shadow-md opacity-70 relative overflow-hidden"
+                                    className="dashboard-card"
+                                    style={{background: 'rgba(255,255,255,0.08)', border: '2px solid var(--border-color)', borderRadius: '2rem', boxShadow: 'var(--shadow-md)', color: 'var(--text-tertiary)', padding: '2rem', position: 'relative', overflow: 'hidden', opacity: 0.7}}
                                 >
                                     <div className="flex items-center gap-4 mb-4">
                                         <span className="text-5xl opacity-40">{achievement.icon}</span>
-                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-gray-200 text-gray-600 shadow">
+                                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold" style={{background: 'rgba(255,255,255,0.2)', color: 'var(--text-tertiary)', boxShadow: 'var(--shadow-sm)'}}>
                                             Locked
                                         </span>
                                     </div>
-                                    <h3 className="text-xl font-bold text-gray-600 mb-2">{achievement.name}</h3>
-                                    <p className="text-gray-500 mb-4">{achievement.description}</p>
-                                    <div className="h-2 bg-gray-200 rounded-full mt-4">
-                                        <div className="h-2 bg-gray-400 rounded-full" style={{ width: '0%' }} />
+                                    <h3 className="text-xl font-bold mb-2" style={{color: 'var(--text-tertiary)'}}>{achievement.name}</h3>
+                                    <p className="mb-4" style={{color: 'var(--text-tertiary)'}}>{achievement.description}</p>
+                                    <div className="h-2 rounded-full mt-4" style={{background: 'rgba(255,255,255,0.15)'}}>
+                                        <div className="h-2" style={{background: 'var(--primary-gradient)', width: '0%', borderRadius: '999px'}} />
                                     </div>
-                                    <p className="text-xs text-gray-400 mt-2">Not unlocked yet</p>
+                                    <p className="text-xs mt-2" style={{color: 'var(--text-tertiary)'}}>Not unlocked yet</p>
                                     <div className="absolute right-0 top-0 opacity-10 text-8xl pointer-events-none select-none">🔒</div>
                                 </div>
                             ))}
