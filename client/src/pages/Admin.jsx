@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaTrash, FaEdit, FaUsersCog, FaBook, FaArrowLeft, FaGamepad, FaStar } from "react-icons/fa";
+import { FaTrash, FaEdit, FaUsersCog, FaBook, FaArrowLeft, FaGamepad, FaStar, FaUserShield } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { getAllUsers, deleteUserById, getAllQuizzes, deleteQuizById } from "../services/api";
+import { getAllUsers, deleteUserById, getAllQuizzes, deleteQuizById, updateUserPermission } from "../services/api";
 
 const Admin = ({ user }) => {
     const [users, setUsers] = useState([]);
@@ -61,6 +61,36 @@ const Admin = ({ user }) => {
             } catch (error) {
                 console.error("Error deleting user:", error);
                 toast.error(error.message || "Failed to delete user");
+            }
+        }
+    };
+
+    const handleUpdatePermission = async (userId, currentAccountType) => {
+        if (userId === user._id) {
+            toast.error("You cannot change your own permissions!");
+            return;
+        }
+
+        const newAccountType = currentAccountType === 'admin' ? 'standard' : 'admin';
+        const confirmMessage = newAccountType === 'admin'
+            ? "Are you sure you want to grant admin privileges to this user?"
+            : "Are you sure you want to remove admin privileges from this user?";
+
+        if (window.confirm(confirmMessage)) {
+            try {
+                const response = await updateUserPermission(userId, newAccountType);
+                if (response.success) {
+                    // Cập nhật danh sách người dùng trong state
+                    setUsers(users.map(u =>
+                        u._id === userId ? { ...u, accountType: newAccountType } : u
+                    ));
+                    toast.success(response.message || "User permissions updated successfully");
+                } else {
+                    throw new Error(response.message || "Failed to update user permissions");
+                }
+            } catch (error) {
+                console.error("Error updating user permissions:", error);
+                toast.error(error.message || "Failed to update user permissions");
             }
         }
     };
@@ -250,32 +280,47 @@ const Admin = ({ user }) => {
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm text-pink-200 font-orbitron">{userData.email}</div>
+                                                    <td className="px-6 py-4 text-sm text-pink-200 font-orbitron">
+                                                        {userData.email}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                    <td className="px-6 py-4 text-sm font-orbitron">
                                                         <span
-                                                            className={`px-2 py-1 text-xs font-semibold rounded-full font-orbitron ${userData.accountType === "admin"
-                                                                ? "bg-indigo-400/20 text-indigo-300"
-                                                                : "bg-green-400/20 text-green-300"
-                                                                }`}
+                                                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                                            ${userData.accountType === "admin"
+                                                                    ? "bg-yellow-500/30 text-yellow-100"
+                                                                    : "bg-green-500/30 text-green-100"}`}
                                                         >
                                                             {userData.accountType}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 text-sm text-pink-200 whitespace-nowrap font-orbitron">
+                                                    <td className="px-6 py-4 text-sm text-pink-200 font-orbitron">
                                                         {new Date(userData.registrationDate).toLocaleDateString()}
                                                     </td>
-                                                    <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                                                        <motion.button
-                                                            whileHover={{ scale: 1.1 }}
-                                                            whileTap={{ scale: 0.95 }}
-                                                            onClick={() => handleDeleteUser(userData._id)}
-                                                            className="text-red-400 hover:text-red-300 transition-colors"
-                                                            disabled={userData._id === user._id}
-                                                        >
-                                                            <FaTrash />
-                                                        </motion.button>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="flex space-x-2">
+                                                            <button
+                                                                onClick={() => handleUpdatePermission(userData._id, userData.accountType)}
+                                                                disabled={userData._id === user._id}
+                                                                className={`p-2 rounded-full ${userData._id === user._id
+                                                                        ? 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
+                                                                        : 'bg-indigo-500/30 text-indigo-300 hover:bg-indigo-600/50 hover:text-indigo-100'
+                                                                    } transition-colors`}
+                                                                title={userData.accountType === "admin" ? "Remove admin privileges" : "Grant admin privileges"}
+                                                            >
+                                                                <FaUserShield className="w-5 h-5" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteUser(userData._id)}
+                                                                disabled={userData._id === user._id}
+                                                                className={`p-2 rounded-full ${userData._id === user._id
+                                                                        ? 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
+                                                                        : 'bg-red-500/30 text-red-300 hover:bg-red-600/50 hover:text-red-100'
+                                                                    } transition-colors`}
+                                                                title="Delete user"
+                                                            >
+                                                                <FaTrash className="w-5 h-5" />
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))

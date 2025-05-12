@@ -586,3 +586,25 @@ export const deleteQuizById = async (quizId) => {
     };
   }
 };
+
+// Update user permissions (admin only)
+export const updateUserPermission = async (userId, accountType) => {
+  try {
+    const response = await api.put('/admin/users/permissions', {
+      userId,
+      accountType
+    });
+    return {
+      success: true,
+      data: response.data,
+      message: response.data.message || "User permissions updated successfully"
+    };
+  } catch (error) {
+    console.error("Error updating user permissions:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to update user permissions",
+      data: null
+    };
+  }
+};

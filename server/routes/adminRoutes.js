@@ -10,5 +10,6 @@ router.get('/users', adminController.getAllUsers);
 router.delete('/users/:id', adminController.deleteUser);
 router.get('/quizzes', adminController.getAllQuizzes);
 router.delete('/quizzes/:id', adminController.deleteQuiz);
+router.put('/users/permissions', adminController.updateUserPermission);
 
 module.exports = router;

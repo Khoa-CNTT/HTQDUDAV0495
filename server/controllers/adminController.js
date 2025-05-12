@@ -41,9 +41,46 @@ const deleteQuiz = async (req, res) => {
     }
 };
 
+// Cập nhật quyền (accountType) cho user
+const updateUserPermission = async (req, res) => {
+    try {
+        const { userId, accountType } = req.body;
+
+        // Kiểm tra nếu accountType hợp lệ
+        if (!['standard', 'admin'].includes(accountType)) {
+            return res.status(400).json({ message: 'Invalid account type' });
+        }
+
+        // Không cho phép tự thay đổi quyền của chính mình
+        if (userId === req.user._id.toString()) {
+            return res.status(400).json({ message: 'Cannot change your own permissions' });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { accountType },
+            { new: true }
+        ).select('-passwordHash');
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json({
+            success: true,
+            user: updatedUser,
+            message: `User ${updatedUser.username} updated to ${accountType} successfully`
+        });
+    } catch (error) {
+        console.error('Error updating user permission:', error);
+        res.status(500).json({ message: 'Error updating user permission' });
+    }
+};
+
 module.exports = {
     getAllUsers,
     deleteUser,
     getAllQuizzes,
     deleteQuiz,
+    updateUserPermission
 };
