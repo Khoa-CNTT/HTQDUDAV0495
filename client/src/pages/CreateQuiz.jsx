@@ -224,7 +224,7 @@ const CreateQuiz = () => {
           transition={{ duration: 0.8 }}
           className="w-full max-w-3xl"
         >
-          <div className="bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border-4 border-pink-400/40 animate-pulse-slow hover:shadow-[0_0_40px_10px_rgba(236,72,153,0.7)] transition-shadow duration-500">
+          <div className="bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border-4 border-pink-400/40 hover:shadow-[0_0_40px_10px_rgba(236,72,153,0.7)] transition-shadow duration-500">
             <div className="p-10">
               <motion.div
                 initial={{ opacity: 0, y: -20 }}
@@ -250,6 +250,7 @@ const CreateQuiz = () => {
                   <label
                     htmlFor="title"
                     className="block text-sm font-bold text-pink-200 mb-2 font-orbitron tracking-wide"
+                    style={{color: '#ffe259'}}
                   >
                     Quiz Title
                   </label>
@@ -280,6 +281,7 @@ const CreateQuiz = () => {
                   <label
                     htmlFor="description"
                     className="block text-sm font-bold text-pink-200 mb-2 font-orbitron tracking-wide"
+                    style={{color: '#ffe259'}}
                   >
                     Description (Optional)
                   </label>
@@ -312,6 +314,7 @@ const CreateQuiz = () => {
                   <label
                     htmlFor="category"
                     className="block text-sm font-bold text-pink-200 mb-2 font-orbitron tracking-wide"
+                    style={{color: '#ffe259'}}
                   >
                     Category
                   </label>
@@ -384,7 +387,7 @@ const CreateQuiz = () => {
                       </div>
 
                       <div className="mb-4">
-                        <label className="block text-sm font-bold text-pink-200 mb-2 font-orbitron">Question Content</label>
+                        <label className="block text-sm font-bold text-pink-200 mb-2 font-orbitron" style={{color: '#ffe259'}}>Question Content</label>
                         <input
                           type="text"
                           value={question.text}
@@ -410,7 +413,7 @@ const CreateQuiz = () => {
                       </div>
 
                       <div className="space-y-3">
-                        <label className="block text-sm font-bold text-pink-200 mb-2 font-orbitron">Options</label>
+                        <label className="block text-sm font-bold text-pink-200 mb-2 font-orbitron" style={{color: '#ffe259'}}>Options</label>
                         {question.options.map((option, optionIndex) => (
                           <div
                             key={optionIndex}

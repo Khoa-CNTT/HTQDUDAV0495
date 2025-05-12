@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import '../styles/Auth.css';
+import { FaUserPlus } from 'react-icons/fa';
 import { register } from '../services/api';
 import toast from 'react-hot-toast';
+import '../styles/CreateRoom.css';
 
 const Register = ({ user }) => {
   const [formData, setFormData] = useState({
@@ -36,7 +37,6 @@ const Register = ({ user }) => {
       setError('Passwords do not match');
       return;
     }
-
     setLoading(true);
     try {
       const { confirmPassword, ...registerData } = formData;
@@ -53,48 +53,71 @@ const Register = ({ user }) => {
 
   if (registered) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#e6f0f3] to-[#d2f2f4] px-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center border-t-4 border-[#00b3b3]">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-green-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="create-room-container">
+        <svg className="animated-bg-svg" style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',zIndex:0,filter:'blur(2px)'}}>
+          <defs>
+            <radialGradient id="g1" cx="50%" cy="50%" r="80%">
+              <stop offset="0%" stopColor="#f472b6" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <circle cx="80%" cy="20%" r="300" fill="url(#g1)">
+            <animate attributeName="cx" values="80%;20%;80%" dur="12s" repeatCount="indefinite" />
+          </circle>
+          <circle cx="20%" cy="80%" r="200" fill="url(#g1)">
+            <animate attributeName="cy" values="80%;20%;80%" dur="16s" repeatCount="indefinite" />
+          </circle>
+        </svg>
+        <div className="create-room-card" style={{zIndex:1,position:'relative',maxWidth:540,padding:'2.5rem 2.5rem',margin:'48px auto',textAlign:'center'}}>
+          <svg xmlns="http://www.w3.org/2000/svg" style={{height:64,width:64,margin:'0 auto 24px',color:'#10B981'}} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h2 className="text-2xl font-bold text-[#00b3b3] mb-4">Registration Successful!</h2>
-          <p className="text-gray-600 mb-4">
-            A verification link has been sent to <strong>{formData.email}</strong>.
-          </p>
-          <p className="text-sm text-gray-500 mb-6">
+          <h2 className="create-room-title" style={{fontSize:'2rem',marginBottom:16}}>Registration Successful!</h2>
+          <p style={{color:'#e0e7ff',marginBottom:16}}>
+            A verification link has been sent to <strong>{formData.email}</strong>.<br/>
             Please check your inbox or spam folder to activate your account.
           </p>
-          <Link
-            to="/login"
-            className="inline-block bg-[#00b3b3] text-white py-2 px-6 rounded-lg hover:bg-[#009999] transition duration-200"
-          >
-            Go to Login
-          </Link>
+          <Link to="/login" className="copy-button" style={{marginTop:16}}>Go to Login</Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-header">
-          <h1 className="auth-title">Create Account</h1>
-          <p className="auth-subtitle">Join our community today</p>
+    <div className="create-room-container">
+      <svg className="animated-bg-svg" style={{position:'absolute',top:0,left:0,width:'100%',height:'100%',zIndex:0,filter:'blur(2px)'}}>
+        <defs>
+          <radialGradient id="g1" cx="50%" cy="50%" r="80%">
+            <stop offset="0%" stopColor="#f472b6" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        <circle cx="80%" cy="20%" r="300" fill="url(#g1)">
+          <animate attributeName="cx" values="80%;20%;80%" dur="12s" repeatCount="indefinite" />
+        </circle>
+        <circle cx="20%" cy="80%" r="200" fill="url(#g1)">
+          <animate attributeName="cy" values="80%;20%;80%" dur="16s" repeatCount="indefinite" />
+        </circle>
+      </svg>
+      <div className="create-room-card" style={{zIndex:1,position:'relative',maxWidth:540,padding:'2.5rem 2.5rem',margin:'48px auto'}}>
+        <div className="text-center mb-8">
+          <h1 className="create-room-title" style={{fontSize:'2.2rem'}}>
+            <FaUserPlus className="create-room-animated-icon" />
+            Create Account
+          </h1>
+          <p className="create-room-subtitle">Join our quiz community</p>
         </div>
-
         {error && (
-          <div className="auth-error">
-            <div className="error-icon">⚠️</div>
-            <h2 className="error-title">Error</h2>
-            <p className="error-message">{error}</p>
+          <div className="error-message">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{error}</span>
           </div>
         )}
-
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label" htmlFor="username">Username</label>
+            <label className="form-label" htmlFor="username" style={{color: '#ffe259'}}>Username</label>
             <input
               id="username"
               name="username"
@@ -104,11 +127,11 @@ const Register = ({ user }) => {
               onChange={handleChange}
               placeholder="Choose a username"
               required
+              style={{color: '#000000', backgroundColor: '#ffffff'}}
             />
           </div>
-
           <div className="form-group">
-            <label className="form-label" htmlFor="email">Email</label>
+            <label className="form-label" htmlFor="email" style={{color: '#ffe259'}}>Email</label>
             <input
               id="email"
               name="email"
@@ -118,11 +141,11 @@ const Register = ({ user }) => {
               onChange={handleChange}
               placeholder="Enter your email"
               required
+              style={{color: '#000000', backgroundColor: '#ffffff'}}
             />
           </div>
-
           <div className="form-group">
-            <label className="form-label" htmlFor="displayName">Display Name (optional)</label>
+            <label className="form-label" htmlFor="displayName" style={{color: '#ffe259'}}>Display Name (optional)</label>
             <input
               id="displayName"
               name="displayName"
@@ -131,11 +154,11 @@ const Register = ({ user }) => {
               value={formData.displayName}
               onChange={handleChange}
               placeholder="What should we call you?"
+              style={{color: '#000000', backgroundColor: '#ffffff'}}
             />
           </div>
-
           <div className="form-group">
-            <label className="form-label" htmlFor="password">Password</label>
+            <label className="form-label" htmlFor="password" style={{color: '#ffe259'}}>Password</label>
             <input
               id="password"
               name="password"
@@ -145,11 +168,11 @@ const Register = ({ user }) => {
               onChange={handleChange}
               placeholder="Create a password"
               required
+              style={{color: '#000000', backgroundColor: '#ffffff'}}
             />
           </div>
-
           <div className="form-group">
-            <label className="form-label" htmlFor="confirmPassword">Confirm Password</label>
+            <label className="form-label" htmlFor="confirmPassword" style={{color: '#ffe259'}}>Confirm Password</label>
             <input
               id="confirmPassword"
               name="confirmPassword"
@@ -159,18 +182,17 @@ const Register = ({ user }) => {
               onChange={handleChange}
               placeholder="Confirm your password"
               required
+              style={{color: '#000000', backgroundColor: '#ffffff'}}
             />
           </div>
-
-          <button type="submit" className="auth-button" disabled={loading}>
+          <button type="submit" className="create-button" disabled={loading} style={{width:'100%',marginTop:16}}>
             {loading ? 'Registering...' : 'Create Account'}
           </button>
         </form>
-
-        <div className="auth-links">
-          <p>
+        <div style={{marginTop:32,textAlign:'center'}}>
+          <p style={{color:'#e0e7ff',marginTop:8}}>
             Already have an account?{' '}
-            <Link to="/login" className="auth-link">
+            <Link to="/login" className="auth-link" style={{color:'#f472b6',fontWeight:600}}>
               Sign in
             </Link>
           </p>
