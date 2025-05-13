@@ -5,6 +5,7 @@ const quizController = require('../controllers/quizController');
 
 // Routes that require authentication
 router.post('/', protect, quizController.createQuiz);
+router.post('/ai', protect, quizController.createQuizWithAI); // New route for AI quiz generation
 router.get('/public', quizController.getPublicQuizzes);
 router.get('/', protect, quizController.getAllQuizzes); // Protected route
 router.get('/:id', quizController.getQuizById);
