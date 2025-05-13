@@ -1,6 +1,7 @@
 const Quiz = require("../models/Quiz");
 const User = require("../models/User");
 const Submission = require("../models/Submission");
+const { generateQuizQuestions } = require("../utils/gemini");
 
 const quizService = {
   async createQuiz(userId, quizData) {
@@ -233,6 +234,49 @@ const quizService = {
       .sort({ createdAt: -1 });
 
     return submissions;
+  },
+
+  async createQuizWithAI(userId, aiQuizData) {
+    try {
+      // Validate required fields
+      if (!aiQuizData.topic) {
+        throw new Error("Topic is required for AI quiz generation");
+      }
+
+      // Parse and validate number of questions (5-30)
+      const numQuestions = parseInt(aiQuizData.numQuestions) || 10;
+      if (numQuestions < 5 || numQuestions > 30) {
+        throw new Error("Number of questions must be between 5 and 30");
+      }
+
+      // Get category or use default
+      const category = aiQuizData.category || 'Other';
+
+      // Generate quiz questions using AI
+      const generatedQuestions = await generateQuizQuestions(
+        aiQuizData.topic, 
+        numQuestions,
+        category
+      );
+
+      // Create the quiz with the generated questions
+      const quiz = await Quiz.create({
+        title: aiQuizData.title || `Quiz on ${aiQuizData.topic}`,
+        description: aiQuizData.description || `Generated quiz about ${aiQuizData.topic}`,
+        category: category,
+        questions: generatedQuestions,
+        createdBy: userId,
+        isPublic: aiQuizData.isPublic || false,
+      });
+
+      return {
+        message: "AI-generated quiz created successfully",
+        quiz,
+      };
+    } catch (error) {
+      console.error("Error creating AI quiz:", error);
+      throw error;
+    }
   },
 };
 

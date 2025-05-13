@@ -207,6 +207,26 @@ const getQuizSubmissions = async (req, res) => {
   }
 };
 
+// POST /api/quizzes/ai (Create quiz with AI)
+const createQuizWithAI = async (req, res) => {
+  try {
+    console.log("Creating quiz with AI - body:", req.body);
+    const result = await quizService.createQuizWithAI(req.user._id, req.body);
+    res.status(201).json({
+      success: true,
+      message: result.message,
+      data: result.quiz
+    });
+  } catch (error) {
+    console.error("Error creating quiz with AI:", error);
+    res.status(400).json({
+      success: false,
+      message: error.message || "Error creating AI quiz",
+      error: error.message
+    });
+  }
+};
+
 const quizController = {
   createQuiz,
   getPublicQuizzes,
@@ -217,6 +237,7 @@ const quizController = {
   deleteQuiz,
   submitQuizAnswers,
   getQuizSubmissions,
+  createQuizWithAI
 };
 
 module.exports = quizController;
