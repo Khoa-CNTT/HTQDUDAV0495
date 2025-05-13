@@ -22,5 +22,5 @@ module.exports = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   
   // AI APIs
-  GOOGLE_GEMINI_KEY: process.env.GOOGLE_GEMINI_KEY || 'AIzaSyDI6ayOmpLot29fCqkS5QqIqZxEU3G5uAY'
+  GOOGLE_GEMINI_KEY: process.env.GOOGLE_GEMINI_KEY
 }; 
