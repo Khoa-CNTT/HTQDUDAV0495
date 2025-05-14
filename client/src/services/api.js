@@ -1,7 +1,7 @@
 import axios from "axios";
 import { saveUser } from "../utils/jwtUtils";
 
-const API_URL = "https://cte-quiz-ml27.onrender.com";
+const API_URL = "https://cte-quiz-ml27.onrender.com/api";
 
 // Create axios instance
 const api = axios.create({
