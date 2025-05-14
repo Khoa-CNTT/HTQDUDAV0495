@@ -32,6 +32,11 @@ const quizSchema = new mongoose.Schema({
         enum: ['General Knowledge', 'Science', 'History', 'Geography', 'Mathematics', 'Literature', 'Sports', 'Entertainment', 'Technology', 'Other'],
         default: 'Other'
     },
+    language: {
+        type: String,
+        enum: ['english', 'vietnamese'],
+        default: 'english'
+    },
     originalPdfName: {
         type: String,
     },

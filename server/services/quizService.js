@@ -251,12 +251,17 @@ const quizService = {
 
       // Get category or use default
       const category = aiQuizData.category || 'Other';
+      
+      // Get language preference or default to English
+      const language = aiQuizData.language || 'english';
 
       // Generate quiz questions using AI
       const generatedQuestions = await generateQuizQuestions(
         aiQuizData.topic, 
         numQuestions,
-        category
+        category,
+        aiQuizData.description || '',
+        language
       );
 
       // Create the quiz with the generated questions
@@ -264,6 +269,7 @@ const quizService = {
         title: aiQuizData.title || `Quiz on ${aiQuizData.topic}`,
         description: aiQuizData.description || `Generated quiz about ${aiQuizData.topic}`,
         category: category,
+        language: language,
         questions: generatedQuestions,
         createdBy: userId,
         isPublic: aiQuizData.isPublic || false,

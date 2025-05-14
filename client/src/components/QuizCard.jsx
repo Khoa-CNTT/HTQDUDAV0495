@@ -43,6 +43,11 @@ const QuizCard = ({ quiz, onDelete, showCreator = false }) => {
               {quiz.category}
             </span>
           )}
+          {quiz.language && (
+            <span className="mr-4 bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">
+              {quiz.language.charAt(0).toUpperCase() + quiz.language.slice(1)}
+            </span>
+          )}
           <span>
             Created {formatDistanceToNow(new Date(quiz.createdAt), { addSuffix: true })}
           </span>

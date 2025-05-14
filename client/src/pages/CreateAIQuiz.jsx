@@ -11,7 +11,8 @@ const CreateAIQuiz = () => {
     description: '',
     category: 'Other',
     numQuestions: 10,
-    isPublic: false
+    isPublic: false,
+    language: 'english'
   });
 
   const categories = [
@@ -108,9 +109,12 @@ const CreateAIQuiz = () => {
         
         <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <h2 className="text-lg font-semibold text-blue-800 mb-2">How it works:</h2>
-          <p className="text-gray-700">
+          <p className="text-gray-700 mb-2">
             Enter a topic and our AI will automatically create quiz questions for you! 
-            You can specify how many questions (5-30) you want and choose a category.
+            You can specify how many questions (5-30) you want, choose a category, select a language (English or Vietnamese), and add a description to guide the question generation.
+          </p>
+          <p className="text-gray-700">
+            <strong>Pro tip:</strong> Adding a detailed description helps the AI generate more focused and relevant questions. For example, instead of just "Solar System", you could specify "Focus on planetary moons and their unique features."
           </p>
         </div>
         
@@ -149,9 +153,12 @@ const CreateAIQuiz = () => {
               name="description"
               value={quizData.description}
               onChange={handleInputChange}
-              placeholder="Leave blank to auto-generate from topic"
+              placeholder="Add specific details or context to guide the AI in generating better questions"
               className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
             />
+            <p className="text-sm text-gray-500 mt-1">
+              The description will be used to help the AI understand the specific focus and context of your quiz
+            </p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -180,6 +187,34 @@ const CreateAIQuiz = () => {
                 max="30"
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-gray-700 font-medium mb-2">Language</label>
+            <div className="flex space-x-6">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="language"
+                  value="english"
+                  checked={quizData.language === 'english'}
+                  onChange={handleInputChange}
+                  className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <span className="ml-2">English</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="language"
+                  value="vietnamese"
+                  checked={quizData.language === 'vietnamese'}
+                  onChange={handleInputChange}
+                  className="h-5 w-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                />
+                <span className="ml-2">Vietnamese</span>
+              </label>
             </div>
           </div>
           
