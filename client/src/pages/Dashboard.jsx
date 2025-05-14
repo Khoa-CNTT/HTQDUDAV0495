@@ -345,7 +345,7 @@ const Dashboard = ({ user, logout }) => {
             onClick={() => setActiveTab("public")}
           >
             <FaUsers className="w-5 h-5" />
-            Public Quizzes
+            Public Quizze
           </button>
           <button
             className={`tab-button ${activeTab === "submissions" ? "active" : ""

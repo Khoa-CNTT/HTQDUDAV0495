@@ -7,6 +7,7 @@ import {
   isAuthenticated,
   removeUser,
 } from "./utils/jwtUtils";
+import { FaGamepad, FaQuestionCircle, FaTrophy, FaBrain, FaLightbulb } from "react-icons/fa";
 
 // Components
 import Navbar from "./components/Navbar";
@@ -78,59 +79,157 @@ function App() {
 
   if (loading) {
     return (
-      <div className="relative flex items-center justify-center min-h-screen overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50">
-        {/* Decorative Elements */}
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-indigo-100 rounded-full opacity-50 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-100 rounded-full opacity-50 blur-3xl" />
-
-        {/* Loading Content */}
-        <div className="relative z-10">
-          {/* Logo Animation */}
-          <motion.div
-            initial={{ opacity: 0, x: -100 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{
-              duration: 0.8,
-              ease: "easeOut",
-            }}
+      <div className="relative w-screen min-h-screen overflow-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+        {/* Animated SVG background */}
+        <svg
+          className="absolute top-0 left-0 z-0 w-full h-full pointer-events-none"
+          style={{ filter: "blur(2px)" }}
+        >
+          <defs>
+            <radialGradient id="g1" cx="50%" cy="50%" r="80%">
+              <stop offset="0%" stopColor="#f472b6" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <motion.circle
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+            cx="80%"
+            cy="20%"
+            r="300"
+            fill="url(#g1)"
           >
-            <h1 className="text-4xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text">
-              CTEWhiz
-            </h1>
+            <animate
+              attributeName="cx"
+              values="80%;20%;80%"
+              dur="12s"
+              repeatCount="indefinite"
+            />
+            <animate
+              attributeName="r"
+              values="300;350;300"
+              dur="8s"
+              repeatCount="indefinite"
+            />
+          </motion.circle>
+          <motion.circle
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 1.5, delay: 0.5, ease: "easeOut" }}
+            cx="20%"
+            cy="80%"
+            r="200"
+            fill="url(#g1)"
+          >
+            <animate
+              attributeName="cy"
+              values="80%;20%;80%"
+              dur="16s"
+              repeatCount="indefinite"
+            />
+          </motion.circle>
+        </svg>
+
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen">
+          {/* 3D Quiz Logo */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="flex items-center justify-center mb-12"
+          >
+            <div className="relative">
+              <motion.div
+                animate={{
+                  rotateY: [0, 360],
+                  rotateZ: [0, 10, 0, -10, 0]
+                }}
+                transition={{
+                  rotateY: { duration: 6, repeat: Infinity, ease: "linear" },
+                  rotateZ: { duration: 4, repeat: Infinity, ease: "easeInOut" }
+                }}
+                style={{
+                  transformStyle: "preserve-3d",
+                  perspective: "1000px"
+                }}
+                className="ml-14 w-32 h-32 mb-6"
+              >
+                <div className="absolute inset-0 flex items-center justify-center w-32 h-32 rounded-xl bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 shadow-[0_0_30px_rgba(236,72,153,0.7)]">
+                  <FaGamepad className="w-16 h-16 text-white" />
+                </div>
+              </motion.div>
+
+              <h1 className="mt-6 text-5xl font-extrabold text-transparent bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 bg-clip-text drop-shadow-lg font-orbitron">
+                CTEWhiz
+              </h1>
+            </div>
+          </motion.div>
+
+          {/* 3D Rotating Quiz Elements */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="relative w-64 h-16 mb-10"
+          >
+            <div className="absolute inset-0 flex items-center justify-center">
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0 }}
+                className="absolute"
+              >
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-indigo-600 to-indigo-800 shadow-lg">
+                  <FaQuestionCircle className="w-6 h-6 text-white" />
+                </div>
+              </motion.div>
+
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
+                className="absolute -ml-24"
+              >
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-pink-700 shadow-lg">
+                  <FaBrain className="w-6 h-6 text-white" />
+                </div>
+              </motion.div>
+
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+                className="absolute ml-24"
+              >
+                <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-amber-600 shadow-lg">
+                  <FaTrophy className="w-6 h-6 text-white" />
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Loading Progress Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+            className="w-64 h-2 mb-4 overflow-hidden rounded-full bg-white/10"
+          >
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: "100%" }}
-              transition={{
-                duration: 2,
-                ease: "easeInOut",
-                delay: 0.5,
-              }}
-              className="h-1 mt-2 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600"
+              transition={{ duration: 2.5, ease: "easeInOut" }}
+              className="h-full rounded-full bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500"
             />
           </motion.div>
 
-          {/* Loading Dots */}
-          <motion.div
+          {/* Loading Text */}
+          <motion.p
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="flex justify-center mt-8 space-x-2"
+            animate={{ opacity: [0, 1, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="text-lg font-medium text-pink-200 font-orbitron"
           >
-            {[0, 1, 2].map((index) => (
-              <motion.div
-                key={index}
-                className="w-3 h-3 bg-indigo-600 rounded-full"
-                animate={{
-                  y: [0, -10, 0],
-                }}
-                transition={{
-                  duration: 0.6,
-                  repeat: Infinity,
-                  delay: index * 0.2,
-                }}
-              />
-            ))}
-          </motion.div>
+            Loading Quiz Adventure...
+          </motion.p>
         </div>
       </div>
     );
