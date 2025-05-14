@@ -302,8 +302,8 @@ const Admin = ({ user }) => {
                                                                 onClick={() => handleUpdatePermission(userData._id, userData.accountType)}
                                                                 disabled={userData._id === user._id}
                                                                 className={`p-2 rounded-full ${userData._id === user._id
-                                                                        ? 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
-                                                                        : 'bg-indigo-500/30 text-indigo-300 hover:bg-indigo-600/50 hover:text-indigo-100'
+                                                                    ? 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
+                                                                    : 'bg-indigo-500/30 text-indigo-300 hover:bg-indigo-600/50 hover:text-indigo-100'
                                                                     } transition-colors`}
                                                                 title={userData.accountType === "admin" ? "Remove admin privileges" : "Grant admin privileges"}
                                                             >
@@ -313,8 +313,8 @@ const Admin = ({ user }) => {
                                                                 onClick={() => handleDeleteUser(userData._id)}
                                                                 disabled={userData._id === user._id}
                                                                 className={`p-2 rounded-full ${userData._id === user._id
-                                                                        ? 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
-                                                                        : 'bg-red-500/30 text-red-300 hover:bg-red-600/50 hover:text-red-100'
+                                                                    ? 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
+                                                                    : 'bg-red-500/30 text-red-300 hover:bg-red-600/50 hover:text-red-100'
                                                                     } transition-colors`}
                                                                 title="Delete user"
                                                             >
