@@ -83,10 +83,9 @@ const userService = {
 
     // get user profile
     async getUserProfile(userId) {
-        console.log('UserId received in getUserProfile:', userId); // Log giá trị userId
         const user = await User.findById(userId).select('-passwordHash');
         if (!user) {
-            throw new Error('User not found :(' + userId + ')');
+            throw new Error('User not found');
         }
         return user;
     },
@@ -113,8 +112,6 @@ const userService = {
     },    // verify user email
     async verifyEmail(token) {
         try {
-            console.log('Verifying email with token:', token);
-
             // First try to find a user that was verified with this token
             const verifiedUser = await User.findOne({
                 isActive: true,

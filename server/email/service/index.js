@@ -13,7 +13,7 @@ const sendVerificationEmail = async (email, username, verificationToken) => {
   // Get CLIENT_URL from environment variables or use default
   const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
   const verificationLink = `${clientUrl}/verify-email?token=${verificationToken}`;
-  
+
   const emailParams = {
     sender: emailConfig.defaultSender,
     to: [{ email, name: username }],
@@ -47,7 +47,7 @@ const sendPasswordResetEmail = async (email, username, resetToken) => {
   // Get CLIENT_URL from environment variables or use default
   const clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
   const resetLink = `${clientUrl}/reset-password?token=${resetToken}`;
-  
+
   const emailParams = {
     sender: emailConfig.defaultSender,
     to: [{ email, name: username }],
@@ -56,14 +56,21 @@ const sendPasswordResetEmail = async (email, username, resetToken) => {
   };
 
   try {
-    console.log('Attempting to send password reset email to:', email);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`Attempting to send password reset email to: ${email}`);
+    }
+
     const response = await emailConfig.apiInstance.sendTransacEmail(emailParams);
-    console.log('Password reset email sent successfully:', response);
+
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`Password reset email sent successfully to: ${email}`);
+    }
+
     return true;
   } catch (error) {
-    console.error('Error sending password reset email:', error);
+    console.error('Error sending password reset email:', error.message);
     if (error.response) {
-      console.error('API Response Error:', error.response.body || error.response.data);
+      console.error('API Response Error:', error.response.statusCode || 'Unknown Status');
     }
     // Don't throw the error anymore, just log it
     return false;
