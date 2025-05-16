@@ -22,13 +22,6 @@ const protect = async (req, res, next) => {
         return res.status(401).json({ message: 'Not authorized, user not found' });
       }
 
-      // Ghi log để debug
-      console.log('Auth middleware - User found:', {
-        decodedUserId: decoded.userId,
-        userObjectId: user._id,
-        userIdStr: user._id.toString()
-      });
-
       // Add user to request object
       req.user = user;
 

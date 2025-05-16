@@ -5,6 +5,9 @@ const crypto = require('crypto');
 const emailConfig = require('../email/config');
 const emailService = require('../email/service');
 
+// Hàm tạo token ngẫu nhiên
+const generateToken = () => crypto.randomBytes(32).toString('hex');
+
 // route POST /api/users/register
 const registerUser = async (req, res) => {
   try {
@@ -41,29 +44,40 @@ const requestPasswordReset = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      // For security reasons, don't reveal if email exists or not
+      // Return success even if email doesn't exist
+      return res.json({ message: 'Password reset email sent if account exists' });
     }
 
     // Generate reset token
     const resetPasswordToken = generateToken();
-    const resetPasswordTokenExpiry = new Date(Date.now() + emailConfig.tokenExpiry.passwordReset); // 1 hour
+    const resetPasswordTokenExpiry = new Date(Date.now() + (emailConfig.tokenExpiry?.passwordReset || 3600000)); // 1 hour
 
     // Update user
     user.resetPasswordToken = resetPasswordToken;
     user.resetPasswordTokenExpiry = resetPasswordTokenExpiry;
     await user.save();
 
-    // Send reset email - don't throw error if email sending fails
-    try {
-      await emailService.sendPasswordResetEmail(email, user.username, resetPasswordToken);
-    } catch (emailError) {
-      console.error('Error sending password reset email:', emailError);
-      // Continue with reset process even if email fails
+    // For development only - should be removed in production
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Reset link generated successfully (details hidden for security)');
     }
 
-    res.json({ message: 'Password reset email sent' });
+    // Try to send email, but don't require success
+    try {
+      if (process.env.BREVO_API_KEY) {
+        await emailService.sendPasswordResetEmail(email, user.username, resetPasswordToken);
+        console.log('Password reset email sent to:', email);
+      } else {
+        console.log('Skipping email sending: BREVO_API_KEY not configured');
+      }
+    } catch (emailError) {
+      console.error('Error sending password reset email (non-fatal):', emailError.message);
+    }
+
+    res.json({ message: 'Password reset email sent if account exists' });
   } catch (error) {
-    console.error('Password reset request error:', error);
+    console.error('Password reset request error:', error.message);
     res.status(500).json({ message: 'Error requesting password reset' });
   }
 };
