@@ -1,7 +1,8 @@
 import axios from "axios";
 import { saveUser } from "../utils/jwtUtils";
 
-const API_URL = "https://cte-quiz-ml27.onrender.com/api";
+// const API_URL = "https://cte-quiz-ml27.onrender.com/api";
+const API_URL = "http://localhost:5000/api";
 
 // Create axios instance
 const api = axios.create({
@@ -605,6 +606,42 @@ export const updateUserPermission = async (userId, accountType) => {
       success: false,
       message: error.response?.data?.message || "Failed to update user permissions",
       data: null
+    };
+  }
+};
+
+const BASE_URL = 'http://localhost:5000';
+
+export const getLeaderboard = async (timeFrame = 'all', category = 'score', page = 1, limit = 20) => {
+  try {
+    const response = await api.get(`/leaderboard`, {
+      params: { timeFrame, category, page, limit }
+    });
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch leaderboard');
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error.response?.data || error);
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || 'Failed to fetch leaderboard',
+      data: {
+        topScorers: [],
+        stats: {
+          totalParticipants: 0,
+          totalQuizzesTaken: 0,
+          averageScore: 0,
+        },
+        pagination: {
+          page: 1,
+          limit: 20,
+          totalUsers: 0,
+          totalPages: 1
+        }
+      }
     };
   }
 };

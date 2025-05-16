@@ -51,6 +51,14 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    loginStreak: {
+      type: Number,
+      default: 0,
+    },
+    lastLoginDate: {
+      type: Date,
+      default: null,
+    },
     isActive: {
       type: Boolean,
       default: false,
