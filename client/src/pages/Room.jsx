@@ -4,14 +4,17 @@ import { getRoomByCode, getRoomParticipants, startRoom, endRoom, checkIsHost } f
 import RoomChat from '../components/RoomChat';
 import socketService from '../services/socketService';
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaArrowLeft, FaGamepad, FaStar, FaUsers, FaDoorOpen, FaSignOutAlt, FaUser, FaUserFriends, FaMedal, FaUserCog, FaCrown, FaTrophy } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 // Helper functions to safely extract user information
 const getUserId = (user) => {
   if (!user) return null;
-  
+
   // Check if user is already a string ID
   if (typeof user === 'string') return user;
-  
+
   // Check if user is an object with _id
   if (typeof user === 'object' && user._id) {
     // Handle if _id is an object with toString method (ObjectId)
@@ -20,7 +23,7 @@ const getUserId = (user) => {
     }
     return user._id;
   }
-  
+
   // If it's some other object representation, try to find an ID
   if (typeof user === 'object') {
     const possibleIds = ['id', 'userId', 'hostId'];
@@ -34,7 +37,7 @@ const getUserId = (user) => {
       }
     }
   }
-  
+
   // Return null if no ID found
   return null;
 };
@@ -58,16 +61,16 @@ const getUserInitial = (user) => {
 // Get host details from participants array when hostId is just an ID
 const getHostDetails = (hostId, participants) => {
   if (!hostId || !participants || !Array.isArray(participants)) return null;
-  
+
   // First, try to find the host in participants array
-  const hostParticipant = participants.find(p => 
+  const hostParticipant = participants.find(p =>
     p.userId && getUserId(p.userId) === hostId
   );
-  
+
   if (hostParticipant && hostParticipant.userId) {
     return hostParticipant.userId;
   }
-  
+
   // If not found, just return the ID
   return hostId;
 };
@@ -76,7 +79,7 @@ function Room({ user: propUser }) {
   const { code } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Use the user from props or fallback to localStorage
   const [user, setUser] = useState(propUser || null);
   const [room, setRoom] = useState(null);
@@ -86,7 +89,7 @@ function Room({ user: propUser }) {
   const [error, setError] = useState('');
   const [isHost, setIsHost] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
-  
+
   // Try to get user from localStorage if not provided via props
   useEffect(() => {
     if (!user) {
@@ -106,11 +109,11 @@ function Room({ user: propUser }) {
     try {
       setLoading(true);
       setError('');
-      
+
       // Extract room code from URL if needed
       const actualCode = code || location.pathname.split('/').pop();
       console.log('Using room code:', actualCode);
-      
+
       // Check if code is undefined or invalid
       if (!actualCode || actualCode === 'undefined') {
         console.error('Invalid room code:', actualCode);
@@ -119,14 +122,14 @@ function Room({ user: propUser }) {
         setTimeout(() => navigate('/dashboard'), 2000);
         return;
       }
-      
+
       const roomResponse = await getRoomByCode(actualCode);
       if (!roomResponse.success) {
         throw new Error(roomResponse.message || 'Failed to load room');
       }
-      
+
       setRoom(roomResponse.data);
-      
+
       // Make sure quizId exists and set it safely
       if (roomResponse.data && roomResponse.data.quizId) {
         setQuiz(roomResponse.data.quizId);
@@ -134,10 +137,10 @@ function Room({ user: propUser }) {
         console.error('Quiz data missing in room response');
         setQuiz(null);
       }
-      
+
       // Try to determine host status
       await determineHostStatus(actualCode, roomResponse.data);
-      
+
       const participantsResponse = await getRoomParticipants(actualCode);
       if (participantsResponse.success) {
         setParticipants(participantsResponse.data);
@@ -160,7 +163,7 @@ function Room({ user: propUser }) {
       setLoading(false);
     }
   };
-  
+
   // Separate function to determine host status with multiple fallbacks
   const determineHostStatus = async (roomCode, roomData) => {
     try {
@@ -170,23 +173,23 @@ function Room({ user: propUser }) {
         setIsHost(true);
         return;
       }
-      
+
       const hostId = getUserId(roomData.hostId);
       console.log('Host ID (extracted):', hostId);
       console.log('User ID (from props):', user?._id);
-      
+
       // Try multiple comparison formats for maximum compatibility
       let userIsHost = false;
-      
+
       if (hostId && user) {
         // Convert both to strings for comparison
         const hostIdStr = String(hostId);
         const userIdStr = String(user._id);
-        
+
         console.log('Host ID as string:', hostIdStr);
         console.log('User ID as string:', userIdStr);
         console.log('String comparison result:', hostIdStr === userIdStr);
-        
+
         // Try direct comparison
         if (hostId === user._id) {
           console.log('Direct comparison matched');
@@ -203,8 +206,8 @@ function Room({ user: propUser }) {
           userIsHost = true;
         }
         // Check if either is nested inside an object
-        else if (typeof user._id === 'object' && user._id && user._id._id && 
-                 (hostId === user._id._id || hostId === String(user._id._id))) {
+        else if (typeof user._id === 'object' && user._id && user._id._id &&
+          (hostId === user._id._id || hostId === String(user._id._id))) {
           console.log('Nested object comparison matched');
           userIsHost = true;
         }
@@ -214,7 +217,7 @@ function Room({ user: propUser }) {
           userIsHost = true;
         }
       }
-      
+
       // If all client-side comparisons fail, try the server API as last resort
       if (!userIsHost) {
         console.log('Client-side host checks failed, trying server API');
@@ -224,7 +227,7 @@ function Room({ user: propUser }) {
           userIsHost = true;
         }
       }
-      
+
       console.log('Final host check result:', userIsHost);
       setIsHost(userIsHost);
     } catch (error) {
@@ -236,7 +239,7 @@ function Room({ user: propUser }) {
     // Extract room code from URL if needed
     const actualCode = code || location.pathname.split('/').pop();
     console.log('Room component initialized with code:', actualCode);
-    
+
     // Check if code is undefined before fetching data
     if (!actualCode || actualCode === 'undefined') {
       console.error('Invalid room code in useEffect:', actualCode);
@@ -245,7 +248,7 @@ function Room({ user: propUser }) {
       setTimeout(() => navigate('/dashboard'), 2000);
       return;
     }
-    
+
     fetchRoomData();
 
     // Set up socket event listeners
@@ -284,7 +287,7 @@ function Room({ user: propUser }) {
     socketService.on('onRoomData', (data) => {
       setRoom(data.room);
       setParticipants(data.participants);
-      
+
       // Update host status if room data changes
       if (data.room && data.room.hostId && user?._id) {
         const hostId = getUserId(data.room.hostId);
@@ -297,7 +300,7 @@ function Room({ user: propUser }) {
       toast.success('Game started!');
       // Navigate to the game page
       navigate(`/quiz-game/${code}`);
-      
+
       // Update room status and quiz data
       if (data && data.room) {
         setRoom(data.room);
@@ -345,7 +348,7 @@ function Room({ user: propUser }) {
     return () => {
       // Reset all socket callbacks to empty functions
       Object.keys(socketService.callbacks).forEach(event => {
-        socketService.on(event, () => {});
+        socketService.on(event, () => { });
       });
     };
   }, [code, location.pathname, navigate, user]);
@@ -356,25 +359,25 @@ function Room({ user: propUser }) {
       setError('');
       // Get the actual room code
       const actualCode = code || location.pathname.split('/').pop();
-      
+
       console.log('Starting game with code:', actualCode);
-      
+
       // First attempt a direct API call as it's most reliable
       toast.loading('Starting game...');
-      
+
       const response = await startRoom(actualCode);
       console.log('Start room API response:', response);
       toast.dismiss();
-      
+
       if (response.success) {
         toast.success('Game started!');
-        setRoom({...response.data, status: 'in_progress'});
-        
+        setRoom({ ...response.data, status: 'in_progress' });
+
         // Now try socket notification if connected
         if (socketConnected) {
           socketService.startGame(actualCode);
         }
-        
+
         // Navigate to the quiz game page - add a small delay to ensure state is updated
         setTimeout(() => {
           navigate(`/quiz-game/${actualCode}`);
@@ -396,15 +399,15 @@ function Room({ user: propUser }) {
       setError('');
       // Get the actual room code
       const actualCode = code || location.pathname.split('/').pop();
-      
+
       // Use socket to end the game if connected
       if (socketConnected) {
         socketService.endGame(actualCode);
       }
-      
+
       // Also call the API for backup
       const response = await endRoom(actualCode);
-      
+
       if (response.success) {
         setRoom(response.data.room);
         setParticipants(response.data.participants);
@@ -419,39 +422,53 @@ function Room({ user: propUser }) {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <span className="loading loading-spinner loading-lg"></span>
+      <div className="flex items-center justify-center w-screen min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+        <div className="w-16 h-16 border-4 border-pink-400/40 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md">
-        <div className="p-3 bg-red-100 text-red-700 rounded mb-4">
-          {error}
-        </div>
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-8 text-center border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
         >
-          Back to Dashboard
-        </button>
+          <p className="mb-4 text-xl text-pink-200 font-orbitron">{error}</p>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate('/dashboard')}
+            className="px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-2xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
+          >
+            Back to Dashboard
+          </motion.button>
+        </motion.div>
       </div>
     );
   }
 
   if (!room) {
     return (
-      <div className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-4">Room Not Found</h1>
-        <p className="mb-4">The room you're looking for doesn't exist or has expired.</p>
-        <button
-          onClick={() => navigate('/dashboard')}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-8 text-center border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
         >
-          Back to Dashboard
-        </button>
+          <h1 className="text-2xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 mb-4">Room Not Found</h1>
+          <p className="mb-4 text-pink-200 font-orbitron">The room you're looking for doesn't exist or has expired.</p>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate('/dashboard')}
+            className="px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-2xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
+          >
+            Back to Dashboard
+          </motion.button>
+        </motion.div>
       </div>
     );
   }
@@ -459,129 +476,228 @@ function Room({ user: propUser }) {
   // Waiting room display
   if (room.status === 'waiting') {
     return (
-      <div className="container mx-auto p-4">
-        {!socketConnected && (
-          <div className="p-3 mb-4 bg-yellow-100 text-yellow-700 rounded-lg">
-            <p>Socket connection not established. Some real-time features may be limited.</p>
-            <button 
-              onClick={() => socketService.init(user).then(() => setSocketConnected(true))}
-              className="mt-2 px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-            >
-              Reconnect
-            </button>
-          </div>
-        )}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Main game area */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow p-4 mb-4">
-              <h1 className="text-2xl font-bold mb-4">Room: {code}</h1>
-              
-              {isHost && (
-                <div className="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-4 rounded-lg mb-4 flex items-center shadow-md">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                  <div>
-                    <span className="font-bold block text-lg">You are the Quiz Host</span>
-                    <span>You have control over when the game starts and ends</span>
-                  </div>
-                </div>
-              )}
-              
-              {room && (
-                <div className="mb-4">
-                  <h2 className="text-xl font-semibold mb-2 flex items-center">
-                    <span className="mr-2">Host:</span> 
-                    <div className={`px-3 py-1 rounded-lg flex items-center ${isHost ? 'bg-blue-600 text-white' : ''}`}>
-                      <span className="font-bold">{getUserName(getHostDetails(room.hostId, participants))}</span>
-                      {isHost && (
-                        <span className="ml-2 bg-white text-blue-600 px-2 py-0.5 rounded-full text-sm font-bold">
-                          YOU
-                        </span>
-                      )}
-                    </div>
-                  </h2>
-                  <p className="text-gray-600">
-                    Quiz: {quiz?.title || 'Loading...'}
-                  </p>
-                </div>
-              )}
+      <div className="relative w-screen min-h-screen overflow-x-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+        {/* Animated SVG background */}
+        <svg
+          className="absolute top-0 left-0 z-0 w-full h-full pointer-events-none"
+          style={{ filter: "blur(2px)" }}
+        >
+          <defs>
+            <radialGradient id="g1" cx="50%" cy="50%" r="80%">
+              <stop offset="0%" stopColor="#f472b6" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <circle cx="80%" cy="20%" r="300" fill="url(#g1)">
+            <animate
+              attributeName="cx"
+              values="80%;20%;80%"
+              dur="12s"
+              repeatCount="indefinite"
+            />
+          </circle>
+          <circle cx="20%" cy="80%" r="200" fill="url(#g1)">
+            <animate
+              attributeName="cy"
+              values="80%;20%;80%"
+              dur="16s"
+              repeatCount="indefinite"
+            />
+          </circle>
+        </svg>
 
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold mb-2">
-                  Participants ({participants.length})
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {participants.map((participant) => (
-                    <div 
-                      key={participant._id} 
-                      className="bg-gray-100 rounded p-2 flex items-center gap-2"
-                    >
-                      <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">
-                        {getUserInitial(participant.userId)}
-                      </div>
-                      <span>{getUserName(participant.userId)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+        <div className="relative z-10 px-4 py-8 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="flex items-center justify-between mb-8"
+          >
+            <div className="flex items-center gap-2">
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 text-pink-200 hover:text-white transition-all"
+              >
+                <FaArrowLeft />
+                <span className="font-orbitron">Back to Dashboard</span>
+              </Link>
             </div>
-        
-            {/* Game content */}
-            <div className="bg-white rounded-lg shadow p-4">
-              <div className="text-center">
-                <p className="text-lg mb-4">Waiting for the game to start...</p>
-                
+            <h1 className="flex items-center gap-3 text-4xl font-extrabold text-transparent md:text-5xl font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 drop-shadow-lg">
+              <FaGamepad className="inline-block text-yellow-300 animate-bounce" />
+              Room: {code}
+              <FaStar className="inline-block text-pink-300 animate-spin-slow" />
+            </h1>
+            <div></div> {/* Empty div for flex justify-between */}
+          </motion.div>
+
+          {!socketConnected && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 mb-8 border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
+            >
+              <p className="text-pink-200 font-orbitron mb-4">Socket connection not established. Some real-time features may be limited.</p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => socketService.init(user).then(() => setSocketConnected(true))}
+                className="px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-2xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
+              >
+                Reconnect
+              </motion.button>
+            </motion.div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main game area */}
+            <div className="lg:col-span-2">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="p-8 border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
+              >
                 {isHost && (
-                  <div className="border-2 border-blue-600 p-6 rounded-lg bg-blue-50 inline-block">
-                    <h3 className="text-xl font-bold mb-4 text-blue-800">Host Controls</h3>
-                    <button
-                      className="btn btn-lg w-full bg-blue-600 hover:bg-blue-700 text-white text-lg px-8 py-4 shadow-lg transition-all duration-200 transform hover:scale-105"
-                      onClick={handleStartGame}
-                      disabled={!room || participants.length < 1}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      START GAME
-                    </button>
-                    
-                    {participants.length < 1 && (
-                      <p className="text-amber-600 mt-3 font-semibold">Need at least one participant to start</p>
-                    )}
-                  </div>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="mb-8 p-6 bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 rounded-2xl border-2 border-pink-400/40"
+                  >
+                    <div className="flex items-center gap-4">
+                      <FaCrown className="w-8 h-8 text-yellow-400" />
+                      <div>
+                        <h2 className="text-xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                          You are the Quiz Host
+                        </h2>
+                        <p className="text-pink-200 font-orbitron">You have control over when the game starts and ends</p>
+                      </div>
+                    </div>
+                  </motion.div>
                 )}
 
-                {!isHost && (
-                  <div className="p-4 bg-blue-50 rounded-lg inline-block animate-pulse">
-                    <p className="text-blue-700 font-semibold">
-                      Only the host can start the game. Please wait...
+                {room && (
+                  <div className="mb-8">
+                    <h2 className="text-xl font-semibold mb-4 flex items-center text-pink-200 font-orbitron">
+                      <span className="mr-2">Host:</span>
+                      <div className={`px-4 py-2 rounded-xl flex items-center ${isHost ? 'bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 text-white' : 'bg-indigo-900/50 text-pink-200'}`}>
+                        <span className="font-bold">{getUserName(getHostDetails(room.hostId, participants))}</span>
+                        {isHost && (
+                          <span className="ml-2 bg-white text-pink-500 px-2 py-0.5 rounded-full text-sm font-bold">
+                            YOU
+                          </span>
+                        )}
+                      </div>
+                    </h2>
+                    <p className="text-pink-200 font-orbitron">
+                      Quiz: {quiz?.title || 'Loading...'}
                     </p>
                   </div>
                 )}
 
-                {/* Explain the game flow to all users */}
-                <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-                  <h3 className="font-bold text-lg text-blue-800 mb-2">How to Play</h3>
-                  <p className="mb-2">1. Wait for the host to start the game</p>
-                  <p className="mb-2">2. The game will begin automatically once started</p>
-                  <p className="mb-2">3. Answer questions to earn points</p>
-                  
-                  {room?.status === 'in_progress' && (
-                    <div className="bg-green-100 p-2 rounded mt-2">
-                      <p className="text-green-800 font-bold">Game in progress!</p>
-                    </div>
-                  )}
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold mb-4 text-pink-200 font-orbitron">
+                    Participants ({participants.length})
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {participants.map((participant) => (
+                      <motion.div
+                        key={participant._id}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="p-4 bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 rounded-xl border-2 border-pink-400/40 flex items-center gap-3"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 text-white flex items-center justify-center font-bold">
+                          {getUserInitial(participant.userId)}
+                        </div>
+                        <span className="text-pink-200 font-orbitron">{getUserName(participant.userId)}</span>
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
 
-          {/* Chat sidebar */}
-          <div className="lg:col-span-1">
-            <RoomChat roomCode={code} roomId={room?._id} />
+                <div className="text-center">
+                  <p className="text-lg mb-6 text-pink-200 font-orbitron">Waiting for the game to start...</p>
+
+                  {isHost && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="inline-block p-8 bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 rounded-2xl border-2 border-pink-400/40"
+                    >
+                      <h3 className="text-xl font-bold mb-6 text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                        Host Controls
+                      </h3>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleStartGame}
+                        disabled={!room || participants.length < 1}
+                        className={`px-8 py-4 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-2xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30 ${(!room || participants.length < 1) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <FaGamepad className="w-6 h-6" />
+                          <span>START GAME</span>
+                        </div>
+                      </motion.button>
+
+                      {participants.length < 1 && (
+                        <p className="mt-4 text-yellow-400 font-orbitron">Need at least one participant to start</p>
+                      )}
+                    </motion.div>
+                  )}
+
+                  {!isHost && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="inline-block p-6 bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 rounded-2xl border-2 border-pink-400/40 animate-pulse"
+                    >
+                      <p className="text-pink-200 font-orbitron">
+                        Only the host can start the game. Please wait...
+                      </p>
+                    </motion.div>
+                  )}
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.4 }}
+                    className="mt-8 p-6 bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 rounded-2xl border-2 border-pink-400/40"
+                  >
+                    <h3 className="font-bold text-lg text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 mb-4">
+                      How to Play
+                    </h3>
+                    <div className="space-y-2 text-pink-200 font-orbitron">
+                      <p>1. Wait for the host to start the game</p>
+                      <p>2. The game will begin automatically once started</p>
+                      <p>3. Answer questions to earn points</p>
+                    </div>
+
+                    {room?.status === 'in_progress' && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="mt-4 p-4 bg-gradient-to-r from-green-500/30 to-green-600/30 rounded-xl"
+                      >
+                        <p className="text-green-200 font-bold font-orbitron">Game in progress!</p>
+                      </motion.div>
+                    )}
+                  </motion.div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Chat sidebar */}
+            <div className="lg:col-span-1">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className="h-full"
+              >
+                <RoomChat roomCode={code} roomId={room?._id} />
+              </motion.div>
+            </div>
           </div>
         </div>
       </div>
@@ -591,143 +707,238 @@ function Room({ user: propUser }) {
   // Game in progress display
   if (room.status === 'in_progress') {
     return (
-      <div className="container mx-auto p-4">
-        {!socketConnected && (
-          <div className="p-3 mb-4 bg-yellow-100 text-yellow-700 rounded-lg">
-            <p>Socket connection not established. Some real-time features may be limited.</p>
-            <button 
-              onClick={() => socketService.init(user).then(() => setSocketConnected(true))}
-              className="mt-2 px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-            >
-              Reconnect
-            </button>
-          </div>
-        )}
-        
-        {/* Game status notification instead of button to non-existent route */}
-        <div className="mb-4 bg-green-100 p-4 rounded-lg shadow-md">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold text-green-800">Quiz Game in Progress!</h2>
-              <p className="text-green-700">Answer the questions below to earn points</p>
-            </div>
-            {isHost && (
-              <button 
-                onClick={handleEndGame}
-                className="btn btn-warning shadow-lg"
-              >
-                End Game
-              </button>
-            )}
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Main game area */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow p-4 mb-4">
-              <h1 className="text-2xl font-bold mb-4">Room: {code}</h1>
-              
-              {isHost && (
-                <div className="bg-gradient-to-r from-blue-500 to-blue-700 text-white p-4 rounded-lg mb-4 flex items-center shadow-md">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                  <div>
-                    <span className="font-bold block text-lg">You are the Quiz Host</span>
-                    <span>You have control over when the game starts and ends</span>
-                  </div>
-                </div>
-              )}
-              
-              {room && (
-                <div className="mb-4">
-                  <h2 className="text-xl font-semibold mb-2 flex items-center">
-                    <span className="mr-2">Host:</span> 
-                    <div className={`px-3 py-1 rounded-lg flex items-center ${isHost ? 'bg-blue-600 text-white' : ''}`}>
-                      <span className="font-bold">{getUserName(getHostDetails(room.hostId, participants))}</span>
-                      {isHost && (
-                        <span className="ml-2 bg-white text-blue-600 px-2 py-0.5 rounded-full text-sm font-bold">
-                          YOU
-                        </span>
-                      )}
-                    </div>
-                  </h2>
-                  <p className="text-gray-600">
-                    Quiz: {quiz?.title || 'Loading...'}
-                  </p>
-                </div>
-              )}
+      <div className="relative w-screen min-h-screen overflow-x-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+        {/* Animated SVG background */}
+        <svg
+          className="absolute top-0 left-0 z-0 w-full h-full pointer-events-none"
+          style={{ filter: "blur(2px)" }}
+        >
+          <defs>
+            <radialGradient id="g1" cx="50%" cy="50%" r="80%">
+              <stop offset="0%" stopColor="#f472b6" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <circle cx="80%" cy="20%" r="300" fill="url(#g1)">
+            <animate
+              attributeName="cx"
+              values="80%;20%;80%"
+              dur="12s"
+              repeatCount="indefinite"
+            />
+          </circle>
+          <circle cx="20%" cy="80%" r="200" fill="url(#g1)">
+            <animate
+              attributeName="cy"
+              values="80%;20%;80%"
+              dur="16s"
+              repeatCount="indefinite"
+            />
+          </circle>
+        </svg>
 
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold mb-2">
-                  Participants ({participants.length})
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {participants.map((participant) => (
-                    <div
-                      key={participant._id}
-                      className="bg-gray-100 rounded p-2 flex items-center gap-2"
-                    >
-                      <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">
-                        {getUserInitial(participant.userId)}
-                      </div>
-                      <span>
-                        {getUserName(participant.userId)}
-                        {participant.score > 0 && (
-                          <span className="ml-2 text-green-600 font-bold">{participant.score} pts</span>
-                        )}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+        <div className="relative z-10 px-4 py-8 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="flex items-center justify-between mb-8"
+          >
+            <div className="flex items-center gap-2">
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 text-pink-200 hover:text-white transition-all"
+              >
+                <FaArrowLeft />
+                <span className="font-orbitron">Back to Dashboard</span>
+              </Link>
             </div>
-        
-            {/* Game content */}
-            <div className="bg-white rounded-lg shadow p-4">
-              <div className="text-center py-8">
-                <h2 className="text-2xl font-bold mb-4">Game in Progress!</h2>
-                <p className="text-lg mb-6">The game has been started by the host.</p>
-                
-                <div className="mb-8 max-w-md mx-auto">
-                  <div className="bg-blue-50 p-4 rounded-lg mb-6">
-                    <p className="text-blue-800">Click the button below to join the quiz and answer questions!</p>
-                  </div>
-                  
-                  <button
-                    onClick={() => navigate(`/quiz-game/${code}`)}
-                    className="btn btn-primary btn-lg text-lg px-8 py-3 shadow-lg animate-pulse"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Play Game
-                  </button>
-                </div>
-                
+            <h1 className="flex items-center gap-3 text-4xl font-extrabold text-transparent md:text-5xl font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 drop-shadow-lg">
+              <FaGamepad className="inline-block text-yellow-300 animate-bounce" />
+              Room: {code}
+              <FaStar className="inline-block text-pink-300 animate-spin-slow" />
+            </h1>
+            <div></div> {/* Empty div for flex justify-between */}
+          </motion.div>
+
+          {!socketConnected && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-4 mb-8 border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
+            >
+              <p className="text-pink-200 font-orbitron mb-4">Socket connection not established. Some real-time features may be limited.</p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => socketService.init(user).then(() => setSocketConnected(true))}
+                className="px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-2xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
+              >
+                Reconnect
+              </motion.button>
+            </motion.div>
+          )}
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-6 border-4 shadow-2xl bg-gradient-to-br from-green-900/50 via-green-800/50 to-green-700/50 backdrop-blur-xl rounded-3xl border-green-400/40"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                  Quiz Game in Progress!
+                </h2>
+                <p className="text-green-200 font-orbitron">Answer the questions below to earn points</p>
+              </div>
+              {isHost && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleEndGame}
+                  className="px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-red-500 via-red-600 to-red-700 rounded-2xl hover:from-red-600 hover:to-red-500 hover:scale-105 active:scale-95 border-white/30"
+                >
+                  End Game
+                </motion.button>
+              )}
+            </div>
+          </motion.div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main game area */}
+            <div className="lg:col-span-2">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="p-8 border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
+              >
                 {isHost && (
-                  <div className="mt-6 border-t border-gray-200 pt-4">
-                    <h3 className="text-xl font-bold mb-4 text-blue-800">Host Controls</h3>
-                    <button
-                      onClick={handleEndGame}
-                      className="btn btn-lg w-full bg-red-600 hover:bg-red-700 text-white text-lg px-8 py-4 shadow-lg transition-all duration-200 transform hover:scale-105"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                      END GAME
-                    </button>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="mb-8 p-6 bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 rounded-2xl border-2 border-pink-400/40"
+                  >
+                    <div className="flex items-center gap-4">
+                      <FaCrown className="w-8 h-8 text-yellow-400" />
+                      <div>
+                        <h2 className="text-xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                          You are the Quiz Host
+                        </h2>
+                        <p className="text-pink-200 font-orbitron">You have control over when the game starts and ends</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {room && (
+                  <div className="mb-8">
+                    <h2 className="text-xl font-semibold mb-4 flex items-center text-pink-200 font-orbitron">
+                      <span className="mr-2">Host:</span>
+                      <div className={`px-4 py-2 rounded-xl flex items-center ${isHost ? 'bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 text-white' : 'bg-indigo-900/50 text-pink-200'}`}>
+                        <span className="font-bold">{getUserName(getHostDetails(room.hostId, participants))}</span>
+                        {isHost && (
+                          <span className="ml-2 bg-white text-pink-500 px-2 py-0.5 rounded-full text-sm font-bold">
+                            YOU
+                          </span>
+                        )}
+                      </div>
+                    </h2>
+                    <p className="text-pink-200 font-orbitron">
+                      Quiz: {quiz?.title || 'Loading...'}
+                    </p>
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
 
-          {/* Chat sidebar */}
-          <div className="lg:col-span-1">
-            <RoomChat roomCode={code} roomId={room?._id} />
+                <div className="mb-8">
+                  <h3 className="text-lg font-semibold mb-4 text-pink-200 font-orbitron">
+                    Participants ({participants.length})
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {participants.map((participant) => (
+                      <motion.div
+                        key={participant._id}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="p-4 bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 rounded-xl border-2 border-pink-400/40 flex items-center gap-3"
+                      >
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 text-white flex items-center justify-center font-bold">
+                          {getUserInitial(participant.userId)}
+                        </div>
+                        <div>
+                          <span className="text-pink-200 font-orbitron">{getUserName(participant.userId)}</span>
+                          {participant.score > 0 && (
+                            <span className="ml-2 text-green-400 font-bold">{participant.score} pts</span>
+                          )}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="text-center py-8">
+                  <h2 className="text-2xl font-bold mb-6 text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                    Game in Progress!
+                  </h2>
+                  <p className="text-lg mb-8 text-pink-200 font-orbitron">
+                    The game has been started by the host.
+                  </p>
+
+                  <div className="mb-8 max-w-md mx-auto">
+                    <div className="p-6 bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 rounded-2xl border-2 border-pink-400/40 mb-6">
+                      <p className="text-pink-200 font-orbitron">Click the button below to join the quiz and answer questions!</p>
+                    </div>
+
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => navigate(`/quiz-game/${code}`)}
+                      className="px-8 py-4 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-2xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30 animate-pulse"
+                    >
+                      <div className="flex items-center gap-2">
+                        <FaGamepad className="w-6 h-6" />
+                        <span>Play Game</span>
+                      </div>
+                    </motion.button>
+                  </div>
+
+                  {isHost && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-8 p-6 border-t-2 border-pink-400/40"
+                    >
+                      <h3 className="text-xl font-bold mb-6 text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                        Host Controls
+                      </h3>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleEndGame}
+                        className="px-8 py-4 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-red-500 via-red-600 to-red-700 rounded-2xl hover:from-red-600 hover:to-red-500 hover:scale-105 active:scale-95 border-white/30"
+                      >
+                        <div className="flex items-center gap-2">
+                          <FaSignOutAlt className="w-6 h-6" />
+                          <span>END GAME</span>
+                        </div>
+                      </motion.button>
+                    </motion.div>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Chat sidebar */}
+            <div className="lg:col-span-1">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className="h-full"
+              >
+                <RoomChat roomCode={code} roomId={room?._id} />
+              </motion.div>
+            </div>
           </div>
         </div>
       </div>
@@ -737,119 +948,206 @@ function Room({ user: propUser }) {
   // Game completed display
   if (room.status === 'completed') {
     return (
-      <div className="container mx-auto p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Main game area */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold">Quiz Results</h1>
-                <div className="badge badge-success py-2 px-4 text-white">Game Completed</div>
-              </div>
-              
-              <div className="mb-8">
-                <h2 className="text-xl font-bold mb-2 text-center">Final Leaderboard</h2>
-                <p className="text-gray-500 text-center mb-6">Quiz: {quiz?.title || 'Loading...'}</p>
-                
-                {participants && Array.isArray(participants) && participants.length > 0 && (
-                  <div className="flex flex-col items-center mb-8">
-                    {/* Top 3 Podium */}
-                    <div className="flex items-end justify-center w-full max-w-xl mx-auto mb-8">
-                      {participants.sort((a, b) => b.score - a.score).slice(0, 3).map((participant, index) => {
-                        // Define heights and colors based on position
-                        const heights = ["h-28", "h-36", "h-20"];
-                        const bgColors = ["bg-gray-300", "bg-yellow-400", "bg-orange-400"];
-                        const positions = [2, 1, 3]; // Silver, Gold, Bronze
-                        const marginTop = ["mt-8", "mt-0", "mt-16"];
-                        
-                        return (
-                          <div key={participant._id} className="flex flex-col items-center mx-2">
-                            <div className="rounded-full w-16 h-16 mb-2 flex items-center justify-center bg-blue-100 border-4 border-white shadow-lg">
-                              <span className="text-2xl font-bold">{getUserInitial(participant.userId)}</span>
-                            </div>
-                            <p className="text-center font-semibold mb-2 w-24 truncate">{getUserName(participant.userId)}</p>
-                            <p className="text-lg font-bold text-blue-600">{participant.score} pts</p>
-                            <div className={`${bgColors[index]} ${heights[index]} w-24 ${marginTop[index]} rounded-t-lg flex items-start justify-center pt-2 shadow-lg`}>
-                              <span className="bg-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg">
-                                {positions[index]}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    
-                    {/* All participants list */}
-                    <div className="w-full max-w-2xl bg-gray-50 rounded-lg overflow-hidden shadow">
-                      <div className="bg-blue-600 text-white px-4 py-3">
-                        <h3 className="font-bold">Complete Rankings</h3>
-                      </div>
-                      <div className="divide-y divide-gray-200">
-                        {participants.sort((a, b) => b.score - a.score).map((participant, index) => (
-                          <div 
-                            key={participant._id}
-                            className={`px-4 py-3 flex items-center justify-between hover:bg-blue-50 transition-colors ${
-                              getUserId(participant.userId) === user._id ? 'bg-blue-100' : ''
-                            }`}
-                          >
-                            <div className="flex items-center">
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 ${
-                                index === 0 ? 'bg-yellow-400 text-yellow-800' : 
-                                index === 1 ? 'bg-gray-300 text-gray-700' : 
-                                index === 2 ? 'bg-orange-400 text-orange-800' : 'bg-blue-100 text-blue-800'
-                              }`}>
-                                {index + 1}
-                              </div>
-                              <div>
-                                <p className="font-medium">
-                                  {getUserName(participant.userId)}
-                                  {getUserId(participant.userId) === user._id && (
-                                    <span className="ml-2 text-xs bg-blue-600 text-white px-2 py-0.5 rounded-full">YOU</span>
-                                  )}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="text-lg font-bold">
-                              {participant.score} 
-                              <span className="text-sm text-gray-500 ml-1">pts</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
+      <div className="relative w-screen min-h-screen overflow-x-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+        {/* Animated SVG background */}
+        <svg
+          className="absolute top-0 left-0 z-0 w-full h-full pointer-events-none"
+          style={{ filter: "blur(2px)" }}
+        >
+          <defs>
+            <radialGradient id="g1" cx="50%" cy="50%" r="80%">
+              <stop offset="0%" stopColor="#f472b6" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <circle cx="80%" cy="20%" r="300" fill="url(#g1)">
+            <animate
+              attributeName="cx"
+              values="80%;20%;80%"
+              dur="12s"
+              repeatCount="indefinite"
+            />
+          </circle>
+          <circle cx="20%" cy="80%" r="200" fill="url(#g1)">
+            <animate
+              attributeName="cy"
+              values="80%;20%;80%"
+              dur="16s"
+              repeatCount="indefinite"
+            />
+          </circle>
+        </svg>
 
-                {(!participants || !Array.isArray(participants) || participants.length === 0) && (
-                  <div className="text-center py-10">
-                    <p className="text-gray-500">No results available</p>
-                  </div>
-                )}
-              </div>
-              
-              <div className="mt-8 flex justify-center gap-4">
-                <button
-                  onClick={() => navigate('/dashboard')}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md font-bold"
-                >
-                  Back to Dashboard
-                </button>
-                
-                {isHost && (
-                  <button
-                    onClick={() => navigate('/create-room')}
-                    className="px-6 py-3 bg-white border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors shadow-md font-bold"
-                  >
-                    Create New Room
-                  </button>
-                )}
-              </div>
+        <div className="relative z-10 px-4 py-8 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="flex items-center justify-between mb-8"
+          >
+            <div className="flex items-center gap-2">
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 text-pink-200 hover:text-white transition-all"
+              >
+                <FaArrowLeft />
+                <span className="font-orbitron">Back to Dashboard</span>
+              </Link>
             </div>
-          </div>
+            <h1 className="flex items-center gap-3 text-4xl font-extrabold text-transparent md:text-5xl font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 drop-shadow-lg">
+              <FaTrophy className="inline-block text-yellow-300 animate-bounce" />
+              Quiz Results
+              <FaStar className="inline-block text-pink-300 animate-spin-slow" />
+            </h1>
+            <div></div> {/* Empty div for flex justify-between */}
+          </motion.div>
 
-          {/* Chat sidebar */}
-          <div className="lg:col-span-1">
-            <RoomChat roomCode={code} roomId={room?._id} />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main game area */}
+            <div className="lg:col-span-2">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="p-8 border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
+              >
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                    Quiz Results
+                  </h2>
+                  <div className="px-4 py-2 bg-gradient-to-r from-green-500/30 to-green-600/30 rounded-xl text-green-200 font-orbitron">
+                    Game Completed
+                  </div>
+                </div>
+
+                <div className="mb-8">
+                  <h2 className="text-xl font-bold mb-2 text-center text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                    Final Leaderboard
+                  </h2>
+                  <p className="text-pink-200 text-center mb-8 font-orbitron">
+                    Quiz: {quiz?.title || 'Loading...'}
+                  </p>
+
+                  {participants && Array.isArray(participants) && participants.length > 0 && (
+                    <div className="flex flex-col items-center mb-8">
+                      {/* Top 3 Podium */}
+                      <div className="flex items-end justify-center w-full max-w-xl mx-auto mb-8">
+                        {participants.sort((a, b) => b.score - a.score).slice(0, 3).map((participant, index) => {
+                          const heights = ["h-28", "h-36", "h-20"];
+                          const bgColors = ["bg-gradient-to-b from-gray-400 to-gray-500", "bg-gradient-to-b from-yellow-400 to-yellow-500", "bg-gradient-to-b from-orange-400 to-orange-500"];
+                          const positions = [2, 1, 3];
+                          const marginTop = ["mt-8", "mt-0", "mt-16"];
+
+                          return (
+                            <motion.div
+                              key={participant._id}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.5, delay: index * 0.2 }}
+                              className="flex flex-col items-center mx-2"
+                            >
+                              <div className="rounded-full w-16 h-16 mb-2 flex items-center justify-center bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 border-4 border-pink-400/40 shadow-lg">
+                                <span className="text-2xl font-bold text-pink-200">{getUserInitial(participant.userId)}</span>
+                              </div>
+                              <p className="text-center font-semibold mb-2 w-24 truncate text-pink-200 font-orbitron">
+                                {getUserName(participant.userId)}
+                              </p>
+                              <p className="text-lg font-bold text-yellow-400 font-orbitron">{participant.score} pts</p>
+                              <div className={`${bgColors[index]} ${heights[index]} w-24 ${marginTop[index]} rounded-t-lg flex items-start justify-center pt-2 shadow-lg`}>
+                                <span className="bg-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg">
+                                  {positions[index]}
+                                </span>
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+
+                      {/* All participants list */}
+                      <div className="w-full max-w-2xl bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 rounded-xl overflow-hidden shadow-lg border-2 border-pink-400/40">
+                        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-3">
+                          <h3 className="font-bold text-white font-orbitron">Complete Rankings</h3>
+                        </div>
+                        <div className="divide-y divide-pink-400/20">
+                          {participants.sort((a, b) => b.score - a.score).map((participant, index) => (
+                            <motion.div
+                              key={participant._id}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.3, delay: index * 0.1 }}
+                              className={`px-4 py-3 flex items-center justify-between hover:bg-white/5 transition-colors ${getUserId(participant.userId) === user._id ? 'bg-pink-500/20' : ''
+                                }`}
+                            >
+                              <div className="flex items-center">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 ${index === 0 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-800' :
+                                  index === 1 ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-gray-700' :
+                                    index === 2 ? 'bg-gradient-to-r from-orange-400 to-orange-500 text-orange-800' :
+                                      'bg-gradient-to-r from-indigo-400 to-indigo-500 text-indigo-800'
+                                  }`}>
+                                  {index + 1}
+                                </div>
+                                <div>
+                                  <p className="font-medium text-pink-200 font-orbitron">
+                                    {getUserName(participant.userId)}
+                                    {getUserId(participant.userId) === user._id && (
+                                      <span className="ml-2 text-xs bg-pink-500 text-white px-2 py-0.5 rounded-full">YOU</span>
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-lg font-bold text-yellow-400 font-orbitron">
+                                {participant.score}
+                                <span className="text-sm text-pink-300/80 ml-1">pts</span>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {(!participants || !Array.isArray(participants) || participants.length === 0) && (
+                    <div className="text-center py-10">
+                      <p className="text-pink-200 font-orbitron">No results available</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-8 flex justify-center gap-4">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => navigate('/dashboard')}
+                    className="px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-2xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
+                  >
+                    Back to Dashboard
+                  </motion.button>
+
+                  {isHost && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => navigate('/create-room')}
+                      className="px-6 py-3 text-pink-200 transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 rounded-2xl hover:from-pink-900/50 hover:to-indigo-900/50 hover:scale-105 active:scale-95 border-pink-400/40"
+                    >
+                      Create New Room
+                    </motion.button>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Chat sidebar */}
+            <div className="lg:col-span-1">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+                className="h-full"
+              >
+                <RoomChat roomCode={code} roomId={room?._id} />
+              </motion.div>
+            </div>
           </div>
         </div>
       </div>
@@ -858,16 +1156,25 @@ function Room({ user: propUser }) {
 
   // Default display if room status doesn't match any of the above
   return (
-    <div className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-4">Room: {room.code}</h1>
-      <p className="mb-4">Status: {room.status}</p>
-      
-      <button
-        onClick={() => navigate('/dashboard')}
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-8 text-center border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
       >
-        Back to Dashboard
-      </button>
+        <h1 className="text-2xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 mb-4">
+          Room: {room.code}
+        </h1>
+        <p className="mb-4 text-pink-200 font-orbitron">Status: {room.status}</p>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate('/dashboard')}
+          className="px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-2xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
+        >
+          Back to Dashboard
+        </motion.button>
+      </motion.div>
     </div>
   );
 }
