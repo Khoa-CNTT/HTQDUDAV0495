@@ -90,52 +90,81 @@ const Dashboard = ({ user, logout }) => {
   }, []);
 
   const handleDeleteQuiz = async (quizId) => {
+    if (!quizId) {
+      toast.error("Invalid quiz ID");
+      return;
+    }
+
     if (window.confirm("Are you sure you want to delete this quiz?")) {
       try {
-        const response = await deleteQuiz(quizId);
-        if (response.success) {
-          setQuizzes((prevQuizzes) =>
-            prevQuizzes.filter((quiz) => quiz._id !== quizId)
-          );
-          toast.success("Quiz deleted successfully");
-        } else {
-          throw new Error(response.message || "Failed to delete quiz");
-        }
+        await deleteQuiz(quizId);
+
+        // Update UI after successful deletion
+        setQuizzes((prevQuizzes) =>
+          prevQuizzes.filter((quiz) => quiz._id !== quizId)
+        );
+
+        // Show success message
+        toast.success("Quiz deleted successfully");
       } catch (error) {
         console.error("Error deleting quiz:", error);
-        toast.error(error.message || "Failed to delete quiz");
+
+        // Extract error message from response
+        const errorMessage = error.response?.data?.message || "Failed to delete quiz";
+        toast.error(errorMessage);
+
+        // If the error is about authorization, show a more specific message
+        if (errorMessage.includes("Not authorized")) {
+          toast.error("You don't have permission to delete this quiz");
+        }
       }
     }
   };
 
   // Check if user is creator of a quiz
   const isCreator = (quiz) => {
-    // Nếu không có user hoặc không có quiz, trả về false
-    if (!user || !quiz) return false;
+    try {
+      // If no user or quiz, return false
+      if (!user || !quiz) {
+        return false;
+      }
 
-    const userId = user._id;
-    const quizCreator = quiz.createdBy;
+      const userId = user._id;
+      // Ensure userId is a string
+      const userIdStr = typeof userId === 'string' ? userId : String(userId);
 
-    // Debug log
-    console.log(`isCreator check for quiz "${quiz.title}":`, {
-      userId,
-      quizCreator,
-      isString: typeof quizCreator === 'string',
-      isObject: typeof quizCreator === 'object',
-      match: quizCreator === userId || (typeof quizCreator === 'object' && quizCreator?._id === userId)
-    });
+      // Process createdBy based on its structure
+      if (!quiz.createdBy) {
+        return false;
+      }
 
-    // Các trường hợp có thể xảy ra:
-    // 1. quizCreator là string ID -> so sánh trực tiếp
-    // 2. quizCreator là object -> so sánh với quizCreator._id
+      // Case 1: createdBy is a string
+      if (typeof quiz.createdBy === 'string') {
+        return quiz.createdBy === userIdStr;
+      }
 
-    if (typeof quizCreator === 'string') {
-      return quizCreator === userId;
-    } else if (typeof quizCreator === 'object' && quizCreator !== null) {
-      return quizCreator._id === userId;
+      // Case 2: createdBy is an object
+      if (typeof quiz.createdBy === 'object' && quiz.createdBy !== null) {
+        // Get ID from object
+        let creatorId = quiz.createdBy._id;
+
+        // If no _id, return false
+        if (!creatorId) {
+          return false;
+        }
+
+        // Ensure creatorId is a string
+        const creatorIdStr = typeof creatorId === 'string' ? creatorId : String(creatorId);
+
+        return creatorIdStr === userIdStr;
+      }
+
+      // Default to false
+      return false;
+    } catch (error) {
+      console.error('Error in isCreator function:', error);
+      return false;
     }
-
-    return false;
   };
 
   // Toggle dropdown menu
@@ -452,8 +481,8 @@ const Dashboard = ({ user, logout }) => {
               ) : (
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {validQuizzes.map((quiz, index) => {
-                    // Kiểm tra quyền sở hữu
-                    const userIsCreator = isCreator(quiz);
+                    // In My Quizzes tab, we always show edit/delete buttons as these are user's own quizzes
+                    const userIsCreator = true; // Always true in My Quizzes tab
 
                     return (
                       <motion.div
@@ -464,7 +493,7 @@ const Dashboard = ({ user, logout }) => {
                       >
                         <QuizCard
                           quiz={quiz}
-                          isCreator={userIsCreator}
+                          isCreator={userIsCreator} // Always true to show edit/delete buttons
                           onDelete={handleDeleteQuiz}
                         />
                       </motion.div>
@@ -500,15 +529,18 @@ const Dashboard = ({ user, logout }) => {
               ) : (
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {Array.isArray(publicQuizzes) &&
-                    publicQuizzes.map((quiz, index) => (
-                      <QuizCard
-                        key={quiz._id}
-                        quiz={quiz}
-                        isCreator={isCreator(quiz)}
-                        showCreator={true}
-                        onDelete={handleDeleteQuiz}
-                      />
-                    ))}
+                    publicQuizzes.map((quiz, index) => {
+                      // In Public Quizzes tab, we never show edit/delete buttons
+                      return (
+                        <QuizCard
+                          key={quiz._id}
+                          quiz={quiz}
+                          isCreator={false} // Always false to hide edit/delete buttons in Public Quizzes
+                          showCreator={true}
+                          onDelete={handleDeleteQuiz}
+                        />
+                      );
+                    })}
                 </div>
               )}
             </motion.div>

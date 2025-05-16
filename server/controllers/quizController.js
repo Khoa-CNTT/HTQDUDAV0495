@@ -112,6 +112,12 @@ const getQuizById = async (req, res) => {
  */
 const updateQuiz = async (req, res) => {
   try {
+    console.log("Update quiz - User info:", {
+      userId: req.user?._id,
+      userInfo: req.user,
+      quizId: req.params.id
+    });
+
     const result = await quizService.updateQuiz(
       req.params.id,
       req.user._id,
@@ -137,6 +143,12 @@ const updateQuiz = async (req, res) => {
  */
 const deleteQuiz = async (req, res) => {
   try {
+    console.log("Delete quiz - User info:", {
+      userId: req.user?._id,
+      userInfo: req.user,
+      quizId: req.params.id
+    });
+
     const result = await quizService.deleteQuiz(req.params.id, req.user._id);
     res.json(result);
   } catch (error) {
