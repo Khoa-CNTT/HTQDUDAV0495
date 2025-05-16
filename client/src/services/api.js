@@ -265,8 +265,33 @@ export const getQuizById = async (quizId) => {
 };
 
 export const deleteQuiz = async (quizId) => {
-  const response = await api.delete(`/quizzes/${quizId}`);
-  return response.data;
+  try {
+    const response = await api.delete(`/quizzes/${quizId}`);
+    return { success: true, message: "Quiz deleted successfully" };
+  } catch (error) {
+    console.error("Error deleting quiz:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to delete quiz",
+    };
+  }
+};
+
+export const updateQuiz = async (quizId, quizData) => {
+  try {
+    const response = await api.put(`/quizzes/${quizId}`, quizData);
+    return {
+      success: true,
+      message: "Quiz updated successfully",
+      data: response.data
+    };
+  } catch (error) {
+    console.error("Error updating quiz:", error);
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to update quiz",
+    };
+  }
 };
 
 // Quiz Submission API calls

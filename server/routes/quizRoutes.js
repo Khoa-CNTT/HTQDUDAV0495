@@ -9,6 +9,7 @@ router.post('/ai', protect, quizController.createQuizWithAI); // New route for A
 router.get('/public', quizController.getPublicQuizzes);
 router.get('/', protect, quizController.getAllQuizzes); // Protected route
 router.get('/:id', quizController.getQuizById);
+router.put('/:id', protect, quizController.updateQuiz); // Route để cập nhật quiz
 router.delete('/:id', protect, quizController.deleteQuiz);
 router.post('/:id/submit', protect, quizController.submitQuizAnswers);
 

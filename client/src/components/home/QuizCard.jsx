@@ -1,9 +1,11 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaPlay, FaClock, FaUsers } from "react-icons/fa";
+import { FaPlay, FaClock, FaUsers, FaEdit, FaTrash } from "react-icons/fa";
 
-const QuizCard = ({ quiz }) => {
+const QuizCard = ({ quiz, onDelete, isCreator = false }) => {
+  const navigate = useNavigate();
+
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
@@ -67,7 +69,7 @@ const QuizCard = ({ quiz }) => {
 
         {/* Description */}
         <p className="mb-6 text-pink-200/80 transition-colors duration-300 line-clamp-2 group-hover:text-pink-200 font-orbitron">
-          {quiz.description}
+          {quiz.description || "No description provided"}
         </p>
 
         {/* Stats */}
@@ -82,12 +84,45 @@ const QuizCard = ({ quiz }) => {
           </div>
         </div>
 
-        {/* Action Button */}
-        <div className="flex justify-end">
+        {/* Action Buttons */}
+        <div className="flex justify-between items-center">
+          {isCreator && (
+            <div className="flex gap-2">
+              <motion.button
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate(`/edit-quiz/${quiz._id}`);
+                }}
+                className="p-2 text-yellow-400 hover:text-yellow-300 transition-colors"
+                title="Edit Quiz"
+              >
+                <FaEdit className="w-5 h-5" />
+              </motion.button>
+              <motion.button
+                variants={buttonVariants}
+                whileHover="hover"
+                whileTap="tap"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (onDelete) onDelete(quiz._id);
+                }}
+                className="p-2 text-pink-400 hover:text-pink-300 transition-colors"
+                title="Delete Quiz"
+              >
+                <FaTrash className="w-5 h-5" />
+              </motion.button>
+            </div>
+          )}
           <motion.div
             variants={buttonVariants}
             whileHover="hover"
             whileTap="tap"
+            className={isCreator ? "ml-auto" : ""}
           >
             <Link
               to={`/quiz/${quiz._id}`}

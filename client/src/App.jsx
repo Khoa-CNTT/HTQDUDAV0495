@@ -36,6 +36,7 @@ import { SidebarProvider } from "./components/ui/sidebar";
 import Friends from "./components/Friends";
 import CreateQuiz from "./pages/CreateQuiz";
 import CreateAIQuiz from "./pages/CreateAIQuiz";
+import EditQuiz from "./pages/EditQuiz";
 import Achievements from "./pages/Achievements";
 import Admin from "./pages/Admin";
 
@@ -344,6 +345,15 @@ function App() {
         <Route
           path="/create-quiz"
           element={<CreateQuiz />}
+        />
+
+        <Route
+          path="/edit-quiz/:id"
+          element={
+            <ProtectedRoute user={user}>
+              <EditQuiz />
+            </ProtectedRoute>
+          }
         />
 
         <Route
