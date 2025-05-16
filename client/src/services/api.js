@@ -164,7 +164,7 @@ export const getUserQuizzes = async () => {
   try {
     const response = await api.get("/quizzes", {
       params: {
-        createdBy: "me" // Server sẽ lấy userId từ token
+        createdBy: "me" // Server will get userId from token
       }
     });
 
@@ -176,19 +176,16 @@ export const getUserQuizzes = async () => {
     // Handle different response structures
     const quizData = response.data.data || response.data;
 
-    // Kiểm tra từng quiz để đảm bảo có _id hợp lệ
+    // Ensure _id has string format, preserve original createdBy data from server
     const processedQuizData = quizData
       .filter(quiz => quiz && (quiz._id || quiz.id))
       .map((quiz) => ({
         ...quiz,
-        _id: (quiz._id || quiz.id || '').toString().trim(),
-        createdBy:
-          typeof quiz.createdBy === "object"
-            ? quiz.createdBy._id
-            : quiz.createdBy,
+        _id: (quiz._id || quiz.id || '').toString().trim()
+        // Keep createdBy data as received from server
       }));
 
-    // Log warning nếu có quiz bị bỏ qua
+    // Log warning if quizzes were filtered out
     if (processedQuizData.length < quizData.length) {
       console.warn(`Filtered out ${quizData.length - processedQuizData.length} quizzes with invalid IDs`);
     }
@@ -219,18 +216,15 @@ export const getPublicQuizzes = async () => {
     // Handle different response structures
     const quizData = response.data.data || response.data;
 
-    // Kiểm tra từng quiz để đảm bảo có _id hợp lệ
+    // Ensure _id has string format, preserve original createdBy data from server
     const processedQuizData = quizData.filter(quiz => quiz && (quiz._id || quiz.id))
       .map((quiz) => ({
         ...quiz,
-        _id: (quiz._id || quiz.id || '').toString().trim(),
-        createdBy:
-          typeof quiz.createdBy === "object"
-            ? quiz.createdBy
-            : { _id: quiz.createdBy },
+        _id: (quiz._id || quiz.id || '').toString().trim()
+        // Keep createdBy data as received from server
       }));
 
-    // Log warning nếu có quiz bị bỏ qua
+    // Log warning if quizzes were filtered out
     if (processedQuizData.length < quizData.length) {
       console.warn(`Filtered out ${quizData.length - processedQuizData.length} quizzes with invalid IDs`);
     }
@@ -265,8 +259,47 @@ export const getQuizById = async (quizId) => {
 };
 
 export const deleteQuiz = async (quizId) => {
-  const response = await api.delete(`/quizzes/${quizId}`);
-  return response.data;
+  try {
+    // Ensure we have authentication
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.token) {
+      throw new Error("Authentication required");
+    }
+
+    const response = await api.delete(`/quizzes/${quizId}`, {
+      headers: {
+        Authorization: `Bearer ${user.token}`,
+      },
+    });
+    return { success: true, message: "Quiz deleted successfully" };
+  } catch (error) {
+    console.error("Error deleting quiz:", error);
+    throw error;
+  }
+};
+
+export const updateQuiz = async (quizId, quizData) => {
+  try {
+    // Ensure we have authentication
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.token) {
+      throw new Error("Authentication required");
+    }
+
+    const response = await api.put(`/quizzes/${quizId}`, quizData, {
+      headers: {
+        Authorization: `Bearer ${user.token}`,
+      },
+    });
+    return {
+      success: true,
+      message: "Quiz updated successfully",
+      data: response.data
+    };
+  } catch (error) {
+    console.error("Error updating quiz:", error);
+    throw error;
+  }
 };
 
 // Quiz Submission API calls

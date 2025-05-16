@@ -146,53 +146,75 @@ const quizService = {
    * Update a quiz
    */
   async updateQuiz(quizId, userId, updateData) {
-    const quiz = await Quiz.findById(quizId);
+    try {
+      const quiz = await Quiz.findById(quizId);
 
-    if (!quiz) {
-      throw new Error("Quiz not found");
+      if (!quiz) {
+        throw new Error("Quiz not found");
+      }
+
+      // For debugging purposes
+      console.log("Updating quiz - comparing ownership:", {
+        quizCreator: quiz.createdBy.toString(),
+        userId: userId.toString()
+      });
+
+      // Check ownership using toString() for accurate comparison
+      if (quiz.createdBy.toString() !== userId.toString()) {
+        throw new Error("Not authorized to update this quiz");
+      }
+
+      // Update fields
+      if (updateData.title) quiz.title = updateData.title;
+      if (updateData.description) quiz.description = updateData.description;
+      if (updateData.questions) quiz.questions = updateData.questions;
+      if (updateData.status) quiz.status = updateData.status;
+      if (updateData.timeLimit) quiz.timeLimit = updateData.timeLimit;
+      if (updateData.passingScore) quiz.passingScore = updateData.passingScore;
+
+      await quiz.save();
+
+      return {
+        message: "Quiz updated successfully",
+        quiz,
+      };
+    } catch (error) {
+      console.error("Error in updateQuiz:", error);
+      throw error;
     }
-
-    // Check if user owns the quiz
-    if (quiz.createdBy.toString() !== userId) {
-      throw new Error("Not authorized to update this quiz");
-    }
-
-    // Update fields
-    if (updateData.title) quiz.title = updateData.title;
-    if (updateData.description) quiz.description = updateData.description;
-    if (updateData.questions) quiz.questions = updateData.questions;
-    if (updateData.status) quiz.status = updateData.status;
-    if (updateData.timeLimit) quiz.timeLimit = updateData.timeLimit;
-    if (updateData.passingScore) quiz.passingScore = updateData.passingScore;
-
-    await quiz.save();
-
-    return {
-      message: "Quiz updated successfully",
-      quiz,
-    };
   },
 
   /**
    * Delete a quiz
    */
   async deleteQuiz(quizId, userId) {
-    const quiz = await Quiz.findById(quizId);
+    try {
+      const quiz = await Quiz.findById(quizId);
 
-    if (!quiz) {
-      throw new Error("Quiz not found");
+      if (!quiz) {
+        throw new Error("Quiz not found");
+      }
+
+      // For debugging purposes
+      console.log("Deleting quiz - comparing ownership:", {
+        quizCreator: quiz.createdBy.toString(),
+        userId: userId.toString()
+      });
+
+      // Check ownership using toString() for accurate comparison
+      if (quiz.createdBy.toString() !== userId.toString()) {
+        throw new Error("Not authorized to delete this quiz");
+      }
+
+      await quiz.deleteOne();
+
+      return {
+        message: "Quiz deleted successfully",
+      };
+    } catch (error) {
+      console.error("Error in deleteQuiz:", error);
+      throw error;
     }
-
-    // Check if user owns the quiz
-    if (quiz.createdBy.toString() !== userId) {
-      throw new Error("Not authorized to delete this quiz");
-    }
-
-    await quiz.deleteOne();
-
-    return {
-      message: "Quiz deleted successfully",
-    };
   },
 
   /**
@@ -248,22 +270,33 @@ const quizService = {
    * Get quiz submissions
    */
   async getQuizSubmissions(quizId, userId) {
-    const quiz = await Quiz.findById(quizId);
+    try {
+      const quiz = await Quiz.findById(quizId);
 
-    if (!quiz) {
-      throw new Error("Quiz not found");
+      if (!quiz) {
+        throw new Error("Quiz not found");
+      }
+
+      // For debugging purposes
+      console.log("Getting quiz submissions - comparing ownership:", {
+        quizCreator: quiz.createdBy.toString(),
+        userId: userId.toString()
+      });
+
+      // Check ownership using toString() for accurate comparison
+      if (quiz.createdBy.toString() !== userId.toString()) {
+        throw new Error("Not authorized to view submissions");
+      }
+
+      const submissions = await Submission.find({ quizId: quizId })
+        .populate("userId", "username displayName")
+        .sort({ createdAt: -1 });
+
+      return submissions;
+    } catch (error) {
+      console.error("Error in getQuizSubmissions:", error);
+      throw error;
     }
-
-    // Check if user owns the quiz
-    if (quiz.createdBy.toString() !== userId) {
-      throw new Error("Not authorized to view submissions");
-    }
-
-    const submissions = await Submission.find({ quizId: quizId })
-      .populate("userId", "username displayName")
-      .sort({ createdAt: -1 });
-
-    return submissions;
   },
 
   async createQuizWithAI(userId, aiQuizData) {

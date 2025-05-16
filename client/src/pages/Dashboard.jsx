@@ -26,6 +26,7 @@ import {
   FaUserFriends,
   FaMedal,
   FaUserCog,
+  FaEdit,
 } from "react-icons/fa";
 
 const Dashboard = ({ user, logout }) => {
@@ -89,27 +90,81 @@ const Dashboard = ({ user, logout }) => {
   }, []);
 
   const handleDeleteQuiz = async (quizId) => {
+    if (!quizId) {
+      toast.error("Invalid quiz ID");
+      return;
+    }
+
     if (window.confirm("Are you sure you want to delete this quiz?")) {
       try {
-        const response = await deleteQuiz(quizId);
-        if (response.success) {
-          setQuizzes((prevQuizzes) =>
-            prevQuizzes.filter((quiz) => quiz._id !== quizId)
-          );
-          toast.success("Quiz deleted successfully");
-        } else {
-          throw new Error(response.message || "Failed to delete quiz");
-        }
+        await deleteQuiz(quizId);
+
+        // Update UI after successful deletion
+        setQuizzes((prevQuizzes) =>
+          prevQuizzes.filter((quiz) => quiz._id !== quizId)
+        );
+
+        // Show success message
+        toast.success("Quiz deleted successfully");
       } catch (error) {
         console.error("Error deleting quiz:", error);
-        toast.error(error.message || "Failed to delete quiz");
+
+        // Extract error message from response
+        const errorMessage = error.response?.data?.message || "Failed to delete quiz";
+        toast.error(errorMessage);
+
+        // If the error is about authorization, show a more specific message
+        if (errorMessage.includes("Not authorized")) {
+          toast.error("You don't have permission to delete this quiz");
+        }
       }
     }
   };
 
   // Check if user is creator of a quiz
   const isCreator = (quiz) => {
-    return quiz.createdBy === user?._id;
+    try {
+      // If no user or quiz, return false
+      if (!user || !quiz) {
+        return false;
+      }
+
+      const userId = user._id;
+      // Ensure userId is a string
+      const userIdStr = typeof userId === 'string' ? userId : String(userId);
+
+      // Process createdBy based on its structure
+      if (!quiz.createdBy) {
+        return false;
+      }
+
+      // Case 1: createdBy is a string
+      if (typeof quiz.createdBy === 'string') {
+        return quiz.createdBy === userIdStr;
+      }
+
+      // Case 2: createdBy is an object
+      if (typeof quiz.createdBy === 'object' && quiz.createdBy !== null) {
+        // Get ID from object
+        let creatorId = quiz.createdBy._id;
+
+        // If no _id, return false
+        if (!creatorId) {
+          return false;
+        }
+
+        // Ensure creatorId is a string
+        const creatorIdStr = typeof creatorId === 'string' ? creatorId : String(creatorId);
+
+        return creatorIdStr === userIdStr;
+      }
+
+      // Default to false
+      return false;
+    } catch (error) {
+      console.error('Error in isCreator function:', error);
+      return false;
+    }
   };
 
   // Toggle dropdown menu
@@ -425,84 +480,25 @@ const Dashboard = ({ user, logout }) => {
                 </motion.div>
               ) : (
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {validQuizzes.map((quiz, index) => (
-                    <motion.div
-                      key={quiz._id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                      className="quiz-card bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-4 border-pink-400/40 hover:shadow-[0_0_40px_10px_rgba(236,72,153,0.7)] transition-all duration-500"
-                      onClick={() => {
-                        if (!quiz._id) {
-                          console.error("Quiz without valid ID:", quiz);
-                          toast.error(
-                            "Cannot view quiz details - Invalid quiz ID"
-                          );
-                          return;
-                        }
-                        const quizId = String(quiz._id).trim();
-                        navigate(`/quiz/${quizId}`);
-                      }}
-                    >
-                      <div className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <h3 className="text-xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
-                            {quiz.title}
-                          </h3>
-                          {quiz.isPublic ? (
-                            <span className="px-3 py-1 text-sm text-green-800 bg-green-100 rounded-full font-orbitron">
-                              Public
-                            </span>
-                          ) : (
-                            <span className="px-3 py-1 text-sm text-gray-800 bg-gray-100 rounded-full font-orbitron">
-                              Private
-                            </span>
-                          )}
-                        </div>
-                        <p className="mb-4 text-pink-200 font-orbitron">
-                          {quiz.questions
-                            ? `${quiz.questions.length} questions`
-                            : "Loading questions..."}
-                        </p>
-                        <div className="flex gap-3">
-                          <Link
-                            to={`/quiz/${quiz._id}`}
-                            className="flex-1 px-4 py-2 text-center text-white transition-all duration-300 font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-xl hover:from-pink-400 hover:to-yellow-400"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (!quiz._id) {
-                                e.preventDefault();
-                                toast.error(
-                                  "Cannot take quiz - Invalid quiz ID"
-                                );
-                              }
-                            }}
-                          >
-                            Take Quiz
-                          </Link>
-                          {isCreator(quiz) && (
-                            <motion.button
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                if (quiz._id) {
-                                  handleDeleteQuiz(quiz._id);
-                                } else {
-                                  toast.error(
-                                    "Cannot delete quiz - Invalid quiz ID"
-                                  );
-                                }
-                              }}
-                              className="px-4 py-2 text-white transition-all duration-300 bg-red-500 font-orbitron rounded-xl hover:bg-red-600"
-                            >
-                              Delete
-                            </motion.button>
-                          )}
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                  {validQuizzes.map((quiz, index) => {
+                    // In My Quizzes tab, we always show edit/delete buttons as these are user's own quizzes
+                    const userIsCreator = true; // Always true in My Quizzes tab
+
+                    return (
+                      <motion.div
+                        key={quiz._id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                      >
+                        <QuizCard
+                          quiz={quiz}
+                          isCreator={userIsCreator} // Always true to show edit/delete buttons
+                          onDelete={handleDeleteQuiz}
+                        />
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
             </motion.div>
@@ -533,58 +529,18 @@ const Dashboard = ({ user, logout }) => {
               ) : (
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {Array.isArray(publicQuizzes) &&
-                    publicQuizzes.map((quiz, index) => (
-                      <motion.div
-                        key={quiz._id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: index * 0.1 }}
-                        className="quiz-card bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-4 border-pink-400/40 hover:shadow-[0_0_40px_10px_rgba(236,72,153,0.7)] transition-all duration-500"
-                        onClick={() => {
-                          if (!quiz._id) {
-                            toast.error(
-                              "Cannot view quiz details - Invalid quiz ID"
-                            );
-                            return;
-                          }
-                          navigate(`/quiz/${quiz._id}`);
-                        }}
-                      >
-                        <div className="p-6">
-                          <div className="flex items-start justify-between mb-4">
-                            <h3 className="text-xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
-                              {quiz.title}
-                            </h3>
-                            <span className="px-3 py-1 text-sm text-green-800 bg-green-100 rounded-full font-orbitron">
-                              Public
-                            </span>
-                          </div>
-                          <p className="mb-2 text-pink-200 font-orbitron">
-                            {quiz.questions
-                              ? `${quiz.questions.length} questions`
-                              : "Loading questions..."}
-                          </p>
-                          <p className="mb-4 text-pink-200 font-orbitron">
-                            Created by: {quiz.createdBy?.username || "Unknown"}
-                          </p>
-                          <Link
-                            to={`/quiz/${quiz._id}`}
-                            className="block w-full px-4 py-2 text-center text-white transition-all duration-300 font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-xl hover:from-pink-400 hover:to-yellow-400"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (!quiz._id) {
-                                e.preventDefault();
-                                toast.error(
-                                  "Cannot take quiz - Invalid quiz ID"
-                                );
-                              }
-                            }}
-                          >
-                            Take Quiz
-                          </Link>
-                        </div>
-                      </motion.div>
-                    ))}
+                    publicQuizzes.map((quiz, index) => {
+                      // In Public Quizzes tab, we never show edit/delete buttons
+                      return (
+                        <QuizCard
+                          key={quiz._id}
+                          quiz={quiz}
+                          isCreator={false} // Always false to hide edit/delete buttons in Public Quizzes
+                          showCreator={true}
+                          onDelete={handleDeleteQuiz}
+                        />
+                      );
+                    })}
                 </div>
               )}
             </motion.div>

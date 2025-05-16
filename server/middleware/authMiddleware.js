@@ -22,9 +22,20 @@ const protect = async (req, res, next) => {
         return res.status(401).json({ message: 'Not authorized, user not found' });
       }
 
-      // Add user and userId to request object
+      // Ghi log để debug
+      console.log('Auth middleware - User found:', {
+        decodedUserId: decoded.userId,
+        userObjectId: user._id,
+        userIdStr: user._id.toString()
+      });
+
+      // Add user to request object
       req.user = user;
-      req.user.userId = decoded.userId;
+
+      // Đảm bảo _id được chuyển đúng dạng string để so sánh
+      if (req.user._id) {
+        req.user._id = req.user._id.toString();
+      }
 
       next();
     } catch (error) {
