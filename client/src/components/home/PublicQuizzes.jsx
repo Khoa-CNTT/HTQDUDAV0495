@@ -1,42 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FaTrophy, FaFire, FaStar } from "react-icons/fa";
-
-const mockQuizzes = [
-  {
-    id: 1,
-    title: "Advanced Mathematics Challenge",
-    description: "Test your mathematical prowess with this comprehensive quiz covering calculus, algebra, and geometry.",
-    date: "2024-04-01",
-    difficulty: "Hard",
-    category: "Mathematics",
-    participants: 1234,
-    rating: 4.8,
-    icon: <FaTrophy className="w-5 h-5" />
-  },
-  {
-    id: 2,
-    title: "World History Explorer",
-    description: "Journey through time with questions about ancient civilizations, world wars, and modern history.",
-    date: "2024-03-25",
-    difficulty: "Medium",
-    category: "History",
-    participants: 856,
-    rating: 4.5,
-    icon: <FaFire className="w-5 h-5" />
-  },
-  {
-    id: 3,
-    title: "Science & Technology Quiz",
-    description: "Explore the fascinating world of science and technology with questions about physics, chemistry, and modern innovations.",
-    date: "2024-03-10",
-    difficulty: "Medium",
-    category: "Science",
-    participants: 1023,
-    rating: 4.7,
-    icon: <FaStar className="w-5 h-5" />
-  },
-];
+import { FaTrophy, FaFire, FaStar, FaUsers } from "react-icons/fa";
+import { getPublicQuizzes } from "../../services/api";
+import toast from "react-hot-toast";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -62,11 +28,88 @@ const itemVariants = {
 
 export default function PublicQuizzes() {
   const [quizzes, setQuizzes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate fetching quizzes from an API
-    setQuizzes(mockQuizzes);
+    // Fetch actual public quizzes from the API
+    const fetchQuizzes = async () => {
+      try {
+        setLoading(true);
+        const response = await getPublicQuizzes();
+
+        // Format quizzes with required properties
+        const formattedQuizzes = response.data.map(quiz => {
+          let icon;
+
+          // Assign icons based on category or rating
+          if (quiz.averageRating >= 4.5) {
+            icon = <FaTrophy className="w-5 h-5" />;
+          } else if (quiz.ratingsCount >= 5) {
+            icon = <FaFire className="w-5 h-5" />;
+          } else {
+            icon = <FaStar className="w-5 h-5" />;
+          }
+
+          // Format difficulty based on question count
+          let difficulty = "Easy";
+          const questionCount = quiz.questions?.length || 0;
+
+          if (questionCount >= 15) {
+            difficulty = "Hard";
+          } else if (questionCount >= 8) {
+            difficulty = "Medium";
+          }
+
+          // Return formatted quiz
+          return {
+            ...quiz,
+            id: quiz._id,
+            icon,
+            difficulty,
+            participants: quiz.ratingsCount || 0,
+            rating: quiz.averageRating || 0
+          };
+        });
+
+        setQuizzes(formattedQuizzes);
+      } catch (error) {
+        console.error("Error fetching public quizzes:", error);
+        toast.error("Không thể tải danh sách quiz công khai");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuizzes();
   }, []);
+
+  // Function to render star ratings
+  const renderStarRating = (rating) => {
+    const starCount = 5;
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    return (
+      <div className="flex items-center">
+        {[...Array(starCount)].map((_, i) => {
+          if (i < fullStars) {
+            return <FaStar key={i} className="text-yellow-400 w-4 h-4" />;
+          } else if (i === fullStars && hasHalfStar) {
+            return (
+              <div key={i} className="relative">
+                <FaStar className="text-gray-300 w-4 h-4" />
+                <div className="absolute inset-0 overflow-hidden w-1/2">
+                  <FaStar className="text-yellow-400 w-4 h-4" />
+                </div>
+              </div>
+            );
+          } else {
+            return <FaStar key={i} className="text-gray-300 w-4 h-4" />;
+          }
+        })}
+      </div>
+    );
+  };
 
   return (
     <motion.div
@@ -82,93 +125,115 @@ export default function PublicQuizzes() {
           className="mb-12 text-center"
         >
           <h2 className="text-4xl font-bold text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text">
-            Featured Quizzes
+            Quiz Nổi Bật
           </h2>
           <p className="mt-4 text-lg text-gray-600">
-            Discover and challenge yourself with our most popular quizzes
+            Khám phá và thử thách bản thân với những quiz phổ biến nhất của chúng tôi
           </p>
         </motion.div>
 
-        <div className="grid gap-8 mt-6 md:grid-cols-2 lg:grid-cols-3">
-          {quizzes.map((quiz) => (
-            <motion.div
-              key={quiz.id}
-              variants={itemVariants}
-              whileHover={{ y: -5 }}
-              className="group relative p-6 transition-all duration-300 bg-white border border-gray-200 rounded-2xl shadow-lg hover:shadow-xl"
-            >
-              {/* Category Badge */}
-              <div className="absolute top-4 right-4">
-                <span className="flex items-center px-3 py-1 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-full">
-                  {quiz.icon}
-                  <span className="ml-2">{quiz.category}</span>
-                </span>
-              </div>
-
-              {/* Content */}
-              <div className="mt-8">
-                <h3 className="text-xl font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors duration-300">
-                  {quiz.title}
-                </h3>
-                <p className="mt-2 text-gray-600 line-clamp-2">
-                  {quiz.description}
-                </p>
-
-                {/* Stats */}
-                <div className="flex items-center gap-4 mt-4 text-sm text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <span className="font-medium text-indigo-600">{quiz.rating}</span>
-                    <span>rating</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-medium text-indigo-600">{quiz.participants}</span>
-                    <span>participants</span>
-                  </div>
-                </div>
-
-                {/* Difficulty Badge */}
-                <div className="mt-4">
-                  <span className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${
-                    quiz.difficulty === 'Hard' 
-                      ? 'text-red-600 bg-red-50' 
-                      : quiz.difficulty === 'Medium'
-                      ? 'text-yellow-600 bg-yellow-50'
-                      : 'text-green-600 bg-green-50'
-                  }`}>
-                    {quiz.difficulty}
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent"></div>
+          </div>
+        ) : quizzes.length === 0 ? (
+          <motion.div
+            variants={itemVariants}
+            className="text-center py-12"
+          >
+            <p className="text-gray-600 text-lg">Hiện tại chưa có quiz nào được chia sẻ công khai.</p>
+          </motion.div>
+        ) : (
+          <div className="grid gap-8 mt-6 md:grid-cols-2 lg:grid-cols-3">
+            {quizzes.map((quiz) => (
+              <motion.div
+                key={quiz.id}
+                variants={itemVariants}
+                whileHover={{ y: -5 }}
+                className="group relative p-6 transition-all duration-300 bg-white border border-gray-200 rounded-2xl shadow-lg hover:shadow-xl"
+              >
+                {/* Category Badge */}
+                <div className="absolute top-4 right-4">
+                  <span className="flex items-center px-3 py-1 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-full">
+                    {quiz.icon}
+                    <span className="ml-2">{quiz.category}</span>
                   </span>
                 </div>
 
-                {/* Action Button */}
-                <div className="mt-6">
-                  <motion.a
-                    href={`/quiz/${quiz.id}`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition-all duration-300 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    Take Quiz
-                  </motion.a>
+                {/* Content */}
+                <div className="mt-8">
+                  <h3 className="text-xl font-semibold text-gray-800 group-hover:text-indigo-600 transition-colors duration-300">
+                    {quiz.title}
+                  </h3>
+                  <p className="mt-2 text-gray-600 line-clamp-2">
+                    {quiz.description || "Thử sức với quiz này để kiểm tra kiến thức của bạn."}
+                  </p>
+
+                  {/* Stats */}
+                  <div className="flex items-center gap-4 mt-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <div className="flex">
+                        {renderStarRating(quiz.rating)}
+                      </div>
+                      <span className="ml-1 font-medium text-indigo-600">{quiz.rating.toFixed(1)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <FaUsers className="text-indigo-500" />
+                      <span className="font-medium text-indigo-600">{quiz.participants}</span>
+                      <span>{quiz.participants === 1 ? 'người đánh giá' : 'người đánh giá'}</span>
+                    </div>
+                  </div>
+
+                  {/* Difficulty Badge */}
+                  <div className="mt-4">
+                    <span className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${quiz.difficulty === 'Hard'
+                        ? 'text-red-600 bg-red-50'
+                        : quiz.difficulty === 'Medium'
+                          ? 'text-yellow-600 bg-yellow-50'
+                          : 'text-green-600 bg-green-50'
+                      }`}>
+                      {quiz.difficulty === 'Hard'
+                        ? 'Khó'
+                        : quiz.difficulty === 'Medium'
+                          ? 'Trung bình'
+                          : 'Dễ'
+                      }
+                    </span>
+                  </div>
+
+                  {/* Action Button */}
+                  <div className="mt-6">
+                    <motion.a
+                      href={`/quiz/${quiz.id}`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition-all duration-300 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                    >
+                      Làm Quiz
+                    </motion.a>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         {/* View All Button */}
-        <motion.div
-          variants={itemVariants}
-          className="mt-12 text-center"
-        >
-          <motion.a
-            href="/quizzes"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="inline-flex items-center px-6 py-3 text-sm font-medium text-white transition-all duration-300 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-lg hover:shadow-xl"
+        {quizzes.length > 0 && (
+          <motion.div
+            variants={itemVariants}
+            className="mt-12 text-center"
           >
-            View All Quizzes
-          </motion.a>
-        </motion.div>
+            <motion.a
+              href="/quizzes"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center px-6 py-3 text-sm font-medium text-white transition-all duration-300 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-lg hover:shadow-xl"
+            >
+              Xem Tất Cả Quiz
+            </motion.a>
+          </motion.div>
+        )}
       </div>
     </motion.div>
   );

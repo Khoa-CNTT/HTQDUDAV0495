@@ -56,6 +56,14 @@ const quizSchema = new mongoose.Schema({
     isPublic: {
         type: Boolean,
         default: false,
+    },
+    averageRating: {
+        type: Number,
+        default: 0
+    },
+    ratingsCount: {
+        type: Number,
+        default: 0
     }
 });
 

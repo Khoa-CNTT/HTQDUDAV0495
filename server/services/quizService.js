@@ -209,7 +209,37 @@ const quizService = {
       throw new Error('Answers must be an array');
     }
 
-    // Forward to submission service
+    // Calculate score and validate answers
+    let correctAnswers = 0;
+    let totalQuestions = quiz.questions.length;
+
+    answers.forEach(answer => {
+      const question = quiz.questions.find(q => q._id.toString() === answer.questionId);
+      if (!question) return;
+
+      const correctOption = question.options.find(opt => opt.isCorrect);
+      if (!correctOption) return;
+
+      if (answer.selectedAnswer && correctOption._id.toString() === answer.selectedAnswer) {
+        correctAnswers++;
+      }
+    });
+
+    // Create QuizSubmission
+    const QuizSubmission = require('../models/QuizSubmission');
+    const submission = await QuizSubmission.create({
+      userId: userId,
+      quizId: quizId,
+      score: correctAnswers,
+      correctAnswers: correctAnswers,
+      totalQuestions: totalQuestions,
+      timeSpent: answers.timeSpent || 10, // Default to 10 minutes if not provided
+      submittedAt: new Date()
+    });
+
+    console.log('Created QuizSubmission:', submission);
+
+    // Forward to submission service for detailed submission
     const submissionService = require('./submissionService');
     return await submissionService.createSubmission(quizId, userId, answers);
   },
@@ -251,13 +281,13 @@ const quizService = {
 
       // Get category or use default
       const category = aiQuizData.category || 'Other';
-      
+
       // Get language preference or default to English
       const language = aiQuizData.language || 'english';
 
       // Generate quiz questions using AI
       const generatedQuestions = await generateQuizQuestions(
-        aiQuizData.topic, 
+        aiQuizData.topic,
         numQuestions,
         category,
         aiQuizData.description || '',

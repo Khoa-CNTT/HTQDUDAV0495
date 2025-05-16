@@ -11,6 +11,8 @@ const friendRoutes = require('./routes/friendRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const achievementRoutes = require('./routes/achievementRoutes');
+const leaderboardRoutes = require('./routes/leaderboard');
+const ratingRoutes = require('./routes/ratingRoutes');
 const setupSocketServer = require('./socket');
 
 // Load env vars
@@ -36,6 +38,8 @@ app.use('/api/friends', friendRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/achievements', achievementRoutes);
+app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/ratings', ratingRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)

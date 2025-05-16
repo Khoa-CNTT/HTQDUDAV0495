@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getSubmissionById } from '../services/api';
+import { getSubmissionById, getQuizById } from '../services/api';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FiArrowLeft } from 'react-icons/fi';
@@ -13,10 +13,15 @@ import {
   FaRedo
 } from 'react-icons/fa';
 
+// Import Rating Modal
+import RatingModal from '../components/rating/RatingModal';
+
 const QuizResults = () => {
   const [result, setResult] = useState(null);
+  const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showRatingModal, setShowRatingModal] = useState(false);
   const { submissionId } = useParams();
   const navigate = useNavigate();
 
@@ -28,6 +33,19 @@ const QuizResults = () => {
           throw new Error(response.message || 'Failed to load results');
         }
         setResult(response.data);
+
+        // Fetch quiz details
+        if (response.data.quizId) {
+          const quizResponse = await getQuizById(response.data.quizId._id || response.data.quizId);
+          setQuiz(quizResponse);
+
+          // Show rating modal only for public quizzes after a delay
+          if (quizResponse.isPublic) {
+            setTimeout(() => {
+              setShowRatingModal(true);
+            }, 2000);
+          }
+        }
       } catch (error) {
         console.error('Error fetching result:', error);
         setError(error.response?.data?.message || 'Failed to load results');
@@ -110,6 +128,11 @@ const QuizResults = () => {
     (result.correctAnswers && result.totalQuestions ?
       (result.correctAnswers / result.totalQuestions) * 100 : 0);
 
+  // Modal để đánh giá quiz công khai sau khi hoàn thành
+  const closeRatingModal = () => {
+    setShowRatingModal(false);
+  };
+
   return (
     <div className="relative w-screen min-h-screen overflow-x-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
       {/* Animated SVG background */}
@@ -179,7 +202,7 @@ const QuizResults = () => {
             className="mb-8"
           >
             <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 bg-clip-text text-transparent mb-2 font-orbitron">
-              {result.quizId?.title || 'Quiz Results'}
+              {result.quizId?.title || quiz?.title || 'Quiz Results'}
             </h1>
             <div className="flex items-center text-pink-300 space-x-4 font-orbitron">
               <span className="flex items-center">
@@ -199,108 +222,127 @@ const QuizResults = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className={`p-8 rounded-xl mb-8 border-2 ${percentageScore >= 60
-              ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/40'
-              : 'bg-gradient-to-r from-red-500/20 to-rose-500/20 border-red-500/40'
-              }`}
+            className="flex flex-col md:flex-row text-center md:text-left"
           >
-            <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-4 font-orbitron text-pink-100">
-                Your Score: {result.correctAnswers || 0} / {result.totalQuestions || 0}
-              </h2>
-              <div className="text-6xl font-bold mb-4 bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 bg-clip-text text-transparent font-orbitron">
-                {percentageScore.toFixed(1)}%
+            <div className="flex-1 mb-6 md:mb-0">
+              <div className="flex flex-col items-center md:items-start">
+                <div className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 mb-2 font-orbitron">
+                  {Math.round(percentageScore)}%
+                </div>
+                <div className="text-pink-200 text-xl font-orbitron">Your Score</div>
+                <div className="flex items-center mt-2 text-lg text-pink-200 font-orbitron">
+                  <FaRegCheckCircle className="text-green-400 mr-2" />
+                  {result.correctAnswers} / {result.totalQuestions} correct
+                </div>
               </div>
-              <p className={`text-lg font-orbitron ${percentageScore >= 60 ? 'text-green-300' : 'text-red-300'}`}>
-                {percentageScore >= 60
-                  ? 'Congratulations! You passed the quiz!'
-                  : 'Keep practicing, you can do better!'}
-              </p>
+            </div>
+            <div className="flex-1 mb-6 md:mb-0">
+              <div className="flex flex-col items-center">
+                {percentageScore >= 80 ? (
+                  <FaTrophy className="text-yellow-400 text-6xl mb-2 animate-pulse" />
+                ) : percentageScore >= 60 ? (
+                  <FaStar className="text-pink-400 text-6xl mb-2" />
+                ) : (
+                  <FaGamepad className="text-indigo-400 text-6xl mb-2" />
+                )}
+                <div className="text-xl text-pink-200 font-orbitron">
+                  {percentageScore >= 80
+                    ? "Excellent!"
+                    : percentageScore >= 60
+                      ? "Good Job!"
+                      : "Keep Practicing!"}
+                </div>
+                <div className="text-pink-200 font-orbitron mt-2">
+                  {Math.round(result.timeSpent)} minutes
+                </div>
+              </div>
+            </div>
+            <div className="flex-1">
+              <div className="flex flex-col items-center md:items-end">
+                <div className="flex space-x-2 mb-4">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      if (quiz) {
+                        navigate(`/take-quiz/${quiz._id}`);
+                      } else if (result.quizId && result.quizId._id) {
+                        navigate(`/take-quiz/${result.quizId._id}`);
+                      } else if (result.quizId) {
+                        navigate(`/take-quiz/${result.quizId}`);
+                      }
+                    }}
+                    className="py-2 px-4 bg-indigo-600 hover:bg-indigo-700 rounded-xl font-medium text-white font-orbitron flex items-center transition-colors duration-300 shadow-lg"
+                  >
+                    <FaRedo className="mr-2" /> Retry
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowRatingModal(true)}
+                    className="py-2 px-4 bg-pink-600 hover:bg-pink-700 rounded-xl font-medium text-white font-orbitron flex items-center transition-colors duration-300 shadow-lg"
+                  >
+                    <FaStar className="mr-2" /> Rate
+                  </motion.button>
+                </div>
+                {quiz && quiz.isPublic && (
+                  <div className="text-sm font-orbitron text-center md:text-right text-pink-200">
+                    This is a public quiz.<br />
+                    Your rating helps others discover it!
+                  </div>
+                )}
+              </div>
             </div>
           </motion.div>
 
+          {/* Visualization of correct/incorrect answers */}
+          {result.answers && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="mb-8"
-          >
-            <h3 className="text-2xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 mb-6">Question Details</h3>
-
+              className="mt-12"
+            >
+              <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 mb-6 font-orbitron">
+                Question Summary
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             {result.answers.map((answer, index) => (
-              <motion.div
+                  <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.1 * index }}
-                className={`p-6 mb-4 rounded-xl border-2 ${answer.isCorrect
-                  ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-500/40'
-                  : 'bg-gradient-to-r from-red-500/20 to-rose-500/20 border-red-500/40'
-                  }`}
-              >
-                <div className="mb-4">
-                  <span className="font-medium text-pink-100 text-lg font-orbitron">Question {index + 1}:</span>
-                  <p className="mt-2 text-pink-200">{answer.question}</p>
-                </div>
-
-                <div className="ml-4 space-y-3">
-                  <div>
-                    <span className="font-medium text-pink-100 font-orbitron">Your Answer:</span>
-                    <p className={`mt-1 flex items-center ${answer.isCorrect ? 'text-green-300' : 'text-red-300'}`}>
+                    className={`p-4 rounded-xl backdrop-blur-sm border ${answer.isCorrect
+                        ? "bg-green-900/20 border-green-400/30"
+                        : "bg-red-900/20 border-red-400/30"
+                      }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white font-orbitron font-medium">Question {index + 1}</span>
                       {answer.isCorrect ? (
-                        <FaRegCheckCircle className="inline mr-2 text-green-400" />
+                        <FaRegCheckCircle className="text-green-400" />
                       ) : (
-                        <FaRegTimesCircle className="inline mr-2 text-red-400" />
+                        <FaRegTimesCircle className="text-red-400" />
                       )}
-                      {answer.selectedOptionText || 'Not answered'}
-                    </p>
                   </div>
-
-                  {!answer.isCorrect && (
-                    <div>
-                      <span className="font-medium text-pink-100 font-orbitron">Correct Answer:</span>
-                      <p className="mt-1 text-green-300 flex items-center">
-                        <FaRegCheckCircle className="inline mr-2 text-green-400" />
-                        {answer.correctAnswer}
-                      </p>
+                    <div className="text-sm text-pink-200 font-orbitron">
+                      {answer.isCorrect ? "Correct" : "Incorrect"}
                     </div>
-                  )}
                 </div>
-              </motion.div>
-            ))}
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="flex flex-col sm:flex-row justify-between items-center gap-4"
-          >
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/dashboard')}
-              className="w-full sm:w-auto px-8 py-3 text-white bg-gradient-to-r from-indigo-500 to-indigo-700 font-medium rounded-xl hover:from-indigo-600 hover:to-indigo-800 focus:outline-none transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center font-orbitron"
-            >
-              <FaGamepad className="w-5 h-5 mr-2" />
-              Back to Dashboard
-            </motion.button>
-
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Link
-                to={`/take-quiz/${result.quizId._id}`}
-                className="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 text-white font-medium rounded-xl hover:from-pink-400 hover:to-yellow-400 focus:outline-none transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center font-orbitron"
-              >
-                <FaRedo className="w-5 h-5 mr-2" />
-                Try Again
-              </Link>
+                ))}
+              </div>
             </motion.div>
-          </motion.div>
+          )}
         </motion.div>
       </div>
+
+      {/* Rating Modal */}
+      {quiz && (
+        <RatingModal
+          isOpen={showRatingModal}
+          onClose={closeRatingModal}
+          quizId={quiz._id}
+          quizTitle={quiz.title}
+        />
+      )}
     </div>
   );
 };

@@ -14,6 +14,7 @@ import CreateQuizModal from "../components/CreateQuizModal";
 import "../styles/Dashboard.css";
 import PaginatedSubmissionsTable from "../components/PaginatedSubmissionsTable";
 import CollapsibleSubmissionsTable from "../components/CollapsibleSubmissionsTable";
+import Leaderboard from "../components/Leaderboard";
 import {
   FaGamepad,
   FaStar,
@@ -345,15 +346,21 @@ const Dashboard = ({ user, logout }) => {
             onClick={() => setActiveTab("public")}
           >
             <FaUsers className="w-5 h-5" />
-            Public Quizze
+            Public Quizzes
           </button>
           <button
-            className={`tab-button ${activeTab === "submissions" ? "active" : ""
-              }`}
+            className={`tab-button ${activeTab === "submissions" ? "active" : ""}`}
             onClick={() => setActiveTab("submissions")}
           >
             <FaTrophy className="w-5 h-5" />
             My Submissions
+          </button>
+          <button
+            className={`tab-button ${activeTab === "leaderboard" ? "active" : ""}`}
+            onClick={() => setActiveTab("leaderboard")}
+          >
+            <FaMedal className="w-5 h-5" />
+            Leaderboard
           </button>
         </motion.div>
 
@@ -595,6 +602,21 @@ const Dashboard = ({ user, logout }) => {
                 My Submissions
               </h2>
               <CollapsibleSubmissionsTable submissions={submissions} />
+            </motion.div>
+          )}
+
+          {activeTab === "leaderboard" && (
+            <motion.div
+              key="leaderboard"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h2 className="mb-6 text-2xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                Global Leaderboard
+              </h2>
+              <Leaderboard />
             </motion.div>
           )}
         </AnimatePresence>

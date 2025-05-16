@@ -13,13 +13,21 @@ import {
   FaPlay,
   FaLock,
   FaUserAlt,
-  FaListAlt
+  FaListAlt,
+  FaRegStar,
+  FaComment
 } from 'react-icons/fa';
+
+// Import Rating components
+import RatingForm from '../components/rating/RatingForm';
+import RatingList from '../components/rating/RatingList';
 
 const QuizDetails = ({ user }) => {
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [newRating, setNewRating] = useState(null);
+  const [activeTab, setActiveTab] = useState('details'); // 'details' or 'ratings'
   const dropdownRef = useRef(null);
   const { id } = useParams();
   const navigate = useNavigate();
@@ -78,6 +86,10 @@ const QuizDetails = ({ user }) => {
         toast.error('Failed to delete quiz');
       }
     }
+  };
+
+  const handleRatingSubmitted = (ratingData) => {
+    setNewRating(ratingData);
   };
 
   const isOwner = user && quiz?.createdBy && user._id === quiz.createdBy.toString();
@@ -201,141 +213,228 @@ const QuizDetails = ({ user }) => {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
-                className="flex items-center mt-4 space-x-4"
+                className="flex flex-wrap gap-3 mt-4"
               >
-                <span className="text-pink-300 flex items-center font-orbitron">
-                  <FaListAlt className="w-5 h-5 mr-2 text-pink-400" />
-                  {quiz.questions.length} questions
+                <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-indigo-900/70 text-pink-300 rounded-full">
+                  <FaListAlt className="mr-1" />
+                  {quiz.category}
                 </span>
-                {quiz.isPublic && (
-                  <span className="bg-green-500/20 text-green-300 px-3 py-1 rounded-full text-sm font-medium flex items-center border border-green-500/40">
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    Public
+                <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-indigo-900/70 text-pink-300 rounded-full">
+                  <FaQuestionCircle className="mr-1" />
+                  {quiz.questions.length} Questions
+                </span>
+                {quiz.averageRating > 0 && (
+                  <span className="inline-flex items-center px-3 py-1 text-sm font-medium bg-indigo-900/70 text-pink-300 rounded-full">
+                    <FaStar className="mr-1 text-yellow-400" />
+                    {quiz.averageRating.toFixed(1)} ({quiz.ratingsCount} Ratings)
                   </span>
                 )}
               </motion.div>
             </div>
 
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="flex flex-col sm:flex-row gap-3"
+              className="flex flex-col gap-3 min-w-[200px]"
             >
               {isOwner && (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleDeleteQuiz}
-                  className="px-6 py-3 bg-gradient-to-r from-red-500 to-rose-600 text-white font-medium rounded-xl hover:from-red-600 hover:to-rose-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center font-orbitron"
-                >
-                  <FaTrash className="w-5 h-5 mr-2" />
-                  Delete
-                </motion.button>
-              )}
+                <div className="flex justify-end">
+                  <div className="relative inline-block text-left" ref={dropdownRef}>
+                    <button
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="text-pink-300 p-3 transition-colors duration-200 rounded-full hover:bg-indigo-900/50"
+                      aria-label="Options"
+                    >
+                      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                      </svg>
+                    </button>
 
-              {user ? (
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Link
-                    to={`/take-quiz/${id}`}
-                    className="px-6 py-3 bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 text-white font-medium rounded-xl hover:from-pink-400 hover:to-yellow-400 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center font-orbitron"
-                  >
-                    <FaPlay className="w-5 h-5 mr-2" />
-                    Take Quiz
-                  </Link>
-                </motion.div>
-              ) : (
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Link
-                    to={`/login?redirect=/take-quiz/${id}`}
-                    className="px-6 py-3 bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 text-white font-medium rounded-xl hover:from-pink-400 hover:to-yellow-400 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center font-orbitron"
-                  >
-                    <FaLock className="w-5 h-5 mr-2" />
-                    Login to Take Quiz
-                  </Link>
-                </motion.div>
-              )}
-            </motion.div>
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            className="bg-white/10 backdrop-blur-sm rounded-xl shadow-lg p-6 mb-8 border border-white/20"
-          >
-            <h2 className="text-2xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 mb-4">Preview</h2>
-            <p className="text-pink-200 mb-6 font-orbitron">
-              This quiz contains {quiz.questions.length} questions. Here's a preview of the first question:
-            </p>
-
-            {quiz.questions.length > 0 && (
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 shadow-sm border border-pink-400/20">
-                <p className="font-medium text-pink-100 text-lg mb-4">{quiz.questions[0].content}</p>
-                <div className="space-y-3">
-                  {quiz.questions[0].options.map((option, index) => (
-                    <div key={index} className="flex items-center p-3 bg-white/5 border border-white/10 rounded-lg">
-                      <span className="font-medium text-yellow-300 mr-3">{String.fromCharCode(65 + index)}.</span>
-                      <span className="text-pink-200">{option.label}</span>
-                    </div>
-                  ))}
+                    <AnimatePresence>
+                      {isDropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                          transition={{ duration: 0.1 }}
+                          className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-xl bg-indigo-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                        >
+                          <div className="py-1">
+                            <button
+                              onClick={handleDeleteQuiz}
+                              className="flex w-full items-center px-4 py-2 text-sm text-pink-200 hover:bg-indigo-700 hover:text-white transition-colors duration-200"
+                            >
+                              <FaTrash className="mr-2" />
+                              Delete Quiz
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
-              </div>
-            )}
-          </motion.div>
+              )}
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.7 }}
-            className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-xl p-8 border border-white/10"
-          >
-            <h2 className="text-2xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 mb-4">Ready to test your knowledge?</h2>
-            <p className="text-pink-200 mb-6 text-lg font-orbitron">
-              Take this quiz to challenge yourself and see how well you understand the material.
-            </p>
-
-            {user ? (
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                className="w-full"
               >
                 <Link
-                  to={`/take-quiz/${id}`}
-                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 text-white font-medium rounded-xl hover:from-pink-400 hover:to-yellow-400 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-orbitron"
+                  to={`/take-quiz/${quiz._id}`}
+                  className="flex items-center justify-center w-full px-6 py-3 text-sm font-medium text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
                 >
-                  <FaPlay className="w-6 h-6 mr-2" />
-                  Start Quiz Now
+                  <FaPlay className="mr-2" />
+                  Take Quiz Solo
                 </Link>
               </motion.div>
-            ) : (
-              <div>
-                <p className="text-pink-200 mb-4 text-lg font-orbitron">
-                  You need to be logged in to take this quiz.
-                </p>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-full"
+              >
+                <Link
+                  to={`/create-room/${quiz._id}`}
+                  className="flex items-center justify-center w-full px-6 py-3 text-sm font-medium text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 rounded-xl hover:from-blue-600 hover:to-indigo-600 hover:scale-105 active:scale-95 border-white/30"
                 >
-                  <Link
-                    to={`/login?redirect=/take-quiz/${id}`}
-                    className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 text-white font-medium rounded-xl hover:from-pink-400 hover:to-yellow-400 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-orbitron"
-                  >
-                    <FaUserAlt className="w-6 h-6 mr-2" />
-                    Login to Continue
-                  </Link>
+                  <FaGamepad className="mr-2" />
+                  Play Multiplayer
+                </Link>
+              </motion.div>
+            </motion.div>
+          </div>
+
+          {/* Tabs for Details and Ratings */}
+          <div className="mb-8">
+            <div className="flex border-b border-pink-400/30">
+              <button
+                className={`py-2 px-4 font-medium font-orbitron ${activeTab === 'details'
+                    ? 'text-pink-300 border-b-2 border-pink-500'
+                    : 'text-pink-200/70 hover:text-pink-200'
+                  }`}
+                onClick={() => setActiveTab('details')}
+              >
+                <FaListAlt className="inline-block mr-2" />
+                Details
+              </button>
+              <button
+                className={`py-2 px-4 font-medium font-orbitron ${activeTab === 'ratings'
+                    ? 'text-pink-300 border-b-2 border-pink-500'
+                    : 'text-pink-200/70 hover:text-pink-200'
+                  }`}
+                onClick={() => setActiveTab('ratings')}
+              >
+                <FaRegStar className="inline-block mr-2" />
+                Ratings & Reviews
+              </button>
+            </div>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {activeTab === 'details' ? (
+              <motion.div
+                key="details"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.5 }}
+                  className="space-y-6"
+                >
+                  <div>
+                    <h3 className="text-xl font-bold text-transparent bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 bg-clip-text mb-4 font-orbitron">
+                      Quiz Questions
+                    </h3>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {quiz.questions.map((question, index) => (
+                        <div
+                          key={index}
+                          className="p-4 bg-indigo-900/50 rounded-xl border border-pink-400/20"
+                        >
+                          <p className="font-medium text-white mb-2 font-orbitron">
+                            <span className="text-pink-300 mr-2">{index + 1}.</span>
+                            {question.content.substring(0, 100)}
+                            {question.content.length > 100 && "..."}
+                          </p>
+                          <p className="text-pink-200 text-sm">
+                            <span className="text-pink-300 font-medium">Options:</span>{" "}
+                            {question.options.length} options available
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-bold text-transparent bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 bg-clip-text mb-4 font-orbitron">
+                      Creator Information
+                    </h3>
+                    <div className="p-4 bg-indigo-900/50 rounded-xl border border-pink-400/20">
+                      <div className="flex items-center">
+                        <div className="bg-indigo-600 text-white w-12 h-12 rounded-full flex items-center justify-center mr-4">
+                          <FaUserAlt className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="text-lg font-medium text-white font-orbitron">
+                            {isOwner ? "You" : "Anonymous User"}
+                          </h4>
+                          <p className="text-pink-200 text-sm font-orbitron">
+                            Created on {new Date(quiz.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </motion.div>
-              </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="ratings"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-8"
+              >
+                {user ? (
+                  <RatingForm
+                    quizId={quiz._id}
+                    onRatingSubmitted={handleRatingSubmitted}
+                  />
+                ) : (
+                  <div className="p-6 backdrop-blur-lg bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 rounded-2xl border-2 border-pink-400/30 shadow-xl">
+                    <h3 className="text-xl font-bold text-transparent bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 bg-clip-text mb-4 font-orbitron">
+                      Đánh giá Quiz
+                    </h3>
+                    <p className="text-pink-200 mb-4 font-orbitron">
+                      Bạn cần đăng nhập để đánh giá quiz này.
+                    </p>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => navigate('/login')}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300"
+                    >
+                      <FaLock className="mr-2" />
+                      Đăng nhập
+                    </motion.button>
+                  </div>
+                )}
+
+                <RatingList
+                  quizId={quiz._id}
+                  newRating={newRating}
+                  currentUserId={user?._id}
+                />
+              </motion.div>
             )}
-          </motion.div>
+          </AnimatePresence>
         </motion.div>
       </div>
     </div>
