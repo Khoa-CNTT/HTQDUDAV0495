@@ -645,3 +645,44 @@ export const getLeaderboard = async (timeFrame = 'all', category = 'score', page
     };
   }
 };
+
+// Rating API calls
+export const addRating = async (quizId, rating, comment) => {
+  try {
+    const response = await api.post("/ratings", { quizId, rating, comment });
+    return response.data;
+  } catch (error) {
+    console.error("Error adding rating:", error);
+    throw error;
+  }
+};
+
+export const getQuizRatings = async (quizId) => {
+  try {
+    const response = await api.get(`/ratings/quiz/${quizId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error getting quiz ratings:", error);
+    throw error;
+  }
+};
+
+export const getUserRatings = async () => {
+  try {
+    const response = await api.get("/ratings/user");
+    return response.data;
+  } catch (error) {
+    console.error("Error getting user ratings:", error);
+    throw error;
+  }
+};
+
+export const deleteRating = async (ratingId) => {
+  try {
+    const response = await api.delete(`/ratings/${ratingId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting rating:", error);
+    throw error;
+  }
+};
