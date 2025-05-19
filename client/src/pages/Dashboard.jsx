@@ -11,6 +11,7 @@ import QuizCard from "../components/QuizCard";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
 import CreateQuizModal from "../components/CreateQuizModal";
+import SearchBar from "../components/SearchBar";
 import "../styles/Dashboard.css";
 import PaginatedSubmissionsTable from "../components/PaginatedSubmissionsTable";
 import CollapsibleSubmissionsTable from "../components/CollapsibleSubmissionsTable";
@@ -31,7 +32,9 @@ import {
 
 const Dashboard = ({ user, logout }) => {
   const [quizzes, setQuizzes] = useState([]);
+  const [filteredQuizzes, setFilteredQuizzes] = useState([]);
   const [publicQuizzes, setPublicQuizzes] = useState([]);
+  const [filteredPublicQuizzes, setFilteredPublicQuizzes] = useState([]);
   const [submissions, setSubmissions] = useState([]);
   const [activeTab, setActiveTab] = useState("quizzes");
   const [loading, setLoading] = useState(true);
@@ -51,11 +54,13 @@ const Dashboard = ({ user, logout }) => {
           throw new Error(quizzesResponse.message || "Failed to load quizzes");
         }
         setQuizzes(quizzesResponse.data || []);
+        setFilteredQuizzes(quizzesResponse.data || []);
 
         // Get public quizzes
         const publicQuizzesResponse = await getPublicQuizzes();
         if (publicQuizzesResponse.success) {
           setPublicQuizzes(publicQuizzesResponse.data || []);
+          setFilteredPublicQuizzes(publicQuizzesResponse.data || []);
         }
 
         // Get submissions
@@ -199,6 +204,36 @@ const Dashboard = ({ user, logout }) => {
   if (invalidQuizzes.length > 0) {
     console.warn("Quiz bị thiếu _id:", invalidQuizzes);
   }
+
+  const handleSearch = (searchTerm) => {
+    if (!searchTerm.trim()) {
+      setFilteredQuizzes(quizzes);
+      return;
+    }
+
+    const searchLower = searchTerm.toLowerCase();
+    const filtered = quizzes.filter(quiz =>
+      quiz.title.toLowerCase().includes(searchLower) ||
+      quiz.description?.toLowerCase().includes(searchLower) ||
+      quiz.category?.toLowerCase().includes(searchLower)
+    );
+    setFilteredQuizzes(filtered);
+  };
+
+  const handlePublicSearch = (searchTerm) => {
+    if (!searchTerm.trim()) {
+      setFilteredPublicQuizzes(publicQuizzes);
+      return;
+    }
+
+    const searchLower = searchTerm.toLowerCase();
+    const filtered = publicQuizzes.filter(quiz =>
+      quiz.title.toLowerCase().includes(searchLower) ||
+      quiz.description?.toLowerCase().includes(searchLower) ||
+      quiz.category?.toLowerCase().includes(searchLower)
+    );
+    setFilteredPublicQuizzes(filtered);
+  };
 
   if (loading) {
     return (
@@ -452,38 +487,29 @@ const Dashboard = ({ user, logout }) => {
                 </div>
               </div>
 
-              {Array.isArray(quizzes) && quizzes.length === 0 ? (
+              {/* Add SearchBar */}
+              <div className="mb-6">
+                <SearchBar onSearch={handleSearch} placeholder="Tìm kiếm quiz theo tên, mô tả hoặc danh mục..." />
+              </div>
+
+              {loading ? (
+                <div className="flex justify-center py-12">
+                  <div className="w-16 h-16 border-4 border-pink-400 rounded-full border-t-transparent animate-spin"></div>
+                </div>
+              ) : filteredQuizzes.length === 0 ? (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-8 text-center border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
+                  className="text-center py-12 bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl shadow-2xl border-4 border-pink-400/40"
                 >
-                  <p className="mb-4 text-xl text-pink-200 font-orbitron">
-                    You haven't created any quizzes yet.
+                  <p className="text-xl text-pink-200 font-orbitron">
+                    Không tìm thấy quiz nào phù hợp với tìm kiếm của bạn.
                   </p>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setIsCreateQuizModalOpen(true)}
-                    className="px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-2xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
-                  >
-                    Create your first quiz
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => navigate("/create-ai-quiz")}
-                    className="ml-2 px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 rounded-2xl hover:from-purple-600 hover:to-indigo-600 hover:scale-105 active:scale-95 border-white/30"
-                  >
-                    Or generate with AI
-                  </motion.button>
                 </motion.div>
               ) : (
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {validQuizzes.map((quiz, index) => {
-                    // In My Quizzes tab, we always show edit/delete buttons as these are user's own quizzes
-                    const userIsCreator = true; // Always true in My Quizzes tab
-
+                  {filteredQuizzes.map((quiz, index) => {
+                    const userIsCreator = true;
                     return (
                       <motion.div
                         key={quiz._id}
@@ -493,7 +519,7 @@ const Dashboard = ({ user, logout }) => {
                       >
                         <QuizCard
                           quiz={quiz}
-                          isCreator={userIsCreator} // Always true to show edit/delete buttons
+                          isCreator={userIsCreator}
                           onDelete={handleDeleteQuiz}
                         />
                       </motion.div>
@@ -516,26 +542,30 @@ const Dashboard = ({ user, logout }) => {
                 Public Quizzes
               </h2>
 
-              {Array.isArray(publicQuizzes) && publicQuizzes.length === 0 ? (
+              {/* Add SearchBar */}
+              <div className="mb-6">
+                <SearchBar onSearch={handlePublicSearch} placeholder="Tìm kiếm quiz theo tên, mô tả hoặc danh mục..." />
+              </div>
+
+              {Array.isArray(filteredPublicQuizzes) && filteredPublicQuizzes.length === 0 ? (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="p-8 text-center border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
                 >
                   <p className="text-xl text-pink-200 font-orbitron">
-                    No public quizzes available.
+                    Không tìm thấy quiz nào phù hợp với tìm kiếm của bạn.
                   </p>
                 </motion.div>
               ) : (
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {Array.isArray(publicQuizzes) &&
-                    publicQuizzes.map((quiz, index) => {
-                      // In Public Quizzes tab, we never show edit/delete buttons
+                  {Array.isArray(filteredPublicQuizzes) &&
+                    filteredPublicQuizzes.map((quiz, index) => {
                       return (
                         <QuizCard
                           key={quiz._id}
                           quiz={quiz}
-                          isCreator={false} // Always false to hide edit/delete buttons in Public Quizzes
+                          isCreator={false}
                           showCreator={true}
                           onDelete={handleDeleteQuiz}
                         />

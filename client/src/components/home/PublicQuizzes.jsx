@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { FaTrophy, FaFire, FaStar, FaUsers } from "react-icons/fa";
 import { getPublicQuizzes } from "../../services/api";
 import toast from "react-hot-toast";
+import SearchBar from "../SearchBar";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -28,6 +29,7 @@ const itemVariants = {
 
 export default function PublicQuizzes() {
   const [quizzes, setQuizzes] = useState([]);
+  const [filteredQuizzes, setFilteredQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -72,6 +74,7 @@ export default function PublicQuizzes() {
         });
 
         setQuizzes(formattedQuizzes);
+        setFilteredQuizzes(formattedQuizzes);
       } catch (error) {
         console.error("Error fetching public quizzes:", error);
         toast.error("Không thể tải danh sách quiz công khai");
@@ -82,6 +85,22 @@ export default function PublicQuizzes() {
 
     fetchQuizzes();
   }, []);
+
+  // Handle search
+  const handleSearch = (searchTerm) => {
+    if (!searchTerm.trim()) {
+      setFilteredQuizzes(quizzes);
+      return;
+    }
+
+    const searchLower = searchTerm.toLowerCase();
+    const filtered = quizzes.filter(quiz =>
+      quiz.title.toLowerCase().includes(searchLower) ||
+      quiz.description?.toLowerCase().includes(searchLower) ||
+      quiz.category?.toLowerCase().includes(searchLower)
+    );
+    setFilteredQuizzes(filtered);
+  };
 
   // Function to render star ratings
   const renderStarRating = (rating) => {
@@ -132,20 +151,23 @@ export default function PublicQuizzes() {
           </p>
         </motion.div>
 
+        {/* Add SearchBar */}
+        <SearchBar onSearch={handleSearch} placeholder="Tìm kiếm quiz theo tên, mô tả hoặc danh mục..." />
+
         {loading ? (
           <div className="flex justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent"></div>
           </div>
-        ) : quizzes.length === 0 ? (
+        ) : filteredQuizzes.length === 0 ? (
           <motion.div
             variants={itemVariants}
             className="text-center py-12"
           >
-            <p className="text-gray-600 text-lg">Hiện tại chưa có quiz nào được chia sẻ công khai.</p>
+            <p className="text-gray-600 text-lg">Không tìm thấy quiz nào phù hợp với tìm kiếm của bạn.</p>
           </motion.div>
         ) : (
           <div className="grid gap-8 mt-6 md:grid-cols-2 lg:grid-cols-3">
-            {quizzes.map((quiz) => (
+            {filteredQuizzes.map((quiz) => (
               <motion.div
                 key={quiz.id}
                 variants={itemVariants}
@@ -187,10 +209,10 @@ export default function PublicQuizzes() {
                   {/* Difficulty Badge */}
                   <div className="mt-4">
                     <span className={`inline-block px-3 py-1 text-sm font-medium rounded-full ${quiz.difficulty === 'Hard'
-                        ? 'text-red-600 bg-red-50'
-                        : quiz.difficulty === 'Medium'
-                          ? 'text-yellow-600 bg-yellow-50'
-                          : 'text-green-600 bg-green-50'
+                      ? 'text-red-600 bg-red-50'
+                      : quiz.difficulty === 'Medium'
+                        ? 'text-yellow-600 bg-yellow-50'
+                        : 'text-green-600 bg-green-50'
                       }`}>
                       {quiz.difficulty === 'Hard'
                         ? 'Khó'
@@ -219,7 +241,7 @@ export default function PublicQuizzes() {
         )}
 
         {/* View All Button */}
-        {quizzes.length > 0 && (
+        {filteredQuizzes.length > 0 && (
           <motion.div
             variants={itemVariants}
             className="mt-12 text-center"

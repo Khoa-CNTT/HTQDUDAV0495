@@ -15,7 +15,8 @@ import {
   FaRegTimesCircle,
   FaRedo,
   FaSpinner,
-  FaExclamationTriangle
+  FaExclamationTriangle,
+  FaFacebook
 } from 'react-icons/fa';
 
 // Helper functions (only keeping those that are used)
@@ -720,6 +721,19 @@ function QuizGame({ user: propUser }) {
 
   // Game completed display
   if (gameStatus === 'completed') {
+    // Prepare share data
+    const shareData = {
+      title: `Kết quả Quiz: ${quiz?.title || 'Quiz Game'}`,
+      description: `Tôi đã hoàn thành ${quiz?.title || 'Quiz Game'} với ${participants.find(p => getUserId(p.userId) === getUserId(user))?.score || 0} điểm!`,
+      url: window.location.href
+    };
+
+    // Handle Facebook share
+    const handleFacebookShare = () => {
+      const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareData.url)}&quote=${encodeURIComponent(shareData.description)}`;
+      window.open(shareUrl, '_blank', 'width=600,height=400');
+    };
+
     return (
       <div className="relative w-screen min-h-screen overflow-x-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
         {/* Animated SVG background */}
@@ -922,6 +936,19 @@ function QuizGame({ user: propUser }) {
                     className="px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 rounded-2xl hover:from-purple-600 hover:to-indigo-600 hover:scale-105 active:scale-95 border-white/30"
                   >
                     Back to Room
+                  </motion.button>
+                </div>
+
+                {/* Add share buttons */}
+                <div className="flex justify-center gap-4 mt-8">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleFacebookShare}
+                    className="inline-flex items-center px-6 py-3 bg-[#1877F2] text-white font-medium rounded-xl hover:bg-[#166FE5] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-orbitron"
+                  >
+                    <FaFacebook className="w-5 h-5 mr-2" />
+                    Chia sẻ lên Facebook
                   </motion.button>
                 </div>
               </motion.div>
