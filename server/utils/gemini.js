@@ -69,19 +69,25 @@ async function generateQuizQuestions(topic, numQuestions, category = 'Other', de
     if (!numQuestions || numQuestions < 5 || numQuestions > 30) {
       numQuestions = Math.min(Math.max(5, numQuestions || 5), 30);
     }
-    
+
+    // Check if API key is available
+    if (!config.GOOGLE_GEMINI_KEY || config.GOOGLE_GEMINI_KEY === 'your_api_key_here') {
+      console.warn('Missing or invalid Gemini API key, using fallback data');
+      return useFallbackData(topic, numQuestions);
+    }
+
     // Validate language
-    const validLanguage = ['english', 'vietnamese'].includes(language.toLowerCase()) 
-      ? language.toLowerCase() 
+    const validLanguage = ['english', 'vietnamese'].includes(language.toLowerCase())
+      ? language.toLowerCase()
       : 'english';
 
     // Get the Gemini model (try more widely available model first)
     const model = geminiAPI.getGenerativeModel({
-        model: "gemini-1.5-flash",
-        generationConfig: {
-            temperature: 0.7
-        },
-        apiVersion: "v1beta"
+      model: "gemini-1.5-flash",
+      generationConfig: {
+        temperature: 0.7
+      },
+      apiVersion: "v1beta"
     });
 
     // Craft the prompt for quiz generation
@@ -137,20 +143,36 @@ async function generateQuizQuestions(topic, numQuestions, category = 'Other', de
       // Generate content with timeout and retry logic
       const result = await Promise.race([
         model.generateContent(prompt),
-        new Promise((_, reject) => 
+        new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Request timeout')), 30000)
         )
       ]);
-      
+
+      if (!result || !result.response) {
+        console.warn('Empty or invalid response from Gemini API');
+        return useFallbackData(topic, numQuestions);
+      }
+
       const responseText = result.response.text();
+      if (!responseText) {
+        console.warn('Empty text response from Gemini API');
+        return useFallbackData(topic, numQuestions);
+      }
 
       // Extract the JSON part from the response
       const jsonMatch = responseText.match(/\[\s*\{.*\}\s*\]/s);
       if (!jsonMatch) {
-        throw new Error('Failed to generate valid quiz questions format');
+        console.warn('Failed to find JSON array in response:', responseText.substring(0, 100) + '...');
+        return useFallbackData(topic, numQuestions);
       }
 
-      let questions = JSON.parse(jsonMatch[0]);
+      let questions;
+      try {
+        questions = JSON.parse(jsonMatch[0]);
+      } catch (parseError) {
+        console.warn('Failed to parse JSON from response:', parseError.message);
+        return useFallbackData(topic, numQuestions);
+      }
 
       // Validate the structure and ensure exactly one correct answer per question
       questions = questions.map(question => {
@@ -181,41 +203,45 @@ async function generateQuizQuestions(topic, numQuestions, category = 'Other', de
       const finalQuestions = questions.slice(0, numQuestions);
       console.log(`Successfully generated ${finalQuestions.length} questions about "${topic}" using gemini-1.5-flash`);
       return finalQuestions;
-      
+
     } catch (error) {
       console.warn('Error with Gemini API, using fallback data:', error.message);
-      
-      // If we hit rate limits or any other error, return fallback data
-      console.log(`Using fallback data for "${topic}" due to API error`);
-      
-      // Create more dynamic fallback by rotating correct answers randomly
-      let modifiedFallbackData = JSON.parse(JSON.stringify(fallbackQuizData));
-      
-      modifiedFallbackData = modifiedFallbackData.map(question => {
-        // Make each question reference the topic
-        question.content = `${question.content} (Related to ${topic})`;
-        
-        // Randomly rotate which answer is correct for more variety
-        const correctIndex = Math.floor(Math.random() * 4);
-        question.options.forEach((opt, index) => {
-          opt.isCorrect = (index === correctIndex);
-        });
-        
-        return question;
-      });
-      
-      if (topic.toLowerCase().includes('space') || topic.toLowerCase().includes('astronomy')) {
-        // For space-related topics, use the unmodified content but still randomize correct answers
-        return modifiedFallbackData.slice(0, numQuestions);
-      } else {
-        // For other topics, use the modified questions with topic references
-        return modifiedFallbackData.slice(0, numQuestions);
-      }
+      return useFallbackData(topic, numQuestions);
     }
 
   } catch (error) {
     console.error('Error generating quiz questions:', error);
-    throw error;
+    // Always return a valid quiz, even in case of errors
+    return useFallbackData(topic, numQuestions);
+  }
+}
+
+// Helper function to generate fallback quiz data
+function useFallbackData(topic, numQuestions) {
+  console.log(`Using fallback data for "${topic}"`);
+
+  // Create more dynamic fallback by rotating correct answers randomly
+  let modifiedFallbackData = JSON.parse(JSON.stringify(fallbackQuizData));
+
+  modifiedFallbackData = modifiedFallbackData.map(question => {
+    // Make each question reference the topic
+    question.content = `${question.content} (Related to ${topic})`;
+
+    // Randomly rotate which answer is correct for more variety
+    const correctIndex = Math.floor(Math.random() * 4);
+    question.options.forEach((opt, index) => {
+      opt.isCorrect = (index === correctIndex);
+    });
+
+    return question;
+  });
+
+  // For space-related topics, use the unmodified content but still randomize correct answers
+  if (topic.toLowerCase().includes('space') || topic.toLowerCase().includes('astronomy')) {
+    return modifiedFallbackData.slice(0, numQuestions);
+  } else {
+    // For other topics, use the modified questions with topic references
+    return modifiedFallbackData.slice(0, numQuestions);
   }
 }
 

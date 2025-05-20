@@ -66,33 +66,56 @@ const CreateAIQuiz = () => {
           'Authorization': `Bearer ${JSON.parse(localStorage.getItem('user') || '{}').token}`
         },
         body: JSON.stringify(quizData)
+      }).catch(error => {
+        console.error('Network error:', error);
+        throw new Error('Network error. Please check your connection and try again.');
       });
 
       // Check if response is OK before trying to parse JSON
       if (!response.ok) {
         let errorMessage = `Server error: ${response.status}`;
         try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorData.error || errorMessage;
-        } catch (jsonError) {
-          console.error('Failed to parse error response:', jsonError);
+          const errorText = await response.text();
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.message || errorData.error || errorMessage;
+          } catch (jsonError) {
+            // If JSON parsing fails, use the raw text if it's not empty
+            if (errorText && errorText.trim()) {
+              errorMessage = `Server error: ${errorText.substring(0, 100)}`;
+            }
+          }
+        } catch (textError) {
+          console.error('Failed to read error response:', textError);
         }
         throw new Error(errorMessage);
       }
 
-      // Safely parse JSON
+      // Safely parse JSON with additional safeguards
       let data;
+      let rawText = '';
       try {
-        data = await response.json();
+        // First get the raw text
+        rawText = await response.text();
+        // Then try to parse it
+        if (!rawText || !rawText.trim()) {
+          throw new Error('Empty response from server');
+        }
+        data = JSON.parse(rawText);
       } catch (jsonError) {
         console.error('Failed to parse response JSON:', jsonError);
-        throw new Error('Invalid server response');
+        console.error('Raw response:', rawText.substring(0, 500));
+        throw new Error('Invalid server response. The server may be experiencing issues with the AI service.');
       }
 
       toast.dismiss(toastId);
 
-      if (!data.success) {
-        throw new Error(data.message || 'Failed to create quiz');
+      if (!data || !data.success) {
+        throw new Error(data?.message || 'Failed to create quiz');
+      }
+
+      if (!data.data || !data.data._id) {
+        throw new Error('Invalid quiz data returned from server');
       }
 
       toast.success('Quiz created successfully!');
