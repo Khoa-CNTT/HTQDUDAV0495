@@ -64,6 +64,10 @@ const fallbackQuizData = [
  */
 async function generateQuizQuestions(topic, numQuestions, category = 'Other', description = '', language = 'english') {
   try {
+    // Log environment info
+    console.log(`Gemini API call for topic: ${topic}, API Key exists: ${Boolean(config.GOOGLE_GEMINI_KEY)}`);
+    console.log(`API Key starts with: ${config.GOOGLE_GEMINI_KEY ? config.GOOGLE_GEMINI_KEY.substring(0, 3) + '...' : 'undefined'}`);
+
     // Validate parameters
     if (!topic) throw new Error('Topic is required');
     if (!numQuestions || numQuestions < 5 || numQuestions > 30) {

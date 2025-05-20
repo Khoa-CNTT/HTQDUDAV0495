@@ -88,3 +88,43 @@ This application uses Google's Gemini API to generate quiz questions automatical
 
 Note that Google Gemini API has rate limits that may affect your ability to generate quizzes frequently. If you encounter rate limit errors, wait a few minutes before trying again.
 
+## Triển khai trên Render.com
+
+Để triển khai ứng dụng trên Render.com và đảm bảo tính năng tạo quiz bằng AI hoạt động, hãy làm theo các bước sau:
+
+1. **Tạo dịch vụ Web Service cho Backend:**
+   - Liên kết repository GitHub của bạn
+   - Chọn thư mục `server` làm thư mục gốc
+   - Đặt Build Command: `npm install`
+   - Đặt Start Command: `node server.js`
+
+2. **Tạo dịch vụ Static Site cho Frontend:**
+   - Liên kết cùng repository GitHub
+   - Chọn thư mục `client` làm thư mục gốc
+   - Đặt Build Command: `npm install && npm run build`
+   - Đặt Publish Directory: `dist`
+
+3. **Cấu hình biến môi trường cho Backend:**
+   - Trong dịch vụ Backend, vào phần Environment
+   - Thêm các biến môi trường sau:
+     ```
+     NODE_ENV=production
+     MONGO_URI=your_mongodb_connection_string
+     JWT_SECRET=your_jwt_secret_key
+     CLIENT_URL=https://your-frontend-url.render.com
+     GOOGLE_GEMINI_KEY=your_gemini_api_key_here
+     ```
+
+4. **Khắc phục lỗi tạo quiz bằng AI trên Render:**
+   - Đảm bảo bạn đã cấu hình `GOOGLE_GEMINI_KEY` với API key hợp lệ từ Google AI Studio
+   - Kiểm tra log của server để tìm thông báo lỗi
+   - Nếu vẫn gặp lỗi, hãy thử:
+     - Tạo API key mới từ Google AI Studio
+     - Cập nhật API key trong biến môi trường của Render
+     - Khởi động lại dịch vụ
+
+**Lưu ý quan trọng:** Nếu bạn nhận được lỗi `404 Not Found` khi gọi endpoint `/api/quizzes/ai`, hãy kiểm tra xem:
+1. Backend service đã được khởi động thành công
+2. Biến môi trường `GOOGLE_GEMINI_KEY` đã được cấu hình đúng
+3. CORS đã được cấu hình để chấp nhận yêu cầu từ domain frontend của bạn
+
