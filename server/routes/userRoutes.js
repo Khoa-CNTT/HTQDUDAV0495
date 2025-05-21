@@ -10,5 +10,6 @@ router.put('/profile', protect, userController.updateUserProfile);
 router.post('/request-password-reset', userController.requestPasswordReset);
 router.post('/reset-password', userController.resetPassword);
 router.get('/verify-email/:token', userController.verifyEmail);
+router.get('/search', protect, userController.searchUsers);
 
-module.exports = router; 
+module.exports = router;

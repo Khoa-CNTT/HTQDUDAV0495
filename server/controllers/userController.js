@@ -158,6 +158,34 @@ const verifyEmail = async (req, res) => {
   }
 };
 
+/**
+ * Search users by displayName or username
+ * @route GET /api/users/search?query=abc
+ * @access Private
+ */
+const searchUsers = async (req, res) => {
+  try {
+    const query = req.query.query?.trim();
+    if (!query) return res.json([]);
+    // Không trả về chính mình
+    const users = await User.find({
+      $and: [
+        {
+          $or: [
+            { displayName: { $regex: query, $options: 'i' } },
+            { username: { $regex: query, $options: 'i' } }
+          ]
+        },
+        { _id: { $ne: req.user.userId } }
+      ]
+    }).select('_id username displayName email profilePicture');
+    res.json(users);
+  } catch (error) {
+    console.error('Search users error:', error);
+    res.status(500).json({ message: 'Error searching users' });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -165,5 +193,6 @@ module.exports = {
   resetPassword,
   getUserProfile,
   updateUserProfile,
-  verifyEmail
+  verifyEmail,
+  searchUsers
 };

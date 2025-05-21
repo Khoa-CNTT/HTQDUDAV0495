@@ -101,7 +101,7 @@ class SocketService {
     if (this.isConnected) {
       return Promise.resolve();
     }
-    
+
     return this.init(user);
   }
 

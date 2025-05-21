@@ -253,7 +253,14 @@ function App() {
             )
           }
         />
-        <Route path="/friends" element={<Friends />} />
+        <Route
+          path="/friends"
+          element={
+            <ProtectedRoute user={user}>
+              <Friends user={user} />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />

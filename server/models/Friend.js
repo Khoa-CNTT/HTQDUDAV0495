@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
 const friendSchema = new mongoose.Schema({
-  user1: {
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  user2: {
+  friendId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
@@ -15,18 +15,13 @@ const friendSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'accepted', 'rejected'],
     default: 'pending'
-  },
-  requestedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
   }
 }, {
   timestamps: true
 });
 
 // Ensure unique friend relationships
-friendSchema.index({ user1: 1, user2: 1 }, { unique: true });
+friendSchema.index({ userId: 1, friendId: 1 }, { unique: true });
 
 const Friend = mongoose.model('Friend', friendSchema);
 

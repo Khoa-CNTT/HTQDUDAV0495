@@ -31,6 +31,16 @@ router.put(
   friendController.respondToFriendRequest
 );
 
+// Alternative endpoint for responding to friend request if the main one fails
+router.put(
+  '/request-alt/:requestId',
+  [
+    check('requestId', 'Valid request ID is required').isMongoId(),
+    check('accept', 'Accept field is required and must be a boolean').isBoolean()
+  ],
+  friendController.respondToFriendRequestAlternative
+);
+
 // Remove friend
 router.delete(
   '/:friendId',

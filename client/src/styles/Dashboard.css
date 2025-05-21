@@ -584,28 +584,28 @@
   .dashboard-container {
     padding: 1rem;
   }
-  
+
   .dashboard-title {
     font-size: 2rem;
   }
-  
+
   .tab-container {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   .quiz-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .multiplayer-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .username {
     max-width: 80px;
   }
-  
+
   .dropdown-menu {
     width: 220px;
   }
@@ -616,11 +616,11 @@
   .dashboard-container {
     padding: 2rem 3rem;
   }
-  
+
   .quiz-grid {
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   }
-  
+
   .multiplayer-grid {
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   }
@@ -630,12 +630,47 @@
   .dashboard-container {
     padding: 2rem 5rem;
   }
-  
+
   .quiz-grid {
     grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   }
-  
+
   .multiplayer-grid {
     grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   }
-} 
+}
+
+/* Custom Scrollbar Styles */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  /* Width of the scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  /* Track color */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  /* Thumb color */
+  border-radius: 10px;
+  border: 2px solid transparent;
+  /* Creates padding around thumb */
+  background-clip: content-box;
+  /* Ensures border creates padding */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
+  /* Thumb color on hover */
+}
+
+/* For Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  /* "auto" or "thin" */
+  scrollbar-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.1);
+  /* thumb and track color */
+}

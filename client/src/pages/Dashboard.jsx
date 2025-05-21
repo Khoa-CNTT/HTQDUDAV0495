@@ -439,6 +439,13 @@ const Dashboard = ({ user, logout }) => {
             Public Quizzes
           </button>
           <button
+            className={`tab-button ${activeTab === "multiplayer" ? "active" : ""}`}
+            onClick={() => setActiveTab("multiplayer")}
+          >
+            <FaUserFriends className="w-5 h-5" />
+            Multiplayer Quizzes
+          </button>
+          <button
             className={`tab-button ${activeTab === "submissions" ? "active" : ""}`}
             onClick={() => setActiveTab("submissions")}
           >
@@ -605,74 +612,76 @@ const Dashboard = ({ user, logout }) => {
               <Leaderboard />
             </motion.div>
           )}
+
+          {activeTab === "multiplayer" && (
+            <motion.div
+              key="multiplayer"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h2 className="mb-6 text-2xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                Multiplayer Quizzes
+              </h2>
+              <p className="mb-8 text-pink-200 font-orbitron">
+                Challenge your friends or join public quiz rooms for a competitive
+                experience.
+              </p>
+
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="p-6 border-2 multiplayer-card bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 backdrop-blur-xl rounded-2xl border-pink-400/40"
+                >
+                  <h3 className="mb-3 text-xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                    Create a Room
+                  </h3>
+                  <p className="mb-6 text-pink-200 font-orbitron">
+                    Create a multiplayer room with one of your quizzes and invite
+                    others to join.
+                  </p>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      if (!Array.isArray(quizzes) || quizzes.length === 0) {
+                        toast.error("You need to create a quiz first!");
+                        setTimeout(() => navigate("/upload"), 1500);
+                      } else {
+                        navigate("/create-room");
+                      }
+                    }}
+                    className="w-full px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
+                  >
+                    Create Room
+                  </motion.button>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="p-6 border-2 multiplayer-card bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 backdrop-blur-xl rounded-2xl border-pink-400/40"
+                >
+                  <h3 className="mb-3 text-xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
+                    Join a Room
+                  </h3>
+                  <p className="mb-6 text-pink-200 font-orbitron">
+                    Join an existing quiz room using a room code from another
+                    player.
+                  </p>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => navigate("/join-room")}
+                    className="w-full px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
+                  >
+                    Join Room
+                  </motion.button>
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
         </AnimatePresence>
-
-        {/* Multiplayer section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="p-8 mt-12 border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
-        >
-          <h2 className="mb-4 text-2xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
-            Multiplayer Quizzes
-          </h2>
-          <p className="mb-8 text-pink-200 font-orbitron">
-            Challenge your friends or join public quiz rooms for a competitive
-            experience.
-          </p>
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="p-6 border-2 multiplayer-card bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 backdrop-blur-xl rounded-2xl border-pink-400/40"
-            >
-              <h3 className="mb-3 text-xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
-                Create a Room
-              </h3>
-              <p className="mb-6 text-pink-200 font-orbitron">
-                Create a multiplayer room with one of your quizzes and invite
-                others to join.
-              </p>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  if (!Array.isArray(quizzes) || quizzes.length === 0) {
-                    toast.error("You need to create a quiz first!");
-                    setTimeout(() => navigate("/upload"), 1500);
-                  } else {
-                    navigate("/create-room");
-                  }
-                }}
-                className="w-full px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
-              >
-                Create Room
-              </motion.button>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="p-6 border-2 multiplayer-card bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 backdrop-blur-xl rounded-2xl border-pink-400/40"
-            >
-              <h3 className="mb-3 text-xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">
-                Join a Room
-              </h3>
-              <p className="mb-6 text-pink-200 font-orbitron">
-                Join an existing quiz room using a room code from another
-                player.
-              </p>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => navigate("/join-room")}
-                className="w-full px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
-              >
-                Join Room
-              </motion.button>
-            </motion.div>
-          </div>
-        </motion.div>
       </div>
 
       <CreateQuizModal
