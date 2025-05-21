@@ -38,8 +38,15 @@ const Dashboard = ({ user, logout }) => {
   const [error, setError] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isCreateQuizModalOpen, setIsCreateQuizModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPublicPage, setCurrentPublicPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(6);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+
+  // --- Pagination and Search Logic ---
+  const [filteredQuizzes, setFilteredQuizzes] = useState([]);
+  const [filteredPublicQuizzes, setFilteredPublicQuizzes] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,6 +81,15 @@ const Dashboard = ({ user, logout }) => {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    setFilteredQuizzes(quizzes.filter(
+      (quiz) => typeof quiz._id === "string" && quiz._id.trim() !== ""
+    ));
+  }, [quizzes]);
+  useEffect(() => {
+    setFilteredPublicQuizzes(publicQuizzes);
+  }, [publicQuizzes]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -199,6 +215,88 @@ const Dashboard = ({ user, logout }) => {
   if (invalidQuizzes.length > 0) {
     console.warn("Quiz bị thiếu _id:", invalidQuizzes);
   }
+
+  const handleSearch = (searchTerm) => {
+    if (!searchTerm.trim()) {
+      setFilteredQuizzes(validQuizzes);
+      setCurrentPage(1);
+      return;
+    }
+    const searchLower = searchTerm.toLowerCase();
+    const filtered = validQuizzes.filter(quiz =>
+      quiz.title.toLowerCase().includes(searchLower) ||
+      quiz.description?.toLowerCase().includes(searchLower) ||
+      quiz.category?.toLowerCase().includes(searchLower)
+    );
+    setFilteredQuizzes(filtered);
+    setCurrentPage(1);
+  };
+
+  const handlePublicSearch = (searchTerm) => {
+    if (!searchTerm.trim()) {
+      setFilteredPublicQuizzes(publicQuizzes);
+      setCurrentPublicPage(1);
+      return;
+    }
+    const searchLower = searchTerm.toLowerCase();
+    const filtered = publicQuizzes.filter(quiz =>
+      quiz.title.toLowerCase().includes(searchLower) ||
+      quiz.description?.toLowerCase().includes(searchLower) ||
+      quiz.category?.toLowerCase().includes(searchLower)
+    );
+    setFilteredPublicQuizzes(filtered);
+    setCurrentPublicPage(1);
+  };
+
+  // Pagination for My Quizzes
+  const totalPages = Math.ceil(filteredQuizzes.length / itemsPerPage);
+  const indexOfLastQuiz = currentPage * itemsPerPage;
+  const indexOfFirstQuiz = indexOfLastQuiz - itemsPerPage;
+  const currentQuizzes = filteredQuizzes.slice(indexOfFirstQuiz, indexOfLastQuiz);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  // Pagination for Public Quizzes
+  const totalPublicPages = Math.ceil(filteredPublicQuizzes.length / itemsPerPage);
+  const indexOfLastPublicQuiz = currentPublicPage * itemsPerPage;
+  const indexOfFirstPublicQuiz = indexOfLastPublicQuiz - itemsPerPage;
+  const currentPublicQuizzes = filteredPublicQuizzes.slice(indexOfFirstPublicQuiz, indexOfLastPublicQuiz);
+  const paginatePublic = (pageNumber) => setCurrentPublicPage(pageNumber);
+
+  // Render pagination controls
+  const renderPagination = (currentPage, totalPages, onPageChange) => {
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      if (
+        i === 1 ||
+        i === totalPages ||
+        (i >= currentPage - 2 && i <= currentPage + 2)
+      ) {
+        pages.push(
+          <button
+            key={i}
+            onClick={() => onPageChange(i)}
+            className={`px-4 py-2 font-orbitron rounded-xl transition-all duration-300 ${
+              currentPage === i
+                ? "bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 text-white"
+                : "bg-gradient-to-r from-indigo-500 to-pink-500 text-white hover:from-pink-500 hover:to-indigo-500"
+            }`}
+          >
+            {i}
+          </button>
+        );
+      } else if (
+        (i === currentPage - 3 && currentPage > 4) ||
+        (i === currentPage + 3 && currentPage < totalPages - 3)
+      ) {
+        pages.push(
+          <span key={i} className="px-4 text-pink-200 font-orbitron">
+            ...
+          </span>
+        );
+      }
+    }
+    return pages;
+  };
 
   if (loading) {
     return (
@@ -479,27 +577,68 @@ const Dashboard = ({ user, logout }) => {
                   </motion.button>
                 </motion.div>
               ) : (
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {validQuizzes.map((quiz, index) => {
-                    // In My Quizzes tab, we always show edit/delete buttons as these are user's own quizzes
-                    const userIsCreator = true; // Always true in My Quizzes tab
-
-                    return (
-                      <motion.div
-                        key={quiz._id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: index * 0.1 }}
+                <>
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {currentQuizzes.map((quiz, index) => {
+                      const userIsCreator = true;
+                      return (
+                        <motion.div
+                          key={quiz._id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5, delay: index * 0.1 }}
+                        >
+                          <QuizCard
+                            quiz={quiz}
+                            isCreator={userIsCreator}
+                            onDelete={handleDeleteQuiz}
+                          />
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                  {/* Pagination for My Quizzes */}
+                  {totalPages > 1 && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center justify-center py-6 space-x-2"
+                    >
+                      <button
+                        onClick={() => paginate(1)}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 font-orbitron bg-gradient-to-r from-indigo-500 to-pink-500 text-white rounded-xl hover:from-pink-500 hover:to-indigo-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <QuizCard
-                          quiz={quiz}
-                          isCreator={userIsCreator} // Always true to show edit/delete buttons
-                          onDelete={handleDeleteQuiz}
-                        />
-                      </motion.div>
-                    );
-                  })}
-                </div>
+                        «
+                      </button>
+                      <button
+                        onClick={() => paginate(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 font-orbitron bg-gradient-to-r from-indigo-500 to-pink-500 text-white rounded-xl hover:from-pink-500 hover:to-indigo-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        ‹
+                      </button>
+                      {renderPagination(currentPage, totalPages, paginate)}
+                      <button
+                        onClick={() => paginate(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="px-4 py-2 font-orbitron bg-gradient-to-r from-indigo-500 to-pink-500 text-white rounded-xl hover:from-pink-500 hover:to-indigo-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        ›
+                      </button>
+                      <button
+                        onClick={() => paginate(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="px-4 py-2 font-orbitron bg-gradient-to-r from-indigo-500 to-pink-500 text-white rounded-xl hover:from-pink-500 hover:to-indigo-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        »
+                      </button>
+                      <span className="ml-6 text-sm font-orbitron text-pink-200">
+                        Page {currentPage} of {totalPages}
+                      </span>
+                    </motion.div>
+                  )}
+                </>
               )}
             </motion.div>
           )}
@@ -527,21 +666,63 @@ const Dashboard = ({ user, logout }) => {
                   </p>
                 </motion.div>
               ) : (
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {Array.isArray(publicQuizzes) &&
-                    publicQuizzes.map((quiz, index) => {
-                      // In Public Quizzes tab, we never show edit/delete buttons
-                      return (
-                        <QuizCard
-                          key={quiz._id}
-                          quiz={quiz}
-                          isCreator={false} // Always false to hide edit/delete buttons in Public Quizzes
-                          showCreator={true}
-                          onDelete={handleDeleteQuiz}
-                        />
-                      );
-                    })}
-                </div>
+                <>
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {Array.isArray(filteredPublicQuizzes) &&
+                      currentPublicQuizzes.map((quiz) => {
+                        return (
+                          <QuizCard
+                            key={quiz._id}
+                            quiz={quiz}
+                            isCreator={false}
+                            showCreator={true}
+                            onDelete={handleDeleteQuiz}
+                          />
+                        );
+                      })}
+                  </div>
+                  {/* Pagination for Public Quizzes */}
+                  {totalPublicPages > 1 && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center justify-center py-6 space-x-2"
+                    >
+                      <button
+                        onClick={() => paginatePublic(1)}
+                        disabled={currentPublicPage === 1}
+                        className="px-4 py-2 font-orbitron bg-gradient-to-r from-indigo-500 to-pink-500 text-white rounded-xl hover:from-pink-500 hover:to-indigo-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        «
+                      </button>
+                      <button
+                        onClick={() => paginatePublic(currentPublicPage - 1)}
+                        disabled={currentPublicPage === 1}
+                        className="px-4 py-2 font-orbitron bg-gradient-to-r from-indigo-500 to-pink-500 text-white rounded-xl hover:from-pink-500 hover:to-indigo-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        ‹
+                      </button>
+                      {renderPagination(currentPublicPage, totalPublicPages, paginatePublic)}
+                      <button
+                        onClick={() => paginatePublic(currentPublicPage + 1)}
+                        disabled={currentPublicPage === totalPublicPages}
+                        className="px-4 py-2 font-orbitron bg-gradient-to-r from-indigo-500 to-pink-500 text-white rounded-xl hover:from-pink-500 hover:to-indigo-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        ›
+                      </button>
+                      <button
+                        onClick={() => paginatePublic(totalPublicPages)}
+                        disabled={currentPublicPage === totalPublicPages}
+                        className="px-4 py-2 font-orbitron bg-gradient-to-r from-indigo-500 to-pink-500 text-white rounded-xl hover:from-pink-500 hover:to-indigo-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        »
+                      </button>
+                      <span className="ml-6 text-sm font-orbitron text-pink-200">
+                        Page {currentPublicPage} of {totalPublicPages}
+                      </span>
+                    </motion.div>
+                  )}
+                </>
               )}
             </motion.div>
           )}
