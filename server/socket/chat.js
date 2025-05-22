@@ -11,6 +11,7 @@ function setupChatHandlers(io, socket) {
   socket.on("send-message", async (data) => {
     try {
       const { receiverId, content, roomCode } = data;
+      const senderId = socket.userId;
 
       // If it's a room message
       if (roomCode) {
@@ -28,35 +29,49 @@ function setupChatHandlers(io, socket) {
 
       // If it's a direct message
       if (receiverId) {
-        // Create new chat message
-        const message = new Chat({
-          senderId: socket.userId,
-          receiverId,
-          content,
-          read: false,
+        // Tìm chat direct giữa 2 user
+        let chat = await Chat.findOne({
+          type: 'direct',
+          participants: { $all: [senderId, receiverId] }
         });
 
-        await message.save();
+        if (!chat) {
+          // Nếu chưa có thì tạo mới
+          chat = new Chat({
+            type: 'direct',
+            participants: [senderId, receiverId],
+            messages: []
+          });
+        }
 
-        // Get sender details
-        const sender = await User.findById(socket.userId).select('username email profilePicture');
+        // Thêm message vào mảng messages
+        const message = {
+          sender: senderId,
+          content,
+          read: false
+        };
+        chat.messages.push(message);
+        chat.lastMessage = new Date();
+        await chat.save();
 
-        // Emit to the receiver
+        // Lấy message vừa thêm (có _id)
+        const savedMessage = chat.messages[chat.messages.length - 1];
+
+        // Lấy thông tin sender
+        const sender = await User.findById(senderId).select('username email profilePicture');
+
+        // Emit cho receiver
         io.to(receiverId).emit("new-message", {
-          _id: message._id,
-          senderId: socket.userId,
+          ...savedMessage.toObject(),
           senderName: sender.username,
-          senderPhoto: sender.profilePicture,
-          content,
-          createdAt: message.createdAt
+          senderPhoto: sender.profilePicture
         });
 
-        // Also emit to the sender
-        socket.emit("message-sent", {
-          _id: message._id,
-          receiverId,
-          content,
-          createdAt: message.createdAt
+        // Emit cho sender (nếu muốn cập nhật UI ngay)
+        socket.emit("new-message", {
+          ...savedMessage.toObject(),
+          senderName: sender.username,
+          senderPhoto: sender.profilePicture
         });
       }
     } catch (error) {

@@ -154,77 +154,36 @@ function Friends({ user }) {
     };
   }, []);
 
-  const handleAcceptFriend = (request) => {
-    friendService.respondToFriendRequest(request._id, true);
-    setFriendRequests((prev) =>
-      prev.filter((req) => req.userId !== request.userId)
-    );
-  };
-
-  const handleRejectFriend = (request) => {
-    friendService.respondToFriendRequest(request._id, false);
-    setFriendRequests((prev) =>
-      prev.filter((req) => req.userId !== request.userId)
-    );
-  };
-
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!selectedFriend || !newMessage.trim() || !user) return;
 
-    const tempId = Date.now().toString();
-    const messageContent = newMessage.trim(); // Store content before clearing
+    const messageContent = newMessage.trim();
+    setNewMessage(""); // Clear input ngay
 
-    const tempMessage = {
-      _id: tempId,
-      tempId: tempId,
-      sender: user._id,
-      receiver: selectedFriend._id,
-      content: messageContent, // Use stored content
-      createdAt: new Date().toISOString(),
-      isTemp: true,
-    };
-
-    // Optimistically add to UI
-    setChatMessages((prev) => [...prev, tempMessage]);
-    setNewMessage(""); // Clear input after preparing tempMessage
-
+    // Gửi qua REST API để đảm bảo lưu DB
     try {
       const chatRes = await axios.get(`${API_URL}/chats/direct/${selectedFriend._id}`, {
         headers: { Authorization: `Bearer ${user.token}` },
       });
-
       if (!chatRes.data || !chatRes.data._id) {
         toast.error("Không thể tạo hoặc lấy phòng chat.");
-        setChatMessages((prev) => prev.filter((msg) => msg.tempId !== tempId)); // Rollback optimistic UI
         return;
       }
-
-      const res = await axios.post(`${API_URL}/chats/${chatRes.data._id}/messages`,
-        { content: messageContent }, // Use stored content
+      await axios.post(`${API_URL}/chats/${chatRes.data._id}/messages`,
+        { content: messageContent },
         { headers: { Authorization: `Bearer ${user.token}` } }
       );
-
-      if (res.data && res.data._id) {
-        const confirmedMessage = { ...res.data, sender: user._id, tempId: tempId, isTemp: false }; // Add tempId for matching
-        // Update the temporary message with the actual one from the server
-        setChatMessages((prev) =>
-          prev.map((msg) => (msg.tempId === tempId ? confirmedMessage : msg))
-        );
-        // Send confirmed message via socket
-        chatService.sendPrivateMessage(selectedFriend._id, messageContent, confirmedMessage);
-        console.log("Sent confirmed message via socket (Friends.jsx):", confirmedMessage);
-      } else {
-        // Handle cases where API might not return full message or _id
-        console.error("API did not return expected message data:", res.data);
-        toast.error("Lỗi khi gửi tin nhắn. Dữ liệu không hợp lệ.");
-        setChatMessages((prev) => prev.filter((msg) => msg.tempId !== tempId)); // Rollback
+      // Sau khi lưu thành công, gửi qua socket để cập nhật real-time
+      if (window.socket) {
+        window.socket.emit("send-message", {
+          receiverId: selectedFriend._id,
+          content: messageContent
+        });
       }
     } catch (err) {
       console.error("Error sending message (Friends.jsx):", err);
       toast.error("Không thể gửi tin nhắn: " + (err.response?.data?.message || err.message));
-      // Remove the temporary message if sending failed
-      setChatMessages((prev) => prev.filter((msg) => msg.tempId !== tempId));
     }
   };
 
@@ -602,6 +561,33 @@ function Friends({ user }) {
     }
   };
 
+  // Thêm vào đầu useEffect (chỉ chạy 1 lần khi user có)
+  useEffect(() => {
+    if (user && window.socket) {
+      window.socket.emit('join', { userId: user._id });
+    }
+  }, [user]);
+
+  // Sửa lại useEffect nhận tin nhắn socket:
+  useEffect(() => {
+    if (!window.socket) return;
+    const handleSocketMessage = (msg) => {
+      // Kiểm tra nếu tin nhắn đã có trong chatMessages thì không thêm lại
+      setChatMessages(prev => {
+        if (prev.some(m => m._id === msg._id)) return prev;
+        // Chỉ thêm nếu là tin nhắn của selectedFriend hoặc của mình gửi cho selectedFriend
+        const isFromSelectedFriend = msg.sender?.toString() === selectedFriend?._id?.toString();
+        const isFromMeToSelectedFriend = msg.sender?.toString() === user?._id?.toString() && msg.receiver === selectedFriend?._id;
+        if (isFromSelectedFriend || isFromMeToSelectedFriend) {
+          return [...prev, msg];
+        }
+        return prev;
+      });
+    };
+    window.socket.on("new-message", handleSocketMessage);
+    return () => window.socket.off("new-message", handleSocketMessage);
+  }, [selectedFriend, user]);
+
   return (
     <div className="relative w-screen min-h-screen overflow-x-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
       {/* Animated SVG background */}
@@ -677,10 +663,7 @@ function Friends({ user }) {
 
             <AnimatePresence>
               {dropdownOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
+                <div
                   className="absolute right-0 z-20 w-64 mt-2 overflow-hidden border-2 shadow-2xl top-16 bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-2xl border-pink-400/40"
                 >
                   {/* Dropdown content */}
@@ -764,7 +747,7 @@ function Friends({ user }) {
                       Logout
                     </span>
                   </button>
-                </motion.div>
+                </div>
               )}
             </AnimatePresence>
           </div>
@@ -811,12 +794,8 @@ function Friends({ user }) {
         <AnimatePresence mode="wait">
           {/* Tab: Danh sách bạn bè */}
           {activeTab === "friends" && (
-            <motion.div
+            <div
               key="friends-tab"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
               className="grid grid-cols-1 md:grid-cols-2 gap-6"
             >
               {/* Friends List */}
@@ -838,21 +817,19 @@ function Friends({ user }) {
                     <div className="text-pink-300 text-center p-4">Bạn chưa có bạn bè nào</div>
                   ) : (
                     filteredFriends.map((friend) => (
-                      <motion.button
+                      <div
                         key={friend._id}
                         onClick={() => handleSelectFriend(friend)}
                         className={`w-full p-3 text-left rounded-xl transition flex items-center gap-3 ${selectedFriend?._id === friend._id
                           ? "bg-gradient-to-r from-indigo-600/50 to-purple-600/50 border-2 border-pink-400/40"
                           : "hover:bg-white/10 border-2 border-transparent"
                           }`}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
                       >
                         <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-yellow-400 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
                           {(friend.displayName || friend.username || '?').charAt(0).toUpperCase()}
                         </div>
                         <span className="text-pink-200 font-medium">{friend.displayName || friend.username}</span>
-                      </motion.button>
+                      </div>
                     ))
                   )}
                 </div>
@@ -873,7 +850,11 @@ function Friends({ user }) {
                         </div>
                       ) : (
                         chatMessages.map((msg, index) => {
-                          const isFromMe = msg.sender === user._id;
+                          // Lấy senderId chuẩn hóa
+                          const senderId = typeof msg.sender === 'object' && msg.sender !== null
+                            ? msg.sender._id
+                            : msg.sender;
+                          const isFromMe = senderId?.toString() === user._id?.toString();
                           return (
                             <motion.div
                               key={msg._id || msg.tempId || index}
@@ -936,17 +917,13 @@ function Friends({ user }) {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </div>
           )}
 
           {/* Tab: Lời mời kết bạn */}
           {activeTab === "requests" && (
-            <motion.div
+            <div
               key="requests-tab"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
               className="p-6 border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
             >
               <h2 className="mb-4 text-2xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">Lời mời kết bạn</h2>
@@ -959,12 +936,9 @@ function Friends({ user }) {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {friendRequests.map((request) => (
-                    <motion.div
+                    <div
                       key={request._id}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
                       className="flex items-center justify-between p-4 rounded-xl bg-black/20 backdrop-blur-md border-2 border-pink-400/40"
-                      whileHover={{ scale: 1.02 }}
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
@@ -994,21 +968,17 @@ function Friends({ user }) {
                           Từ chối
                         </motion.button>
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               )}
-            </motion.div>
+            </div>
           )}
 
           {/* Tab: Tìm kiếm bạn bè */}
           {activeTab === "search" && (
-            <motion.div
+            <div
               key="search-tab"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
               className="p-6 border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
             >
               <h2 className="mb-4 text-2xl font-bold text-transparent font-orbitron bg-clip-text bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500">Tìm kiếm bạn bè</h2>
@@ -1042,10 +1012,9 @@ function Friends({ user }) {
                   {searchResults.map(user => {
                     const isFriend = friends.some(f => f._id === user._id);
                     return (
-                      <motion.div
+                      <div
                         key={user._id}
                         className="flex items-center justify-between p-4 rounded-xl bg-black/20 backdrop-blur-md border-2 border-pink-400/40"
-                        whileHover={{ scale: 1.02 }}
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
@@ -1076,12 +1045,12 @@ function Friends({ user }) {
                             Kết bạn
                           </motion.button>
                         )}
-                      </motion.div>
+                      </div>
                     );
                   })}
                 </div>
               )}
-            </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </div>

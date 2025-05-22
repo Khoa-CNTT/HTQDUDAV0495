@@ -11,12 +11,13 @@ class FriendController {
   async getFriends(req, res, next) {
     try {
       const myUserId = req.user._id;
+      // Sử dụng schema mới: user1, user2
       const friends = await Friend.find({
-        $or: [{ userId: myUserId }, { friendId: myUserId }],
+        $or: [{ user1: myUserId }, { user2: myUserId }],
         status: 'accepted'
       });
       const friendIds = friends.map(f =>
-        f.userId.toString() === myUserId.toString() ? f.friendId : f.userId
+        f.user1.toString() === myUserId.toString() ? f.user2 : f.user1
       );
       const users = await User.find({ _id: { $in: friendIds } }).select('-password');
       res.json(users);
@@ -33,10 +34,11 @@ class FriendController {
       const myUserId = req.user._id;
       console.log(`Getting friend requests for user ID: ${myUserId}`);
 
+      // Sử dụng schema mới: user2 là người nhận, user1 là người gửi
       const requests = await Friend.find({
-        friendId: myUserId,
+        user2: myUserId,
         status: 'pending'
-      }).populate('userId', 'username email');
+      }).populate('user1', 'username email');
 
       console.log(`Found ${requests.length} friend requests`);
 
@@ -45,19 +47,20 @@ class FriendController {
         const req = requests[i];
         console.log(`Request ${i + 1}:`, {
           _id: req._id.toString(),
-          userId: req.userId._id.toString(),
-          friendId: req.friendId.toString(),
-          username: req.userId.username,
-          email: req.userId.email,
+          user1: req.user1._id.toString(),
+          user2: req.user2.toString(),
+          username: req.user1.username,
+          email: req.user1.email,
           status: req.status
         });
       }
 
+      // Trả về đúng định dạng cho client
       const formattedRequests = requests.map(r => ({
         _id: r._id,
-        userId: r.userId._id,
-        username: r.userId.username,
-        email: r.userId.email
+        userId: r.user1._id,
+        username: r.user1.username,
+        email: r.user1.email
       }));
 
       res.json(formattedRequests);
@@ -91,14 +94,22 @@ class FriendController {
         return res.status(400).json({ message: 'Cannot add yourself as a friend' });
       }
 
+      // Kiểm tra trùng lặp với schema mới
       const exists = await Friend.findOne({
         $or: [
-          { userId: myUserId, friendId },
-          { userId: friendId, friendId: myUserId }
+          { user1: myUserId, user2: friendId },
+          { user1: friendId, user2: myUserId }
         ]
       });
       if (exists) return res.status(400).json({ message: 'Already requested or friends' });
-      const requestDoc = new Friend({ userId: myUserId, friendId, status: 'pending' });
+
+      // Tạo mới với schema mới
+      const requestDoc = new Friend({
+        user1: myUserId,
+        user2: friendId,
+        requestedBy: myUserId,
+        status: 'pending'
+      });
       await requestDoc.save();
       res.json({ message: 'Request sent' });
     } catch (err) {
@@ -139,55 +150,28 @@ class FriendController {
 
       console.log(`Processing friend request: requestId=${requestId}, accept=${accept}, userId=${myUserId}`);
 
-      // Tìm tất cả các yêu cầu kết bạn đang chờ của người dùng hiện tại
-      const allPendingRequests = await Friend.find({
-        friendId: myUserId,
-        status: 'pending'
-      });
-
-      console.log(`All pending requests for user ${myUserId}:`,
-        allPendingRequests.map(r => ({
-          id: r._id.toString(),
-          from: r.userId.toString(),
-          to: r.friendId.toString(),
-          status: r.status
-        }))
-      );
-
-      // Tìm yêu cầu cụ thể, mở rộng tiêu chí tìm kiếm
+      // Tìm yêu cầu cụ thể với schema mới
       const requestDoc = await Friend.findOne({
         _id: requestId,
+        user2: myUserId,
         status: 'pending'
       });
 
       if (!requestDoc) {
         console.log(`Request not found for ID: ${requestId}`);
-
-        // Kiểm tra xem có tồn tại yêu cầu với ID này không, bất kể trạng thái và người nhận
-        const anyRequest = await Friend.findById(requestId);
-        if (anyRequest) {
-          console.log(`Found request with different criteria:`, {
-            userId: anyRequest.userId.toString(),
-            friendId: anyRequest.friendId.toString(),
-            status: anyRequest.status
-          });
-        } else {
-          console.log(`No request found with ID ${requestId} in the database`);
-        }
-
         return res.status(404).json({ message: 'Request not found' });
       }
 
       console.log(`Found request to process:`, {
         id: requestDoc._id.toString(),
-        from: requestDoc.userId.toString(),
-        to: requestDoc.friendId.toString(),
+        user1: requestDoc.user1.toString(),
+        user2: requestDoc.user2.toString(),
         status: requestDoc.status
       });
 
       // Xác nhận người dùng hiện tại có quyền xử lý yêu cầu này không
-      if (requestDoc.friendId.toString() !== myUserId.toString()) {
-        console.log(`User ${myUserId} is not authorized to process request ${requestId} (intended for ${requestDoc.friendId})`);
+      if (requestDoc.user2.toString() !== myUserId.toString()) {
+        console.log(`User ${myUserId} is not authorized to process request ${requestId} (intended for ${requestDoc.user2})`);
         return res.status(403).json({ message: 'Not authorized to process this request' });
       }
 
@@ -197,7 +181,7 @@ class FriendController {
         console.log(`Request ${requestId} accepted. Result:`, savedDoc);
         res.json({ message: 'Friend request accepted' });
       } else {
-        // Sử dụng findByIdAndDelete thay vì deleteOne trong trường hợp này
+        // Sử dụng findByIdAndDelete để từ chối
         const deleted = await Friend.findByIdAndDelete(requestId);
         console.log(`Request ${requestId} rejected. Delete result:`, deleted);
         res.json({ message: 'Friend request rejected' });

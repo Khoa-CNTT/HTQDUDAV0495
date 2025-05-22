@@ -1,12 +1,17 @@
 const mongoose = require('mongoose');
 
 const friendSchema = new mongoose.Schema({
-  userId: {
+  user1: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  friendId: {
+  user2: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  requestedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
@@ -21,7 +26,7 @@ const friendSchema = new mongoose.Schema({
 });
 
 // Ensure unique friend relationships
-friendSchema.index({ userId: 1, friendId: 1 }, { unique: true });
+friendSchema.index({ user1: 1, user2: 1 }, { unique: true });
 
 const Friend = mongoose.model('Friend', friendSchema);
 
