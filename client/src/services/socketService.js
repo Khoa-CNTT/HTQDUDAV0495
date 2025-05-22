@@ -18,8 +18,34 @@ class SocketService {
       onAnswerProcessed: () => { },
       onGameProgress: () => { },
       onGameEnded: () => { },
-      onAchievementsUnlocked: () => { }
+      onAchievementsUnlocked: () => { },
+      onNewMessage: () => { },
+      onNewRoomMessage: () => { },
+      onTyping: () => { },
+      onStopTyping: () => { }
     };
+    // Attempt to reconnect if there's a user in localStorage
+    this._reconnectIfPossible();
+  }
+
+  /**
+   * Try to reconnect using stored user data
+   */
+  _reconnectIfPossible() {
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        if (user && user.token) {
+          console.log("Attempting to reconnect socket using stored user data");
+          this.init(user).catch(err => {
+            console.warn("Auto-reconnect failed:", err);
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error during auto-reconnect attempt:", error);
+    }
   }
 
   /**
@@ -50,6 +76,7 @@ class SocketService {
     }
 
     this.connecting = true;
+    console.log("Initializing socket connection to:", serverUrl);
 
     // Create a promise that resolves when connected
     this.initializePromise = new Promise((resolve, reject) => {
@@ -67,7 +94,7 @@ class SocketService {
 
         // Set up connection listener to resolve promise
         this.socket.on('connect', () => {
-          console.log('Socket connected');
+          console.log('Socket connected successfully');
           this.isConnected = true;
           this.connecting = false;
           this.callbacks.onConnect();
@@ -84,6 +111,7 @@ class SocketService {
         // Set up all other listeners
         this._setupListeners();
       } catch (error) {
+        console.error("Socket initialization error:", error);
         this.connecting = false;
         reject(error);
       }
@@ -207,9 +235,82 @@ class SocketService {
   }
 
   /**
+   * Send a private message to another user
+   * @param {string} receiverId - ID of the message recipient
+   * @param {string} content - Message content
+   */
+  sendPrivateMessage(receiverId, content) {
+    if (!this.socket || !this.isConnected) {
+      console.error('Socket not connected. Cannot send message.');
+      return false;
+    }
+
+    console.log(`Emitting private message to ${receiverId}:`, content);
+    this.socket.emit('send-private-message', { receiverId, content });
+    return true;
+  }
+
+  /**
+   * Send a message to a room
+   * @param {string} roomCode - Room code to send message to
+   * @param {string} content - Message content
+   */
+  sendRoomMessage(roomCode, content) {
+    if (!this.socket || !this.isConnected) {
+      console.error('Socket not connected. Cannot send room message.');
+      return false;
+    }
+
+    this.socket.emit('send-room-message', { roomCode, content });
+    return true;
+  }
+
+  /**
+   * Notify that user is typing in private chat
+   * @param {string} receiverId - ID of the user to notify
+   */
+  sendTypingStatus(receiverId) {
+    if (!this.socket || !this.isConnected) return false;
+    console.log(`Emitting typing status to ${receiverId}`);
+    this.socket.emit('typing-private', { receiverId });
+    return true;
+  }
+
+  /**
+   * Notify that user stopped typing in private chat
+   * @param {string} receiverId - ID of the user to notify
+   */
+  sendStopTypingStatus(receiverId) {
+    if (!this.socket || !this.isConnected) return false;
+    console.log(`Emitting stop typing status to ${receiverId}`);
+    this.socket.emit('stop-typing-private', { receiverId });
+    return true;
+  }
+
+  /**
+   * Emit a custom event
+   * @param {string} event - Event name
+   * @param {any} data - Event data
+   */
+  emit(event, data) {
+    if (!this.socket || !this.isConnected) {
+      console.error(`Socket not connected. Cannot emit ${event}.`);
+      return false;
+    }
+
+    this.socket.emit(event, data);
+    return true;
+  }
+
+  /**
    * Setup internal socket listeners
    */
   _setupListeners() {
+    if (!this.socket) {
+      console.warn("Cannot setup listeners: socket is null");
+      return;
+    }
+
     this.socket.on('disconnect', () => {
       console.log('Socket disconnected');
       this.isConnected = false;
@@ -264,6 +365,27 @@ class SocketService {
     this.socket.on('achievements-unlocked', (data) => {
       console.log('Achievements unlocked event received:', data);
       this.callbacks.onAchievementsUnlocked(data);
+    });
+
+    // Chat related events
+    this.socket.on('new-message', (data) => {
+      console.log('New private message received (socket):', data);
+      this.callbacks.onNewMessage(data);
+    });
+
+    this.socket.on('new-room-message', (data) => {
+      console.log('New room message received (socket):', data);
+      this.callbacks.onNewRoomMessage(data);
+    });
+
+    this.socket.on('user-typing', (data) => {
+      console.log('User typing event received (socket):', data);
+      this.callbacks.onTyping(data);
+    });
+
+    this.socket.on('user-stop-typing', (data) => {
+      console.log('User stop typing event received (socket):', data);
+      this.callbacks.onStopTyping(data);
     });
   }
 }

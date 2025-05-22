@@ -7,111 +7,160 @@ const User = require('../models/User');
  * @param {Object} socket - Socket connection
  */
 function setupChatHandlers(io, socket) {
-  // Send message
-  socket.on("send-message", async (data) => {
+  // Xử lý tin nhắn trực tiếp
+  socket.on("private-message", async (data) => {
     try {
-      const { receiverId, content, roomCode } = data;
+      const { to: receiverId, content, tempId } = data;
       const senderId = socket.userId;
 
-      // If it's a room message
-      if (roomCode) {
-        // Save message to database if needed
-        // Broadcast to everyone in the room
-        io.to(roomCode).emit("new-message", {
-          senderId: socket.userId,
-          senderName: socket.username,
-          content,
-          roomCode,
-          createdAt: new Date()
-        });
-        return;
-      }
+      // Tìm hoặc tạo cuộc trò chuyện
+      let chat = await Chat.findOne({
+        type: 'direct',
+        participants: { $all: [senderId, receiverId] }
+      });
 
-      // If it's a direct message
-      if (receiverId) {
-        // Tìm chat direct giữa 2 user
-        let chat = await Chat.findOne({
+      if (!chat) {
+        chat = new Chat({
           type: 'direct',
-          participants: { $all: [senderId, receiverId] }
-        });
-
-        if (!chat) {
-          // Nếu chưa có thì tạo mới
-          chat = new Chat({
-            type: 'direct',
-            participants: [senderId, receiverId],
-            messages: []
-          });
-        }
-
-        // Thêm message vào mảng messages
-        const message = {
-          sender: senderId,
-          content,
-          read: false
-        };
-        chat.messages.push(message);
-        chat.lastMessage = new Date();
-        await chat.save();
-
-        // Lấy message vừa thêm (có _id)
-        const savedMessage = chat.messages[chat.messages.length - 1];
-
-        // Lấy thông tin sender
-        const sender = await User.findById(senderId).select('username email profilePicture');
-
-        // Emit cho receiver
-        io.to(receiverId).emit("new-message", {
-          ...savedMessage.toObject(),
-          senderName: sender.username,
-          senderPhoto: sender.profilePicture
-        });
-
-        // Emit cho sender (nếu muốn cập nhật UI ngay)
-        socket.emit("new-message", {
-          ...savedMessage.toObject(),
-          senderName: sender.username,
-          senderPhoto: sender.profilePicture
+          participants: [senderId, receiverId],
+          messages: []
         });
       }
+
+      // Thêm tin nhắn mới
+      const message = {
+        sender: senderId,
+        content,
+        read: false
+      };
+      chat.messages.push(message);
+      chat.lastMessage = new Date();
+      await chat.save();
+
+      // Lấy tin nhắn đã lưu với ID
+      const savedMessage = chat.messages[chat.messages.length - 1];
+
+      // Lấy thông tin người gửi
+      const sender = await User.findById(senderId).select('username email profilePicture');
+
+      const messageData = {
+        _id: savedMessage._id,
+        tempId, // Trả về tempId để client cập nhật tin nhắn tạm thời
+        sender: senderId,
+        senderName: sender.username,
+        content: savedMessage.content,
+        createdAt: savedMessage.createdAt,
+        read: savedMessage.read
+      };
+
+      // Gửi cho người nhận
+      io.to(receiverId).emit("private-message", {
+        message: messageData,
+        from: senderId
+      });
+
+      // Gửi xác nhận lại cho người gửi
+      socket.emit("private-message", {
+        message: messageData,
+        from: senderId,
+        to: receiverId
+      });
     } catch (error) {
-      console.error("Error in send-message event:", error);
+      console.error("Error in private-message event:", error);
       socket.emit("error", { message: "Failed to send message" });
     }
   });
 
-  // Mark message as read
-  socket.on("mark-read", async (messageId) => {
+  // Xử lý tin nhắn phòng
+  socket.on("room-message", async (data) => {
     try {
-      const message = await Chat.findById(messageId);
-      if (message && message.receiverId.toString() === socket.userId) {
-        message.read = true;
-        await message.save();
+      const { roomCode, content, tempId } = data;
+      const senderId = socket.userId;
 
-        // Notify the sender that the message was read
-        io.to(message.senderId.toString()).emit("message-read", {
-          messageId,
-          readAt: new Date()
+      // Tìm chat phòng
+      let chat = await Chat.findOne({
+        type: 'room',
+        roomId: roomCode
+      });
+
+      if (!chat) {
+        chat = new Chat({
+          type: 'room',
+          roomId: roomCode,
+          participants: [], // Có thể cập nhật danh sách tham gia nếu cần
+          messages: []
         });
       }
+
+      // Thêm tin nhắn mới
+      const message = {
+        sender: senderId,
+        content,
+        read: true // Tin nhắn phòng luôn được đánh dấu đã đọc
+      };
+      chat.messages.push(message);
+      chat.lastMessage = new Date();
+      await chat.save();
+
+      // Lấy tin nhắn đã lưu
+      const savedMessage = chat.messages[chat.messages.length - 1];
+
+      // Lấy thông tin người gửi
+      const sender = await User.findById(senderId).select('username email profilePicture');
+
+      const messageData = {
+        _id: savedMessage._id,
+        tempId, // Trả về tempId
+        sender: senderId,
+        senderName: sender.username,
+        content: savedMessage.content,
+        createdAt: savedMessage.createdAt
+      };
+
+      // Phát tin nhắn cho tất cả trong phòng
+      io.to(roomCode).emit("room-message", {
+        message: messageData,
+        roomCode
+      });
     } catch (error) {
-      console.error("Error in mark-read event:", error);
+      console.error("Error in room-message event:", error);
+      socket.emit("error", { message: "Failed to send room message" });
     }
   });
 
-  // Handle typing indicators for direct messages
-  socket.on("typing", (userId) => {
-    io.to(userId).emit("user-typing", {
+  // Xử lý typing indicators cho direct messages
+  socket.on("typing", async (data) => {
+    const { to: receiverId } = data;
+    io.to(receiverId).emit("user-typing", {
       userId: socket.userId,
-      username: socket.username,
+      username: socket.username
     });
   });
 
-  // Handle stop typing for direct messages
-  socket.on("stop-typing", (userId) => {
-    io.to(userId).emit("user-stop-typing", {
+  // Xử lý stop typing cho direct messages
+  socket.on("stop-typing", async (data) => {
+    const { to: receiverId } = data;
+    io.to(receiverId).emit("user-stop-typing", {
+      userId: socket.userId,
+      username: socket.username
+    });
+  });
+
+  // Xử lý typing indicators cho room messages
+  socket.on("typing-room-chat", (roomCode) => {
+    socket.to(roomCode).emit("user-typing", {
       userId: socket.userId,
       username: socket.username,
+      roomCode
+    });
+  });
+
+  // Xử lý stop typing cho room messages
+  socket.on("stop-typing-room-chat", (roomCode) => {
+    socket.to(roomCode).emit("user-stop-typing", {
+      userId: socket.userId,
+      username: socket.username,
+      roomCode
     });
   });
 }

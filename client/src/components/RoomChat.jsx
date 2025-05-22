@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import chatService from '../services/chatService';
 import socketService from '../services/socketService';
 import axios from 'axios';
-import { motion, AnimatePresence } from 'framer-motion';
 import { FaPaperPlane, FaUser, FaSpinner } from 'react-icons/fa';
+
+const API_URL = "http://localhost:5000/api";
 
 const RoomChat = ({ roomCode, roomId }) => {
   const [messages, setMessages] = useState([]);
@@ -29,12 +30,14 @@ const RoomChat = ({ roomCode, roomId }) => {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        if (!roomId) {
+        if (!roomId || !user?.token) {
           setLoading(false);
           return;
         }
 
-        const response = await axios.get(`/api/chats/room/${roomId}/messages`);
+        const response = await axios.get(`${API_URL}/chats/room/${roomId}/messages`, {
+          headers: { Authorization: `Bearer ${user.token}` }
+        });
         // Ensure messages is always an array
         const messagesData = Array.isArray(response.data) ? response.data : [];
         setMessages(messagesData);
@@ -52,7 +55,7 @@ const RoomChat = ({ roomCode, roomId }) => {
     } else {
       setLoading(false);
     }
-  }, [roomId]);
+  }, [roomId, user?.token]);
 
   // Socket event listeners
   useEffect(() => {
@@ -63,10 +66,28 @@ const RoomChat = ({ roomCode, roomId }) => {
 
     // Set up message handler
     const handleNewMessage = (data) => {
-      setMessages(prev => [...(Array.isArray(prev) ? prev : []), data.message]);
-      scrollToBottom();
+      // Ensure we're not adding duplicate messages
+      setMessages((prev) => {
+        const messageExists = prev.some(
+          (msg) =>
+            msg._id === data.message._id ||
+            (msg.sender === data.message.sender &&
+              msg.content === data.message.content &&
+              msg.createdAt === data.message.createdAt)
+        );
+
+        if (messageExists) {
+          return prev;
+        }
+
+        return [...prev, data.message];
+      });
+
+      // Always scroll to bottom when new message arrives
+      setTimeout(scrollToBottom, 100);
     };
 
+    // Register for new messages
     chatService.onNewRoomMessage(handleNewMessage);
 
     // Set up typing handlers
@@ -93,7 +114,7 @@ const RoomChat = ({ roomCode, roomId }) => {
         socket.off('user-stop-typing');
       }
     };
-  }, [user]);
+  }, [user, roomCode]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -142,7 +163,7 @@ const RoomChat = ({ roomCode, roomId }) => {
       </div>
 
       {/* Messages container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 messages-container">
         {loading ? (
           <div className="flex justify-center items-center h-full">
             <FaSpinner className="w-8 h-8 text-pink-400 animate-spin" />
@@ -155,18 +176,14 @@ const RoomChat = ({ roomCode, roomId }) => {
               </div>
             ) : (
               messages.map((message, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className={`flex ${message.sender === user?._id ? 'justify-end' : 'justify-start'
-                    }`}
+                <div
+                  key={message._id || `${message.sender}-${message.createdAt}-${index}`}
+                  className={`flex ${message.sender === user?._id ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
                     className={`max-w-[70%] rounded-xl p-3 ${message.sender === user?._id
-                      ? 'bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 text-white'
-                      : 'bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 text-pink-200'
+                      ? 'bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 text-white rounded-br-none'
+                      : 'bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 text-pink-200 rounded-bl-none'
                       }`}
                   >
                     {message.sender !== user?._id && (
@@ -175,11 +192,11 @@ const RoomChat = ({ roomCode, roomId }) => {
                       </div>
                     )}
                     <p className="text-sm font-orbitron">{message.content}</p>
-                    <div className="text-xs opacity-70 mt-1 font-orbitron">
-                      {new Date(message.createdAt).toLocaleTimeString()}
+                    <div className="text-xs opacity-70 mt-1 font-orbitron text-right">
+                      {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))
             )}
             <div ref={messagesEndRef} />
@@ -189,13 +206,11 @@ const RoomChat = ({ roomCode, roomId }) => {
 
       {/* Typing indicator */}
       {typingUsers.size > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div
           className="px-4 py-2 text-sm text-pink-300/80 font-orbitron"
         >
           {Array.from(typingUsers).join(', ')} typing...
-        </motion.div>
+        </div>
       )}
 
       {/* Message input */}
@@ -209,15 +224,13 @@ const RoomChat = ({ roomCode, roomId }) => {
             placeholder="Type a message..."
             className="flex-1 p-3 bg-indigo-900/50 border-2 border-pink-400/40 rounded-xl text-pink-200 placeholder-pink-300/50 focus:outline-none focus:border-pink-400 font-orbitron"
           />
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <button
             type="submit"
             disabled={!newMessage.trim() || !socketService.isConnected}
             className={`px-4 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30 ${(!newMessage.trim() || !socketService.isConnected) ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <FaPaperPlane className="w-5 h-5" />
-          </motion.button>
+          </button>
         </div>
       </form>
     </div>
