@@ -488,16 +488,37 @@ export const getRoomParticipants = async (code) => {
 export const getUserAchievements = async () => {
   try {
     const response = await api.get('/achievements');
-    return {
-      success: true,
-      data: response.data.data || [] // Ensure we always return an array
-    };
+
+    // Validate data before returning it
+    if (response && response.data && response.data.data) {
+      // Process the data to ensure all objects are valid
+      const safeData = (response.data.data || [])
+        .filter(item => item !== null && typeof item === 'object')
+        .map(item => ({
+          ...item,
+          // Ensure _id is a string to prevent toString() errors
+          _id: item._id ? String(item._id) : `temp-${Math.random().toString(36).substr(2, 9)}`
+        }));
+
+      return {
+        success: true,
+        data: safeData
+      };
+    } else {
+      // If data structure is unexpected, still return a valid response
+      console.warn("Unexpected achievements data structure:", response?.data);
+      return {
+        success: true,
+        data: []
+      };
+    }
   } catch (error) {
     console.error("Error getting achievements:", error);
+    // Return empty data array instead of failing
     return {
       success: false,
       message: error.response?.data?.message || "Failed to load achievements",
-      data: []
+      data: [] // Ensure we return an empty array on error
     };
   }
 };

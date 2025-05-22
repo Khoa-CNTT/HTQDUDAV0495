@@ -55,47 +55,69 @@ const Achievements = () => {
 
     useEffect(() => {
         // Set up socket listener for new achievements
-        socketService.on('onAchievementsUnlocked', (data) => {
-            // Show toast notification for each new achievement
-            data.achievements.forEach(achievement => {
-                toast.success(
-                    <div className="flex items-center gap-2">
-                        <span className="text-2xl">{achievement.icon}</span>
-                        <div>
-                            <p className="font-semibold">{achievement.name}</p>
-                            <p className="text-sm">{achievement.description}</p>
-                        </div>
-                    </div>,
-                    {
-                        duration: 5000,
-                        position: 'bottom-right'
+        socketService.on('achievements-unlocked', (data) => {
+            // Ensure data and achievements array exist
+            if (data && Array.isArray(data.achievements)) {
+                // Show toast notification for each new achievement
+                data.achievements.forEach(achievement => {
+                    if (achievement && achievement.name) {
+                        toast.success(
+                            <div className="flex items-center gap-2">
+                                <span className="text-2xl">{achievement.icon}</span>
+                                <div>
+                                    <p className="font-semibold">{achievement.name}</p>
+                                    <p className="text-sm">{achievement.description}</p>
+                                </div>
+                            </div>,
+                            {
+                                duration: 5000,
+                                position: 'bottom-right'
+                            }
+                        );
                     }
-                );
-            });
+                });
 
-            // Refresh achievements list
-            fetchAchievements();
+                // Refresh achievements list
+                fetchAchievements();
+            }
         });
 
         return () => {
             // Clean up socket listener
-            socketService.on('onAchievementsUnlocked', () => { });
+            socketService.off('achievements-unlocked');
         };
     }, []);
 
     const fetchAchievements = async () => {
         try {
+            setLoading(true);
             const response = await getUserAchievements();
-            if (response.success) {
-                setAchievements(response.data);
-                setError(null);
+
+            // Always treat the response as successful even if it's not
+            // Just use empty data if there's an error
+            const achievementsData = response.success && Array.isArray(response.data) ? response.data : [];
+
+            // Extra validation to ensure we only work with valid data
+            const validAchievements = achievementsData.filter(
+                item => item && typeof item === 'object' && item._id
+            );
+
+            setAchievements(validAchievements);
+
+            if (!response.success) {
+                console.warn('Achievement data issue:', response.message);
             } else {
-                throw new Error(response.message);
+                setError(null);
             }
         } catch (error) {
             console.error('Error fetching achievements:', error);
-            setError(error.message || 'Unable to load achievements');
-            toast.error('Unable to load achievements');
+            setError('Unable to load achievements. Please try again later.');
+            // Don't show toast on first load
+            if (!loading) {
+                toast.error('Unable to load achievements');
+            }
+            // Set empty array on error instead of leaving previous state
+            setAchievements([]);
         } finally {
             setLoading(false);
         }
@@ -147,9 +169,31 @@ const Achievements = () => {
         );
     }
 
-    // Group achievements by unlocked status
-    const unlockedAchievements = achievements.filter(a => a.unlocked);
-    const lockedAchievements = achievements.filter(a => !a.unlocked);
+    // Group achievements by unlocked status (ensure valid objects only)
+    const validAchievements = achievements.filter(a => a && typeof a === 'object');
+    const unlockedAchievements = validAchievements.filter(a => a.unlocked);
+    const lockedAchievements = validAchievements.filter(a => !a.unlocked);
+
+    // Handle the case where there are no achievements at all
+    if (validAchievements.length === 0 && !loading && !error) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-8 text-center border-4 shadow-2xl bg-gradient-to-br from-indigo-800/90 via-purple-800/90 to-pink-800/90 backdrop-blur-xl rounded-3xl border-pink-400/40"
+                >
+                    <p className="mb-4 text-xl text-pink-200 font-orbitron">No achievements available yet.</p>
+                    <button
+                        onClick={handleCheckAchievements}
+                        className="px-6 py-3 text-white transition-all duration-300 transform border-2 shadow-lg font-orbitron bg-gradient-to-r from-yellow-400 via-pink-500 to-indigo-500 rounded-2xl hover:from-pink-400 hover:to-yellow-400 hover:scale-105 active:scale-95 border-white/30"
+                    >
+                        Check Achievements
+                    </button>
+                </motion.div>
+            </div>
+        );
+    }
 
     return (
         <div className="relative w-screen min-h-screen overflow-x-hidden bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900">

@@ -235,6 +235,19 @@ class SocketService {
   }
 
   /**
+   * Remove event callback
+   * @param {string} event - Event name
+   */
+  off(event) {
+    if (Object.hasOwnProperty.call(this.callbacks, event)) {
+      // Reset the callback to an empty function
+      this.callbacks[event] = () => { };
+    } else {
+      console.warn(`Cannot remove listener for unknown event: ${event}`);
+    }
+  }
+
+  /**
    * Send a private message to another user
    * @param {string} receiverId - ID of the message recipient
    * @param {string} content - Message content
