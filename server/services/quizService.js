@@ -2,6 +2,8 @@ const Quiz = require("../models/Quiz");
 const User = require("../models/User");
 const Submission = require("../models/Submission");
 const { generateQuizQuestions } = require("../utils/gemini");
+const fs = require('fs');
+const pdfParse = require('pdf-parse');
 
 const quizService = {
   async createQuiz(userId, quizData) {
@@ -347,6 +349,77 @@ const quizService = {
       throw error;
     }
   },
+};
+
+// Simple PDF parser function
+const parsePdfForQuestions = async (filePath) => {
+  try {
+    const dataBuffer = fs.readFileSync(filePath);
+    const data = await pdfParse(dataBuffer);
+    const text = data.text;
+
+    // Simple question extraction (this is a basic implementation)
+    // In a real application, you'd want more sophisticated parsing
+    const lines = text.split('\n').filter(line => line.trim());
+    const questions = [];
+
+    // Look for patterns like "1. Question text?" or "Question: text"
+    let currentQuestion = null;
+    let questionCounter = 1;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+
+      // Check if line looks like a question
+      if (line.includes('?') || line.toLowerCase().includes('question')) {
+        if (currentQuestion) {
+          questions.push(currentQuestion);
+        }
+
+        currentQuestion = {
+          content: line,
+          options: [
+            { label: "Option A", isCorrect: false },
+            { label: "Option B", isCorrect: true },
+            { label: "Option C", isCorrect: false },
+            { label: "Option D", isCorrect: false }
+          ]
+        };
+      }
+    }
+
+    // Add the last question if exists
+    if (currentQuestion) {
+      questions.push(currentQuestion);
+    }
+
+    // If no questions found, create a default one
+    if (questions.length === 0) {
+      questions.push({
+        content: "Sample question from PDF: " + lines[0] || "Default question",
+        options: [
+          { label: "Option A", isCorrect: false },
+          { label: "Option B", isCorrect: true },
+          { label: "Option C", isCorrect: false },
+          { label: "Option D", isCorrect: false }
+        ]
+      });
+    }
+
+    return questions;
+  } catch (error) {
+    console.error('Error parsing PDF:', error);
+    // Return a default question if parsing fails
+    return [{
+      content: "Default question - PDF parsing failed",
+      options: [
+        { label: "Option A", isCorrect: false },
+        { label: "Option B", isCorrect: true },
+        { label: "Option C", isCorrect: false },
+        { label: "Option D", isCorrect: false }
+      ]
+    }];
+  }
 };
 
 module.exports = quizService;

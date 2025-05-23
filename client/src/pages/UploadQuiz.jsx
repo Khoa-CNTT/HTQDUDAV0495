@@ -12,7 +12,7 @@ const UploadQuiz = () => {
     description: '',
     isPublic: false,
     category: 'Other',
-    pdf: null
+    pdfFile: null
   });
   const [fileName, setFileName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,7 +39,7 @@ const UploadQuiz = () => {
       if (files[0]) {
         setFormData({
           ...formData,
-          pdf: files[0]
+          pdfFile: files[0]
         });
         setFileName(files[0].name);
       }
@@ -73,7 +73,7 @@ const UploadQuiz = () => {
     if (file && file.type === 'application/pdf') {
       setFormData({
         ...formData,
-        pdf: file
+        pdfFile: file
       });
       setFileName(file.name);
     } else {
@@ -84,7 +84,7 @@ const UploadQuiz = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.pdf) {
+    if (!formData.pdfFile) {
       toast.error('Please select a PDF file');
       return;
     }
@@ -104,7 +104,7 @@ const UploadQuiz = () => {
       data.append('description', formData.description);
       data.append('category', formData.category);
       data.append('isPublic', formData.isPublic);
-      data.append('pdfFile', formData.pdf);
+      data.append('pdfFile', formData.pdfFile);
 
       const response = await uploadQuiz(data);
 
@@ -302,7 +302,7 @@ const UploadQuiz = () => {
                           </span>
                           <input
                             id="pdf-upload"
-                            name="pdf"
+                            name="pdfFile"
                             type="file"
                             accept=".pdf"
                             className="sr-only"
@@ -328,7 +328,7 @@ const UploadQuiz = () => {
                             <button
                               type="button"
                               onClick={() => {
-                                setFormData(prev => ({ ...prev, pdf: null }));
+                                setFormData(prev => ({ ...prev, pdfFile: null }));
                                 setFileName('');
                               }}
                               className="text-pink-400 hover:text-yellow-400"
