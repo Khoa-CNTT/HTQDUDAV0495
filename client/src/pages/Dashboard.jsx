@@ -496,7 +496,7 @@ const Dashboard = ({ user, logout }) => {
 
               {/* Add SearchBar */}
               <div className="mb-6">
-                <SearchBar onSearch={handleSearch} placeholder="Tìm kiếm quiz theo tên, mô tả hoặc danh mục..." />
+                <SearchBar onSearch={handleSearch} placeholder="Search quiz by name" />
               </div>
 
               {loading ? (
@@ -551,7 +551,7 @@ const Dashboard = ({ user, logout }) => {
 
               {/* Add SearchBar */}
               <div className="mb-6">
-                <SearchBar onSearch={handlePublicSearch} placeholder="Tìm kiếm quiz theo tên, mô tả hoặc danh mục..." />
+                <SearchBar onSearch={handlePublicSearch} placeholder="Search Quiz by name..." />
               </div>
 
               {Array.isArray(filteredPublicQuizzes) && filteredPublicQuizzes.length === 0 ? (

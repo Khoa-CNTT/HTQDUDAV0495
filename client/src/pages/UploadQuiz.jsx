@@ -4,6 +4,7 @@ import { uploadQuiz } from '../services/api';
 import { toast } from 'react-toastify';
 import { FiUpload, FiX, FiCheck, FiFileText } from 'react-icons/fi';
 import { FaGamepad, FaStar, FaTrophy } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 const UploadQuiz = () => {
   const [formData, setFormData] = useState({
@@ -33,7 +34,7 @@ const UploadQuiz = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
-    
+
     if (type === 'file') {
       if (files[0]) {
         setFormData({
@@ -67,7 +68,7 @@ const UploadQuiz = () => {
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     const file = e.dataTransfer.files[0];
     if (file && file.type === 'application/pdf') {
       setFormData({
@@ -82,14 +83,14 @@ const UploadQuiz = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.pdf) {
       toast.error('Please select a PDF file');
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       const userData = JSON.parse(localStorage.getItem('user'));
       if (!userData || !userData.token) {
@@ -106,12 +107,12 @@ const UploadQuiz = () => {
       data.append('pdfFile', formData.pdf);
 
       const response = await uploadQuiz(data);
-      
+
       toast.success('Quiz created successfully!');
       navigate(`/quiz/${response.quiz._id}`);
     } catch (error) {
       console.error('Error uploading quiz:', error);
-      
+
       if (error.response?.status === 401) {
         toast.error('Your session has expired. Please log in again.');
         localStorage.removeItem('user');
@@ -127,7 +128,7 @@ const UploadQuiz = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center py-8 relative overflow-hidden">
       {/* Animated SVG background */}
-      <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-0" style={{filter:'blur(2px)'}}>
+      <svg className="absolute top-0 left-0 w-full h-full pointer-events-none z-0" style={{ filter: 'blur(2px)' }}>
         <defs>
           <radialGradient id="g1" cx="50%" cy="50%" r="80%">
             <stop offset="0%" stopColor="#f472b6" stopOpacity="0.5" />
@@ -176,7 +177,7 @@ const UploadQuiz = () => {
                   <label
                     htmlFor="title"
                     className="block text-sm font-bold text-pink-200 mb-2 font-orbitron tracking-wide"
-                    style={{color: '#ffe259'}}
+                    style={{ color: '#ffe259' }}
                   >
                     Quiz Title
                   </label>
@@ -200,7 +201,7 @@ const UploadQuiz = () => {
                   <label
                     htmlFor="description"
                     className="block text-sm font-bold text-pink-200 mb-2 font-orbitron tracking-wide"
-                    style={{color: '#ffe259'}}
+                    style={{ color: '#ffe259' }}
                   >
                     Description (Optional)
                   </label>
@@ -224,7 +225,7 @@ const UploadQuiz = () => {
                   <label
                     htmlFor="category"
                     className="block text-sm font-bold text-pink-200 mb-2 font-orbitron tracking-wide"
-                    style={{color: '#ffe259'}}
+                    style={{ color: '#ffe259' }}
                   >
                     Category
                   </label>
@@ -275,9 +276,8 @@ const UploadQuiz = () => {
                   </div>
 
                   <div
-                    className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 ${
-                      isDragging ? 'border-yellow-400 bg-yellow-400/10' : 'border-pink-400'
-                    } border-dashed rounded-xl transition-all duration-200`}
+                    className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 ${isDragging ? 'border-yellow-400 bg-yellow-400/10' : 'border-pink-400'
+                      } border-dashed rounded-xl transition-all duration-200`}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
@@ -290,7 +290,7 @@ const UploadQuiz = () => {
                       >
                         <FiFileText className={`h-16 w-16 ${isDragging ? 'text-yellow-400' : 'text-pink-400'} transition-colors`} />
                       </motion.div>
-                      
+
                       <div className="flex flex-col items-center space-y-2">
                         <label
                           htmlFor="pdf-upload"
@@ -313,7 +313,7 @@ const UploadQuiz = () => {
                       </div>
 
                       <p className="text-xs text-pink-300 font-orbitron">PDF up to 10MB</p>
-                      
+
                       {fileName && (
                         <motion.div
                           initial={{ opacity: 0, y: -10 }}
@@ -399,4 +399,4 @@ const UploadQuiz = () => {
   );
 };
 
-export default UploadQuiz; 
+export default UploadQuiz;

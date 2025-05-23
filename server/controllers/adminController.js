@@ -77,10 +77,22 @@ const updateUserPermission = async (req, res) => {
     }
 };
 
+// Thống kê số lượng user và quiz
+const getStats = async (req, res) => {
+    try {
+        const userCount = await User.countDocuments();
+        const quizCount = await Quiz.countDocuments();
+        res.json({ userCount, quizCount });
+    } catch (error) {
+        res.status(500).json({ message: 'Error getting stats' });
+    }
+};
+
 module.exports = {
     getAllUsers,
     deleteUser,
     getAllQuizzes,
     deleteQuiz,
-    updateUserPermission
+    updateUserPermission,
+    getStats
 };

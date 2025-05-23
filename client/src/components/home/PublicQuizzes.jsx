@@ -152,7 +152,7 @@ export default function PublicQuizzes() {
         </motion.div>
 
         {/* Add SearchBar */}
-        <SearchBar onSearch={handleSearch} placeholder="Tìm kiếm quiz theo tên, mô tả hoặc danh mục..." />
+        <SearchBar onSearch={handleSearch} placeholder="Search Quiz by name..." />
 
         {loading ? (
           <div className="flex justify-center py-12">

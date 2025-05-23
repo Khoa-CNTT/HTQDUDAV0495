@@ -381,7 +381,7 @@ const UserProfile = ({ user, updateUser }) => {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       type="button"
-                      onClick={() => navigate("/change-password")}
+                      onClick={() => navigate("/reset-password")}
                       className="flex items-center px-6 py-3 text-pink-200 transition-all duration-300 transform border-2 shadow-lg border-pink-400/40 font-orbitron bg-gradient-to-br from-indigo-900/50 via-purple-900/50 to-pink-900/50 rounded-xl hover:from-pink-900/50 hover:to-indigo-900/50"
                     >
                       <FiLock className="mr-2" />

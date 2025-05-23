@@ -164,7 +164,9 @@ const getUserStats = async (userId) => {
         .sort('-completedAt')
         .populate('quizId');
 
-    const uniqueQuizIds = new Set(submissions.map(s => s.quizId.toString()));
+    // Filter out submissions with null quizId to avoid .toString() error
+    const validSubmissions = submissions.filter(s => s.quizId);
+    const uniqueQuizIds = new Set(validSubmissions.map(s => s.quizId.toString()));
     const recentSubmissions = submissions.slice(0, 5);
 
     // Calculate percentage scores for recent submissions

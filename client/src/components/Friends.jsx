@@ -498,7 +498,7 @@ function Friends({ user }) {
             onClick={() => setActiveTab("friends")}
           >
             <FaUserFriends className="w-5 h-5" />
-            Danh sách bạn bè
+            Friends List
           </button>
 
           <button
@@ -506,7 +506,7 @@ function Friends({ user }) {
             onClick={() => setActiveTab("requests")}
           >
             <FaBell className="w-5 h-5" />
-            Lời mời kết bạn
+            Friend Request
             {friendRequests.length > 0 && (
               <span className="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
                 {friendRequests.length}
@@ -519,7 +519,7 @@ function Friends({ user }) {
             onClick={() => setActiveTab("search")}
           >
             <FaSearch className="w-5 h-5" />
-            Tìm kiếm bạn bè
+            Search
           </button>
         </div>
 
@@ -532,7 +532,7 @@ function Friends({ user }) {
                 <input
                   type="text"
                   className="w-full px-4 py-2 mb-4 text-white bg-indigo-900 border-2 rounded-xl border-pink-400/40 focus:outline-none focus:ring-2 focus:ring-pink-400/60 font-orbitron"
-                  placeholder="Tìm bạn bè..."
+                  placeholder="Search friends..."
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                 />
@@ -561,7 +561,7 @@ function Friends({ user }) {
               <div>
                 <ul className="space-y-2">
                   {friendRequests.length === 0 && (
-                    <li className="text-pink-200 font-orbitron">Không có lời mời nào.</li>
+                    <li className="text-pink-200 font-orbitron">You have no friend requests.</li>
                   )}
                   {friendRequests.map(req => (
                     <li key={req._id} className="flex items-center gap-3 p-3 rounded-xl bg-pink-400/10">
@@ -589,14 +589,14 @@ function Friends({ user }) {
                 <input
                   type="text"
                   className="w-full px-4 py-2 mb-4 text-white bg-indigo-900 border-2 rounded-xl border-pink-400/40 focus:outline-none focus:ring-2 focus:ring-pink-400/60 font-orbitron"
-                  placeholder="Nhập tên người dùng..."
+                  placeholder="Search by username..."
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                 />
                 {loading && <div className="text-pink-200 font-orbitron">Đang tìm kiếm...</div>}
                 <ul className="space-y-2">
                   {searchResults.length === 0 && !loading && (
-                    <li className="text-pink-200 font-orbitron">Không tìm thấy người dùng.</li>
+                    <li className="text-pink-200 font-orbitron">User not found.</li>
                   )}
                   {searchResults.map(u => (
                     <li key={u._id} className="flex items-center gap-3 p-3 rounded-xl bg-pink-400/10">
@@ -678,7 +678,7 @@ function Friends({ user }) {
                   <input
                     type="text"
                     className="flex-1 px-4 py-2 text-white bg-indigo-900 border-2 rounded-xl border-pink-400/40 focus:outline-none focus:ring-2 focus:ring-pink-400/60 font-orbitron"
-                    placeholder="Nhập tin nhắn..."
+                    placeholder="Type a message..."
                     value={newMessage}
                     onChange={e => setNewMessage(e.target.value)}
                     onKeyDown={handleTyping}
@@ -688,12 +688,12 @@ function Friends({ user }) {
                     type="submit"
                     className="px-6 py-2 text-white bg-pink-500 rounded-xl font-orbitron hover:bg-pink-600 disabled:opacity-50"
                     disabled={!newMessage.trim()}
-                  >Gửi</button>
+                  >Send</button>
                 </form>
               </div>
             ) : (
               <div className="flex items-center justify-center h-full text-pink-200 font-orbitron text-xl">
-                Chọn một người bạn để bắt đầu trò chuyện!
+                Select a friend to start chatting!
               </div>
             )}
           </div>
