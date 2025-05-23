@@ -631,7 +631,11 @@ export const getAllQuizzes = async () => {
 export const deleteQuizById = async (quizId) => {
   try {
     const response = await api.delete(`/admin/quizzes/${quizId}`);
-    return response.data;
+    return {
+      success: true,
+      message: response.data.message || "Quiz deleted successfully",
+      data: response.data
+    };
   } catch (error) {
     console.error("Error deleting quiz:", error);
     return {

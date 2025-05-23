@@ -99,9 +99,9 @@ const Admin = ({ user }) => {
         if (window.confirm("Are you sure you want to delete this quiz? This action cannot be undone.")) {
             try {
                 const response = await deleteQuizById(quizId);
-                if (response.success) {
-                    setQuizzes(quizzes.filter(q => q._id !== quizId));
-                    toast.success("Quiz deleted successfully");
+                if (response && response.success) {
+                    setQuizzes(prevQuizzes => prevQuizzes.filter(q => q._id !== quizId));
+                    toast.success(response.message || "Quiz deleted successfully");
                 } else {
                     throw new Error(response.message || "Failed to delete quiz");
                 }

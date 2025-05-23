@@ -109,6 +109,11 @@ const Dashboard = ({ user, logout }) => {
           prevQuizzes.filter((quiz) => quiz._id !== quizId)
         );
 
+        // Also update filtered quizzes to ensure it disappears from search results immediately
+        setFilteredQuizzes((prevFilteredQuizzes) =>
+          prevFilteredQuizzes.filter((quiz) => quiz._id !== quizId)
+        );
+
         // Show success message
         toast.success("Quiz deleted successfully");
       } catch (error) {
